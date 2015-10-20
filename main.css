@@ -1,0 +1,138 @@
+/**
+ * To the extent possible under law, the author(s) have dedicated all copyright
+ * and related and neighboring rights to this software to the public domain
+ * worldwide. This software is distributed without any warranty.
+ *
+ * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
+ * CC0 Public Domain Dedication.
+**/
+
+
+body{
+    font-family:'Helvetica Neue', 'Lucida Grande', Tahoma, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+a{
+    color: #0645AD;
+    text-decoration: none;
+}
+
+h1{
+   font-size: 20px;
+}
+
+h2{
+    font-size: 16px;
+}
+
+div#main{
+    width: 800px;
+    margin: 30px auto;
+}
+
+.div-table{
+    display: table;
+    width:100%;
+    border-spacing:5px;/*cellspacing:poor IE support for  this*/
+    background-color: #F5F5F5;
+}
+
+.div-table-row{
+    display: table-row;
+    width:auto;
+    clear:both;
+    height: 50px;
+}
+
+.div-table-col1{
+    display: table-column;
+    float:left;
+    width:100px;
+    padding-top: 5px;
+}
+
+.div-table-col2{
+    display: table-column;
+    float:left;
+    width:300px;
+}
+
+#spec input[type="text"]{
+    background-color: #E0E0E0;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    width: 250px;
+    box-sizing:content-box;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box;
+}
+
+#spec input[type="number"]{
+    background-color: #E0E0E0;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    width: 40px;
+    text-align: center;
+}
+
+#spec input[type="submit"]{
+    color: #FFF;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    width: 250px;
+}
+
+#spec input[type="text"]:focus,
+#spec input[type="number"]:focus{
+    border-color: #808080;
+}
+
+#spec input[type="submit"]:hover{
+    color: #000;
+}
+
+
+#spec input.error{
+    border-color: #FF0000;
+}
+
+.run{
+    background-color: #3366CC;
+}
+
+.stop{
+    background-color: #CC4444;
+}
+
+#status{
+    font-size: 20px;
+}
+
+#result span{
+    display: block;
+    width: 100%;
+    padding: 3px;
+    margin: 1px;
+    border: 1px solid #C0C0C0;
+}
+
+#result a{
+    color: #000;
+}
+
+#result .fatalerror{
+    background-color: #CC4444;
+    color: #FFF;
+}
+
+#result .error{
+    background-color: #FFA9A7;
+}
+#result .success{
+    background-color: #B0DEB3;
+}
