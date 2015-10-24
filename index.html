@@ -1,3 +1,4 @@
+<!doctype html>
 <!--
  * To the extent possible under law, the author(s) have dedicated all copyright 
  * and related and neighboring rights to this software to the public domain 
@@ -6,7 +7,6 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the 
  * CC0 Public Domain Dedication.
 //-->
-<!doctype html>
 <html>
 <head>
 <title>PLtools: Harvest Templates</title>
@@ -26,6 +26,15 @@
 
 <div id="main">
 
+<div id="inst">Copy data from a Wikimedia template to Wikidata
+    <ul><li><i>Property:</i> destination property in Wikidata</li>
+    <li><i>Wiki:</i> language and project name</li>
+    <li><i>Template:</i> source template</li>
+    <li><i>Parameter:</i> parameter name in the template. Use numbers for nameless parameters</li>
+    <li><i>Category:</i> non-mandatory option to filter pages on wiki</li></ul>
+    By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata.
+</div>
+
 <form id="spec">
   <div class="div-table">
     <div class="div-table-row">
@@ -34,7 +43,7 @@
     </div>
     <div class="div-table-row">
       <div class="div-table-col1">Wiki</div>
-      <div class="div-table-col2"><input type="text" name="lang" style="width:50px;" value="en"> . <input type="text" name="project" style="width:150px;" value="wikipedia"></div>
+      <div class="div-table-col2"><input type="text" name="lang" style="width:50px;" value="en"> . <input type="text" name="project" style="width:150px;" value="wikipedia">.org</div>
     </div>
     <div class="div-table-row">
       <div class="div-table-col1">Template</div>
@@ -66,7 +75,6 @@
     </div>
   </div>
 </form>
-
 <div id="result"></div>
 </div>
 

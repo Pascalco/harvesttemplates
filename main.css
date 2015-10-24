@@ -32,9 +32,19 @@ div#main{
     background-color: #F5F5F5;
 }
 
+#inst{
+    width: 200px;
+    border: 1px solid black;
+    float:right;
+    border-radius: 5px;
+    margin: 10px;
+    padding: 5px;
+    font-size: 80%;
+}
+
 .div-table{
     display: table;
-    width:100%;
+    width: 500px;
     border-spacing:5px;/*cellspacing:poor IE support for  this*/
 }
 
@@ -117,6 +127,7 @@ input.error{
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
+    clear:both;
 }
 
 #result div{
