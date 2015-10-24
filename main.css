@@ -29,13 +29,13 @@ h2{
 div#main{
     width: 800px;
     margin: 30px auto;
+    background-color: #F5F5F5;
 }
 
 .div-table{
     display: table;
     width:100%;
     border-spacing:5px;/*cellspacing:poor IE support for  this*/
-    background-color: #F5F5F5;
 }
 
 .div-table-row{
@@ -58,7 +58,7 @@ div#main{
     width:300px;
 }
 
-#spec input[type="text"]{
+input[type="text"]{
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
@@ -70,7 +70,7 @@ div#main{
     -webkit-box-sizing:content-box;
 }
 
-#spec input[type="number"]{
+input[type="number"]{
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
@@ -79,7 +79,7 @@ div#main{
     text-align: center;
 }
 
-#spec input[type="submit"]{
+input[type="submit"]{
     color: #FFF;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
@@ -87,17 +87,17 @@ div#main{
     width: 250px;
 }
 
-#spec input[type="text"]:focus,
-#spec input[type="number"]:focus{
+input[type="text"]:focus,
+input[type="number"]:focus{
     border-color: #808080;
 }
 
-#spec input[type="submit"]:hover{
+input[type="submit"]:hover{
     color: #000;
 }
 
 
-#spec input.error{
+input.error{
     border-color: #FF0000;
 }
 
@@ -113,12 +113,16 @@ div#main{
     font-size: 20px;
 }
 
-#result span{
-    display: block;
+#result{
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#result div{
     width: 100%;
     padding: 3px;
     margin: 1px;
-    border: 1px solid #C0C0C0;
 }
 
 #result a{
@@ -131,8 +135,14 @@ div#main{
 }
 
 #result .error{
-    background-color: #FFA9A7;
+    background-color: #FFA9A7 !important;
+    border: 1px solid #C0C0C0;
 }
 #result .success{
-    background-color: #B0DEB3;
+    background-color: #B0DEB3 !important;
+    border: 1px solid #C0C0C0;
+}
+
+#result div:nth-child(odd){
+    background-color: #FFF;
 }

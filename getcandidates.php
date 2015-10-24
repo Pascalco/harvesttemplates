@@ -27,14 +27,16 @@ function getDBname ( $lang, $project ){
     return $dbname;
 }
 
-function getPagesWithTemplate( $template, $offset, $namespace = 0 ){
+function getPagesWithTemplate( $template, $namespace = 0 ){
     $ret = array();
+    $ret2 = array();
     $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
-    $result = mysql_query( 'SELECT DISTINCT tl_from, pp_value FROM templatelinks, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from' );
+    $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from' );
     while ( $row = mysql_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
+        $ret2[$row['tl_from']] = $row['page_title'];
     }
-    return $ret;
+    return array( $ret, $ret2 );
 }
 
 function getPagesInCategory( $category, $namespace = 0 ){
@@ -79,23 +81,23 @@ function openDB( $lang, $project ){
     return $conn;
 }
 
-if ( empty( $_GET['lang'] ) or empty( $_GET['project'] ) ){
+if ( empty( $_GET['lang'] ) or empty( $_GET['project'] ) or empty( $_GET['p'] ) ){
     exit(0);
 }
 
 $conn = openDB( $_GET['lang'], $_GET['project'] );
 $r = getPagesWithTemplate( $_GET['template'], 0 );
 if ( !empty( $_GET['category'] ) ){
-    $r = array_intersect_key( $r, getPagesInCategory( $_GET['category'] ) );
+    $r[0] = array_intersect_key( $r[0], getPagesInCategory( $_GET['category'] ) );
 }
 mysql_close( $conn );
-
 if ( !empty( $_GET['p'] ) ){
     $conn = openDB( 'Wikidata', 'Wikidata' );
     $single = getPagesWithClaim( $_GET['p'] );
     mysql_close( $conn );
-    $r = array_diff( $r, $single );
+    $r[0] = array_diff( $r[0], $single );
 }
+$r[1] = array_intersect_key( $r[1], $r[0] );
 
-echo json_encode( array_map( null, array_keys( $r ), array_values( $r ) ) );
+echo json_encode( array_map( null, array_keys( $r[0] ), array_values( $r[0] ), array_values( $r[1] ) ) );
 ?>
