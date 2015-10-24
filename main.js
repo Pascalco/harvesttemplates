@@ -217,7 +217,7 @@ function parseTemplate( text, pageid, title, job ){
         if (save == 1 && (result !== '' || m != '=')) result += m;
         if (open == 1 && m.toLowerCase() == job.parameter.toLowerCase()) save = 1; //found parameter on the correct level
     });
-    if ( result === '' && !isNaN( job.paramter ) ){
+    if ( result === '' && !isNaN( job.parameter ) ){
         parts = txt[1].split( /(\||\}\})/ );
         result = parts[2*job.parameter];
     }
