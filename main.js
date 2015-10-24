@@ -154,6 +154,10 @@ function handleValue( pageid, item, title, value ){
                 return 0;
             }
         }
+        if ( res.indexOf( '#' ) != -1 ){
+            report( pageid, 'error', 'no target page found', title );
+            return 0;
+        }
         $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
             action : 'query',
             prop : 'pageprops',
