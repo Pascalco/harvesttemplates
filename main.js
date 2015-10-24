@@ -289,7 +289,7 @@ $(document).ready( function(){
             ids : 'P'+$( 'input[name="property"]' ).val(),
             format: 'json'
         },function( data ) {
-            if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatpye == 'wikibase-item' ){
+            if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'wikibase-item' ){
                 $( '#wikisyntax' ).show();
             } else{
                 $( '#wikisyntax' ).hide();
