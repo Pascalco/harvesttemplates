@@ -201,7 +201,7 @@ function parseTemplate( text, pageid, title, job ){
     var open = 1;
     var save = 0;
     var result = '';
-    text = text.replace( new RegExp( '{{\s*'+job.template, 'i' ), '{{'+job.template );
+    text = text.replace( new RegExp( '{{\\s*'+job.templates, 'i' ), '{{'+job.template );
     var txt = text.split( '{{'+job.template );
     if ( txt.length == 1 ){
         report( 'fatalerror', 'unknown error', title, job );
@@ -265,12 +265,31 @@ function getPages( job ) {
     })
     .done( function( pageids ) {
         reportStatus( 'loading....' );
-        if ( pageids.length > 0 ){
-            proceedOnePage( 0, pageids, job );
-        } else {
-            reportStatus( 'nothing to do' );
-            stopJob();
-        }
+        $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
+            action : 'query',
+            prop : 'redirects',
+            titles : 'Template:'+job.template,
+            rdnamespace: 10,
+            format: 'json'
+        })
+        .done( function( data ) {
+            job.templates = '('+job.template+'|'+job.template.replace(' ','_');
+            for ( var m in data.query.pages ){
+                if ('redirects' in data.query.pages[m]){
+                    for (var red in data.query.pages[m].redirects){
+                        var title = data.query.pages[m].redirects[red].title.split(':',2);
+                        job.templates += '|'+title[1]+'|'+title[1].replace(' ','_');
+                    }
+                }
+            }
+            job.templates += ')';
+            if ( pageids.length > 0 ){
+                proceedOnePage( 0, pageids, job );
+            } else {
+                reportStatus( 'nothing to do' );
+                stopJob();
+            }
+        });
     })
     .fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ', ' + error;
@@ -315,7 +334,7 @@ $(document).ready( function(){
                         p: 'P'+$('input[name="property"]').val(),
                         lang: $('input[name="lang"]').val(),
                         project: $('input[name="project"]').val(),
-                        template: $('input[name="template"]').val().capitalizeFirstLetter(),
+                        template: $('input[name="template"]').val().capitalizeFirstLetter().replace('_',' '),
                         parameter: $('input[name="parameter"]').val(),
                         category: $('input[name="category"]').val(),
                         wikisyntax: $('input[name="wikisyntax"]').prop('checked')
