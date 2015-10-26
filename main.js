@@ -170,7 +170,20 @@ function handleValue( pageid, item, title, value ){
                     if ( 'pageprops' in data.query.pages[m] ){
                         if ( 'wikibase_item' in data.query.pages[m].pageprops ){
                             newvalue = data.query.pages[m].pageprops.wikibase_item;
-                            addValue( pageid, item, title, newvalue );
+                            $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
+                                action : 'wbgetentities',
+                                ids : newvalue,
+                                format: 'json'
+                            })
+                            .done( function( data2 ) {
+                                if ('P31' in data2.entities[newvalue].claims){
+                                    if (data2.entities[newvalue].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
+                                        report( pageid, 'error', 'target page is a disambiguation page', title );
+                                        return 0;
+                                    }
+                                }
+                                addValue( pageid, item, title, newvalue );
+                            });
                         } else {
                             report( pageid, 'error', 'target has no Wikidata item', title );
                         }
