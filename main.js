@@ -146,7 +146,7 @@ function handleValue( pageid, item, title, value ){
         }
     }
     else if ( job.datatype == 'wikibase-item' ){
-        var res = value.match(/\[\[([^\|\]]+)/);
+        var res = value.match(/^\[\[([^\|\]]+)/);
         if (res !== null){
             res = res[1];
         } else {
