@@ -130,17 +130,20 @@ function handleValue( pageid, item, title, value ){
      if ( job.datatype == 'string' || job.datatype == 'url' ){
         if ( regex !== false ){
             var patt = new RegExp('^'+regex+'$');
-            if ( patt.test( value ) === false){
+            if ( patt.test( value ) == true){
+                if ( uniqueValue.indexOf( value ) != -1 ){
+                    report( pageid, 'error', 'unique value violation', title );
+                    return false;
+                }
+                uniqueValue.push( value );
+                addValue( pageid, item, title, value );
+            } else {    
                 report( pageid, 'error', 'format violation of value <i>'+value+'</i>', title );
                 return false;
             }
+        } else {
+            reportStatus( 'no format expression found' );
         }
-        if ( uniqueValue.indexOf( value ) != -1 ){
-            report( pageid, 'error', 'unique value violation', title );
-            return false;
-        }
-        uniqueValue.push( value );
-        addValue( pageid, item, title, value );
     }
     else if ( job.datatype == 'wikibase-item' ){
         var res = value.match(/\[\[([^\|\]]+)/);
