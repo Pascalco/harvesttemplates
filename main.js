@@ -199,7 +199,7 @@ function handleValue( pageid, item, title, value ){
             }
         });
     } else if ( job.datatype == 'commonsMedia' ){
-        value = value.replace( '_', ' ' );
+        value = value.replace( /_/g, ' ' );
         $.getJSON( 'https://commons.wikimedia.org/w/api.php?callback=?', {
             action : 'query',
             titles : 'File:'+value,
@@ -286,7 +286,7 @@ function proceedOnePage(){
 
 function createCheckboxlist( pageids ){
     for ( var j in pageids ){
-        $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace(/_/g,' ')+'</a></span></div>' );
+        $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
     }
     $('#addvalues').show();
     reportStatus('Found '+pageids.length+' pages');
@@ -310,12 +310,12 @@ function getPages() {
             format: 'json'
         })
         .done( function( data ) {
-            job.templates = '('+job.template+'|'+job.template.replace(' ','_');
+            job.templates = '('+job.template+'|'+job.template.replace( / /g, '_' );
             for ( var m in data.query.pages ){
                 if ('redirects' in data.query.pages[m]){
                     for (var red in data.query.pages[m].redirects){
                         var title = data.query.pages[m].redirects[red].title.split(':',2);
-                        job.templates += '|'+title[1]+'|'+title[1].replace(' ','_');
+                        job.templates += '|'+title[1]+'|'+title[1].replace( / /g, '_' );
                     }
                 }
             }
@@ -372,7 +372,7 @@ $(document).ready( function(){
                         p: 'P'+$('input[name="property"]').val(),
                         lang: $('input[name="lang"]').val(),
                         project: $('input[name="project"]').val(),
-                        template: $('input[name="template"]').val().capitalizeFirstLetter().replace('_',' '),
+                        template: $('input[name="template"]').val().capitalizeFirstLetter().replace( /_/g, ' ' ),
                         parameter: $('input[name="parameter"]').val(),
                         category: $('input[name="category"]').val(),
                         wikisyntax: $('input[name="wikisyntax"]').prop('checked')
