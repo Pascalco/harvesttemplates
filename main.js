@@ -254,7 +254,7 @@ function parseTemplate( text, pageid, wikidataid, title ){
                 result = sp.slice(1).join( '=' ).trim();
             }
         } else {
-           unnamed.push( m );
+           unnamed.push( m.trim() );
         }
    });
    if ( result === '' && !isNaN( job.parameter ) ){
