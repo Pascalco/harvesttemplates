@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 */
-var allProjects = ['wikipedia','wikisource','wikivoyage','wikinews','wikibooks','wikiquote','commons'];
+var allProjects = ['commons','wikibooks','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
 var run = 0;
 var uniqueValue = [];
 var regex = false;
@@ -72,10 +72,13 @@ function getWpEditionId( lang, project ){
     if ( project == 'wikipedia' ){
         project = 'wiki';
     } else if( project == 'commons' || lang == 'commons' ){
-        project = 'commons';
+        project = 'commonswiki';
         lang = '';
     } else if ( project == 'wikidata' || lang == 'wikidata' ){
-        project = 'wikidata';
+        project = 'wikidatawiki';
+        lang = '';
+    } else if ( project == 'wikimedia' && lang == 'species' ){
+        project = 'specieswiki';
         lang = '';
     }
     $.ajax({
@@ -207,7 +210,7 @@ function handleValue( pageid, item, title, value ){
         })
         .done( function ( data ) {
             if ('-1' in data.query.pages ){
-                report( pageid, 'error', 'File <i>'+value+'</i> does not exists on Commons', title );
+                report( pageid, 'error', 'File <i>'+value+'</i> does not exist on Commons', title );
                 return false;
             }
             if ( uniqueValue.indexOf( value ) != -1 ){
@@ -289,7 +292,7 @@ function createCheckboxlist( pageids ){
         $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
     }
     $('#addvalues').show();
-    reportStatus('Found '+pageids.length+' pages');
+    reportStatus(pageids.length == 1 ? 'Found one page' : 'Found '+pageids.length+' pages');
 }
 
 function getPages() {
@@ -381,7 +384,7 @@ $(document).ready( function(){
                         $( 'input[name="lang"]' ).addClass( 'error' );
                         error = 1;
                     }
-                    if (job.project === '' || $.inArray(job.project, allProjects) == -1){
+                    if ( job.project === '' || $.inArray(job.project, allProjects) == -1 || !(job.lang == 'species' && job.project == 'wikimedia') ){
                         $( 'input[name="project"]' ).addClass( 'error' );
                         error = 1;
                     }
@@ -405,6 +408,7 @@ $(document).ready( function(){
                             format: 'json'
                         },function( data ) {
                             job.datatype = data.entities[job.p].datatype;
+							// TODO: monolingualtext, quantity, time
                             if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
                                 reportStatus( 'loading..' );
                                 createConstraints();

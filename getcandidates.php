@@ -16,6 +16,7 @@ function getDBname ( $lang, $project ){
     $dbname = $lang;
     if ( $lang == 'commons' || $project == 'commons' ) $dbname = 'commonswiki_p';
     elseif ( $lang == 'wikidata' || $project == 'wikidata' ) $dbname = 'wikidatawiki_p';
+	elseif ( $lang == 'species' && $project == 'wikimedia' ) $dbname = 'specieswiki_p';
     elseif ( $project == 'wikipedia' ) $dbname .= 'wiki_p';
     elseif ( $project == 'wikisource' ) $dbname .= 'wikisource_p';
     elseif ( $project == 'wiktionary' ) $dbname .= 'wiktionary_p';
@@ -49,7 +50,7 @@ function getPagesInCategory( $category, $namespace = 0 ){
     return $ret;
 }
 
-function getPagesWithClaim( $p, $namespace = 0){
+function getPagesWithClaim( $p, $namespace = 0 ){
     ini_set( 'memory_limit', '1G' );
     $ret = array();
     $result = mysql_query( 'SELECT DISTINCT page_title FROM page, pagelinks WHERE page_id=pl_from AND pl_title = "'.$p.'" AND pl_from_namespace=0 AND pl_namespace=120' );
