@@ -224,26 +224,44 @@ function parseTemplate( text, pageid, wikidataid, title ){
     var open = 1;
     var save = 0;
     var result = '';
+    text = text.replace( /(\r\n|\n|\r)/gm, '' ) //remove linebreaks
+    text = text.replace( /<ref((?!<\/ref>).)*<\/ref>/g, '' ); //remove references
+    text = text.replace( /<ref([^>]+)>/g, '' ); //remove reference tags
     text = text.replace( new RegExp( '{{\\s*'+job.templates, 'i' ), '{{'+job.template );
     var txt = text.split( '{{'+job.template );
     if ( txt.length == 1 ){
-        report( 'fatalerror', 'unknown error', title );
+        report( 'error', 'Template not found', title );
         return false;
     }
-    parts = txt[1].split( /(\{\{|\}\}|\||\=|\[\[|\]\])/ );
-    $.each(parts,function(i,m){
-        m = m.trim();
-        if (save == 1 && open == 1 && m == '|') return false; //end of value
-        if (m == '{{' || m == '[[') open += 1; //one level deeper
-        if (m == '}}' || m == ']]') open -= 1; //one level higher
-        if (open === 0) return false; //end of template
-        if (save == 1 && (result !== '' || m != '=')) result += m;
-        if (open == 1 && m.toLowerCase() == job.parameter.toLowerCase()) save = 1; //found parameter on the correct level
-    });
-    if ( result === '' && !isNaN( job.parameter ) ){
-        parts = txt[1].split( /(\||\}\})/ );
-        result = parts[2*job.parameter];
+    text = txt[1];
+    var patt = new RegExp( '{{((?!}}|{{).)*}}' );
+    while ( true ){
+        if ( patt.test( text ) ){
+            text = text.replace( patt, '' ); //remove all other templates
+        } else {
+             break;
+        }
     }
+    txt = text.split( '}}' );
+    text = txt[0];
+    text = text.replace( /\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]' ); //simplify links
+    parts = text.split( '|' );
+    var unnamed = [];
+    $.each( parts, function( i, m ){
+       if (m.indexOf('=') != '-1'){
+            sp = m.split('=');
+            if (sp[0].toLowerCase().trim() == job.parameter.toLowerCase()){
+                result = sp.slice(1).join( '=' ).trim();
+            }
+        } else {
+           unnamed.push( m );
+        }
+   });
+   if ( result === '' && !isNaN( job.parameter ) ){
+        if ( unnamed.length > job.parameter ){
+            result = unnamed[job.parameter];
+        }
+   }
     if ( result !== '' ){
         delay = 5000;
         handleValue( pageid, wikidataid, title, result );
