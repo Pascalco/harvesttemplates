@@ -230,7 +230,7 @@ function parseTemplate( text, pageid, wikidataid, title ){
     text = text.replace( new RegExp( '{{\\s*'+job.templates, 'i' ), '{{'+job.template );
     var txt = text.split( '{{'+job.template );
     if ( txt.length == 1 ){
-        report( 'error', 'Template not found', title );
+        report( pageid, 'error', 'Template not found', title );
         return false;
     }
     text = txt[1];
