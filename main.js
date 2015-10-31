@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 */
-var allProjects = ['commons','wikibooks','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
+var allProjects = ['commons','wikibooks','wikimedia','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
 var run = 0;
 var uniqueValue = [];
 var regex = false;
@@ -402,7 +402,7 @@ $(document).ready( function(){
                         $( 'input[name="lang"]' ).addClass( 'error' );
                         error = 1;
                     }
-                    if ( job.project === '' || $.inArray(job.project, allProjects) == -1 || !(job.lang == 'species' && job.project == 'wikimedia') ){
+                    if ( job.project === '' || $.inArray(job.project, allProjects) == -1 ){
                         $( 'input[name="project"]' ).addClass( 'error' );
                         error = 1;
                     }
