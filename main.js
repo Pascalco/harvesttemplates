@@ -43,28 +43,29 @@ function stopJob(){
     $( 'input[name="pagelist"]' ).attr( 'disabled', false );
 }
 
-function createConstraints(){
-    singleValue = [];
-    uniqueValue = [];
-    $.ajax({
-        type: 'GET',
-        url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
-        data: {query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:'+job.p+' ?value .}', format: 'json'},
-        dataType: 'json',
-        async: false
-    }).done(function( data ) {
-        for ( var row in data.results.bindings ){
-            uniqueValue.push( data.results.bindings[row].value.value );
-        }
+function createConstraints( job ){
+    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
+        uniqueValue = [];
         $.ajax({
             type: 'GET',
-            url: 'getregex.php',
-            data: {p: job.p},
+            url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
+            data: {query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:'+job.p+' ?value .} GROUP BY ?value', format: 'json'},
+            dataType: 'json',
             async: false
-        }).done(function(data) {
-            regex = data;
+        }).done(function( data ) {
+            for ( var row in data.results.bindings ){
+                uniqueValue.push( data.results.bindings[row].value.value );
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'getregex.php',
+                data: {p: job.p},
+                async: false
+            }).done(function(data) {
+                regex = data;
+            });
         });
-    });
+    }
 }
 
 function getWpEditionId( lang, project ){
@@ -429,7 +430,7 @@ $(document).ready( function(){
 							// TODO: monolingualtext, quantity, time
                             if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
                                 reportStatus( 'loading..' );
-                                createConstraints();
+                                createConstraints( job );
                                 reportStatus( 'loading...' );
                                 getPages();
                             } else {
