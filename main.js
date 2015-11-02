@@ -149,7 +149,7 @@ function handleValue( pageid, item, title, value ){
      if ( job.datatype == 'string' || job.datatype == 'url' ){
          value = job.prefix + value;
         if ( regex !== false ){
-            var patt = new RegExp('^'+regex+'$');
+            var patt = new RegExp('^('+regex+')$');
             if ( patt.test( value ) == true){
                 if ( uniqueValue.indexOf( value ) != -1 ){
                     report( pageid, 'error', 'unique value violation', title );
@@ -413,6 +413,7 @@ $(document).ready( function(){
                     var error = 0;
                     $('#result').html( '' );
                     $('#addvalues').hide();
+                    $('#demo').hide();
                     stopJob();
                     i = 0;
                     job = {
