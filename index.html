@@ -1,10 +1,10 @@
 <!doctype html>
 <!--
- * To the extent possible under law, the author(s) have dedicated all copyright 
- * and related and neighboring rights to this software to the public domain 
- * worldwide. This software is distributed without any warranty. 
+ * To the extent possible under law, the author(s) have dedicated all copyright
+ * and related and neighboring rights to this software to the public domain
+ * worldwide. This software is distributed without any warranty.
  *
- * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the 
+ * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 //-->
 <html>
@@ -33,6 +33,7 @@
     <li><i>Parameter:</i> parameter name in the template. Use numbers for nameless parameters</li>
     <li><i>Category:</i> non-mandatory option to filter pages on wiki</li></ul>
     By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata.
+    Alternatively, with <i>demo</i> only parsing is done without any edit action.
 </div>
 
 <form id="spec">
@@ -70,7 +71,7 @@
       <div class="div-table-col2"><div id="status"></div></div>
     </div>
     <div class="div-table-row">
-      <div class="div-table-col1"></div>
+      <div class="div-table-col1"><input type="submit" value="demo" class="run" id="demo" style="display:none;"></div>
       <div class="div-table-col2"><input type="submit" value="add values" class="run" id="addvalues" style="display:none;"></div>
     </div>
   </div>

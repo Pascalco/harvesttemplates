@@ -23,10 +23,10 @@ function report( pageid, status, value, title ){
         value = '<a href="//www.wikidata.org/wiki/'+value+'" target="_blank">'+value+'</a>';
     }
     if ( status == 'success' ){
-        $('#' + pageid).next().append( ' → <a href="//www.wikidata.org/wiki/'+title+'" target="_blank">'+title+'</a>: added value <i>'+value+'</i>' );
+        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+title+'" target="_blank">'+title+'</a>: added value <i>'+value+'</i></span>' );
     } else {
         delay = 500;
-        $('#' + pageid).next().append( ' → '+value );
+        $('#' + pageid).next().append( '<span class="value"> → '+value+'</span>' );
     }
     $('#' + pageid).parent().addClass( status );
 }
@@ -37,10 +37,20 @@ function reportStatus( status ){
 
 function stopJob(){
     run = 0;
-    $('#addvalues').val( 'add values' );
-    $('#addvalues').removeClass( 'stop' );
-    $('#addvalues').addClass( 'run' );
+    if ( $('.stop').attr('id') == 'addvalues' ){
+        $('#addvalues').val( 'add values' );
+        $('#addvalues').removeClass( 'stop' );
+        $('#addvalues').addClass( 'run' );
+        $('#demo').attr( 'disabled', false );
+    } else if ( $('.stop').attr('id') == 'demo' ){
+        $('#demo').val( 'demo' );
+        $('#demo').removeClass( 'stop' );
+        $('#demo').addClass( 'run' );
+        $('#addvalues').attr( 'disabled', false );
+        i=0;
+    }
     $( 'input[name="pagelist"]' ).attr( 'disabled', false );
+
 }
 
 function createConstraints( job ){
@@ -113,22 +123,27 @@ function addValue( pageid, item, title, value ){
         reportStatus( 'not supported datatype' );
         return false;
     }
-    $.ajax({
-        type: 'GET',
-        url: '../oauth.php',
-        data: {action : 'createClaim', claim : claim}
-    })
-    .done(function( data ){
-        if ( data.indexOf('createdClaim') > -1 ){
-            var res = data.split('|');
-            var guid = res[1];
-            setSource( item, guid );
-            report( pageid, 'success', value, item );
-        } else {
-            report( pageid, 'fatalerror', data, title );
-        }
-    });
+    if ( job.demo == 1){
+        report( pageid, 'success', value, item );
+    } else {
+        $.ajax({
+            type: 'GET',
+            url: '../oauth.php',
+            data: {action : 'createClaim', claim : claim}
+        })
+        .done(function( data ){
+            if ( data.indexOf('createdClaim') > -1 ){
+                var res = data.split('|');
+                var guid = res[1];
+                setSource( item, guid );
+                report( pageid, 'success', value, item );
+            } else {
+                report( pageid, 'fatalerror', data, title );
+            }
+        });
+    }
 }
+
 
 function handleValue( pageid, item, title, value ){
      if ( job.datatype == 'string' || job.datatype == 'url' ){
@@ -139,9 +154,11 @@ function handleValue( pageid, item, title, value ){
                     report( pageid, 'error', 'unique value violation', title );
                     return false;
                 }
-                uniqueValue.push( value );
+                if (job.demo != 1){
+                    uniqueValue.push( value );
+                }
                 addValue( pageid, item, title, value );
-            } else {    
+            } else {
                 report( pageid, 'error', 'format violation of value <i>'+value+'</i>', title );
                 return false;
             }
@@ -218,7 +235,9 @@ function handleValue( pageid, item, title, value ){
                 report( pageid, 'error', 'unique value violation', title );
                 return false;
             }
-            uniqueValue.push( value );
+            if (job.demo != 1){
+                uniqueValue.push( value );
+            }
             addValue( pageid, item, title, value );
         });
     }
@@ -267,7 +286,9 @@ function parseTemplate( text, pageid, wikidataid, title ){
         }
    }
     if ( result !== '' ){
-        delay = 5000;
+        if ( job.demo != 1 ){
+            delay = 5000;
+        }
         handleValue( pageid, wikidataid, title, result );
     } else {
         report( pageid, 'error', 'no value', title );
@@ -297,7 +318,7 @@ function proceedOnePage(){
                 format: 'json'
             })
             .done( function( data2 ) {
-                parseTemplate( data2.query.pages[el.attr('id')].revisions[0]['*'], el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].title );                
+                parseTemplate( data2.query.pages[el.attr('id')].revisions[0]['*'], el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].title );
                 proceedOnePage();
             });
         }, delay );
@@ -311,6 +332,7 @@ function createCheckboxlist( pageids ){
         $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
     }
     $('#addvalues').show();
+    $('#demo').show();
     reportStatus(pageids.length == 1 ? 'Found one page' : 'Found '+pageids.length+' pages');
 }
 
@@ -440,7 +462,20 @@ $(document).ready( function(){
                     }
                 }
             });
-        } else if ( $(this).attr('id') == 'addvalues' && $(this).val() == 'add values' ){
+        } else if ( $(this).val() == 'demo' || $(this).val() == 'add values' ){
+            if (job.demo == 1){
+                $("#result").find('div').each(function(index, value) {
+                    $(this).removeClass();
+                    $(this).find('.value').html('');
+                });
+            }
+            if ( $(this).val() == 'demo' ){
+                job.demo = 1;
+                $( '#addvalues' ).attr( 'disabled', true );
+            } else {
+                job.demo = 0;
+                $( '#demo' ).attr( 'disabled', true );
+            }
             run = 1;
             $( 'input[name="pagelist"]' ).attr( 'disabled', true );
             $(this).val('stop');
