@@ -147,6 +147,7 @@ function addValue( pageid, item, title, value ){
 
 function handleValue( pageid, item, title, value ){
      if ( job.datatype == 'string' || job.datatype == 'url' ){
+         value = job.prefix + value;
         if ( regex !== false ){
             var patt = new RegExp('^'+regex+'$');
             if ( patt.test( value ) == true){
@@ -382,6 +383,8 @@ $(document).ready( function(){
         $(this).removeClass( 'error' );
     });
     $( 'input[name="property"]' ).change(function (){
+        $( '#wikisyntax' ).hide();
+        $( '#prefix' ).hide();
         $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?',{
             action : 'wbgetentities',
             ids : 'P'+$( 'input[name="property"]' ).val(),
@@ -389,8 +392,8 @@ $(document).ready( function(){
         },function( data ) {
             if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'wikibase-item' ){
                 $( '#wikisyntax' ).show();
-            } else{
-                $( '#wikisyntax' ).hide();
+            } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'string' ){
+                $( '#prefix' ).show();
             }
         });
     });
@@ -419,7 +422,8 @@ $(document).ready( function(){
                         template: $('input[name="template"]').val().capitalizeFirstLetter().replace( /_/g, ' ' ),
                         parameter: $('input[name="parameter"]').val(),
                         category: $('input[name="category"]').val(),
-                        wikisyntax: $('input[name="wikisyntax"]').prop('checked')
+                        wikisyntax: $('input[name="wikisyntax"]').prop('checked'),
+                        prefix: $('input[name="prefix"]').val(),
                     };
                     if ( job.lang === '' ){
                         $( 'input[name="lang"]' ).addClass( 'error' );
