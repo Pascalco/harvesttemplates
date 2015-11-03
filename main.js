@@ -144,30 +144,57 @@ function addValue( pageid, item, title, value ){
     }
 }
 
-
-function handleValue( pageid, item, title, value ){
-     if ( job.datatype == 'string' || job.datatype == 'url' ){
-         value = job.prefix + value;
+function checkConstraints( pageid, item, title, value){
+    // format check
+    if ( job.datatype == 'string' || job.datatype == 'url'){
         if ( regex !== false ){
             var patt = new RegExp('^('+regex+')$');
-            if ( patt.test( value ) == true){
-                if ( uniqueValue.indexOf( value ) != -1 ){
-                    report( pageid, 'error', 'unique value violation', title );
-                    return false;
-                }
-                if (job.demo != 1){
-                    uniqueValue.push( value );
-                }
-                addValue( pageid, item, title, value );
-            } else {
+            if ( patt.test( value ) == false){
                 report( pageid, 'error', 'format violation of value <i>'+value+'</i>', title );
                 return false;
             }
         } else {
             reportStatus( 'no format expression found' );
+            return false;
         }
     }
-    else if ( job.datatype == 'wikibase-item' ){
+    // unique value check
+    if ( job.datatype == 'string' || job.datatype == 'url' || job.datatype == 'commonsMedia' ){
+        if ( uniqueValue.indexOf( value ) != -1 ){
+            report( pageid, 'error', 'unique value violation', title );
+            return false;
+        }
+        if (job.demo != 1){
+            uniqueValue.push( value );
+        }
+    }
+    //disam check
+    if ( job.datatype == 'wikibase-item' ){
+        $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
+            action : 'wbgetentities',
+            ids : value,
+            format: 'json'
+        })
+        .done( function( data2 ) {
+            if ('P31' in data2.entities[newvalue].claims){
+                if (data2.entities[newvalue].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
+                    report( pageid, 'error', 'target page is a disambiguation page', title );
+                    return false;
+                }
+            }
+            addValue( pageid, item, title, value );  
+        });
+    } else {
+       addValue( pageid, item, title, value ); 
+    }
+}
+
+function handleValue( pageid, item, title, value ){
+    if ( job.datatype == 'string'){
+        checkConstraints( pageid, item, title, job.prefix + value );
+    } else if ( job.datatype == 'url' ){
+        checkConstraints( pageid, item, title, value );
+    } else if ( job.datatype == 'wikibase-item' ){
         var res = value.match(/^\[\[([^\|\]]+)/);
         if (res !== null){
             res = res[1];
@@ -176,12 +203,12 @@ function handleValue( pageid, item, title, value ){
                 res = value;
             } else {
                 report( pageid, 'error', 'no target page found', title );
-                return 0;
+                return false;
             }
         }
         if ( res.indexOf( '#' ) != -1 ){
             report( pageid, 'error', 'no target page found', title );
-            return 0;
+            return false;
         }
         $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
             action : 'query',
@@ -195,20 +222,7 @@ function handleValue( pageid, item, title, value ){
                     if ( 'pageprops' in data.query.pages[m] ){
                         if ( 'wikibase_item' in data.query.pages[m].pageprops ){
                             newvalue = data.query.pages[m].pageprops.wikibase_item;
-                            $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
-                                action : 'wbgetentities',
-                                ids : newvalue,
-                                format: 'json'
-                            })
-                            .done( function( data2 ) {
-                                if ('P31' in data2.entities[newvalue].claims){
-                                    if (data2.entities[newvalue].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
-                                        report( pageid, 'error', 'target page is a disambiguation page', title );
-                                        return 0;
-                                    }
-                                }
-                                addValue( pageid, item, title, newvalue );
-                            });
+                            checkConstraints( pageid, item, title, newvalue );
                         } else {
                             report( pageid, 'error', 'target has no Wikidata item', title );
                         }
@@ -228,18 +242,11 @@ function handleValue( pageid, item, title, value ){
             format: 'json'
         })
         .done( function ( data ) {
-            if ('-1' in data.query.pages ){
+            if ( '-1' in data.query.pages ){
                 report( pageid, 'error', 'File <i>'+value+'</i> does not exist on Commons', title );
-                return false;
+            } else {
+                checkConstraints( pageid, item, title, value );
             }
-            if ( uniqueValue.indexOf( value ) != -1 ){
-                report( pageid, 'error', 'unique value violation', title );
-                return false;
-            }
-            if (job.demo != 1){
-                uniqueValue.push( value );
-            }
-            addValue( pageid, item, title, value );
         });
     }
 }
