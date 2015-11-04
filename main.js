@@ -115,10 +115,19 @@ function setSource( item, guid ){
 }
 
 function addValue( pageid, item, title, value ){
-    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url'){
+    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
         claim = {type : 'string', q: item, p: job.p, text: value};
-    } else if ( job.datatype == 'wikibase-item'){
+    } else if ( job.datatype == 'wikibase-item '){
         claim = {type : 'wikibase-entityid', q: item, p: job.p, numericid: value.substring(1)};
+    } else if ( job.datatype == 'time' ){
+        var precision = 9;
+        if ( value.substring(5,7) != '00' ){
+           precision = 10;
+           if ( value.substring(8,10) != '00' ){
+               precision = 11;
+           }
+        }
+        claim = {type : 'time', q: item, p : job.p , date : '+'+value+'T00:00:00Z', precision : precision, calender: job.calender.model}
     } else {
         reportStatus( 'not supported datatype' );
         return false;
@@ -138,7 +147,8 @@ function addValue( pageid, item, title, value ){
                 setSource( item, guid );
                 report( pageid, 'success', value, item );
             } else {
-                report( pageid, 'fatalerror', data, title );
+                console.log(pageid, 'fatalerror', data, title);
+                report( pageid, 'error', data, title );
             }
         });
     }
@@ -182,11 +192,96 @@ function checkConstraints( pageid, item, title, value){
                     return false;
                 }
             }
-            addValue( pageid, item, title, value );  
+            addValue( pageid, item, title, value );
         });
     } else {
-       addValue( pageid, item, title, value ); 
+       addValue( pageid, item, title, value );
     }
+}
+
+function parseDate( value ){
+    var date = false;
+    $.ajax({
+        type: 'GET',
+        url: 'monthnames.json',
+        dataType: 'json',
+        async: false
+    }).done( function( monthnames ) {
+        value = value.replace( /–|-|—/g, '-' );
+        digits = {'०':0,'१':1,'२':2,'३':3,'४':4,'५':5,'६':6,'७':7,'८':8,'९':9}
+        roman = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
+        $.each(digits, function( k, v) {
+            r = new RegExp(k,'g');
+            value = value.replace( r , v )
+        });
+        //only year
+        r = new RegExp( '^(\\d{4})$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-00-00';
+        }
+        $.each ( ( monthnames[job.lang]||{} ) , function ( name , num ) {
+            // month and year
+            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{4})$' ,'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[2]+'-'+num+'-00';
+            }
+            // day, month, year
+            r = new RegExp( '^(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?('+name+')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[5]+'-'+num+'-'+res[1];
+            }
+            // month, day, year
+            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{1,2})t?h?\\,? (\\d{4})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[3]+'-'+num+'-'+res[2];
+            }
+            // year, month, day
+            r = new RegExp( '^(\\d{4})(e?ko|\\.|,)? ('+name+')(aren)? (\\d{1,2})(a|ean|an)?$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[1]+'-'+num+'-'+res[5];
+            }
+        } );
+        for ( var num = 1; num <= 12; num++ ) {
+            // day, month (number), year
+            r = new RegExp( '^(\\d{1,2})([. /]+| tháng )(0?'+num+'|'+roman[num]+')([., /]+| năm )(\\d{4})$' ,'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[5]+'-'+num+'-'+res[1];
+            }
+            // year, month (number), day
+            r = new RegExp( '^(\\d{4})( - |/)(0?'+num+'|'+roman[num]+')( - |/)(\\d{1,2})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[1]+'-'+num+'-'+res[5];
+            }
+        }
+        // Japanese/Chinese/Korean
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-00-00';
+        }
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-'+res[3]+'-00';
+        }
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-'+res[3]+'-'+res[5];
+        }
+        if (date !== false){
+            date = date.replace( /-(\d)-/, '-0\$1-' );
+            date = date.replace( /-(\d)$/, '-0\$1' );
+        }
+    });
+    return date;
 }
 
 function handleValue( pageid, item, title, value ){
@@ -203,12 +298,12 @@ function handleValue( pageid, item, title, value ){
                 res = value;
             } else {
                 report( pageid, 'error', 'no target page found', title );
-                return false;
+                return 0;
             }
         }
         if ( res.indexOf( '#' ) != -1 ){
             report( pageid, 'error', 'no target page found', title );
-            return false;
+            return 0;
         }
         $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
             action : 'query',
@@ -242,12 +337,34 @@ function handleValue( pageid, item, title, value ){
             format: 'json'
         })
         .done( function ( data ) {
-            if ( '-1' in data.query.pages ){
+            if ('-1' in data.query.pages ){
                 report( pageid, 'error', 'File <i>'+value+'</i> does not exist on Commons', title );
             } else {
                 checkConstraints( pageid, item, title, value );
             }
         });
+    } else if ( job.datatype == 'time' ){
+        var newvalue = parseDate( value );
+        if ( newvalue !== false ){
+             if ( isNaN( parseInt( job.calender.year ) ) ){
+                 job.calender.year = 1926;
+             }
+             if (job.calender.rel == '=>'){
+                  if ( parseInt( newvalue.substring(0,4) ) >= job.calender.year  ){
+                       checkConstraints( pageid, item, title, newvalue );
+                  } else {
+                       report( pageid, 'error', newvalue+' < '+job.calender.year, title );
+                  }
+              } else {
+                  if ( parseInt( newvalue.substring(0,4) ) <= job.calender.year  ){
+                       checkConstraints( pageid, item, title, newvalue );
+                  } else {
+                       report( pageid, 'error', newvalue+' > '+job.calender.year, title );
+                  }
+              }
+        } else {
+             report( pageid, 'error', 'could not find a date', title );
+        }
     }
 }
 
@@ -392,6 +509,7 @@ $(document).ready( function(){
     $( 'input[name="property"]' ).change(function (){
         $( '#wikisyntax' ).hide();
         $( '#prefix' ).hide();
+        $( '#calender' ).hide();
         $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?',{
             action : 'wbgetentities',
             ids : 'P'+$( 'input[name="property"]' ).val(),
@@ -401,6 +519,8 @@ $(document).ready( function(){
                 $( '#wikisyntax' ).show();
             } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'string' ){
                 $( '#prefix' ).show();
+            } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'time' ){
+                $( '#calender' ).show();
             }
         });
     });
@@ -432,6 +552,11 @@ $(document).ready( function(){
                         category: $('input[name="category"]').val(),
                         wikisyntax: $('input[name="wikisyntax"]').prop('checked'),
                         prefix: $('input[name="prefix"]').val(),
+                        calender: {
+                            model: $('select[name="calender"]').val(),
+                            rel: $('select[name="rel"]').val(),
+                            year: $('input[name="year"]').val()
+                        }
                     };
                     if ( job.lang === '' ){
                         $( 'input[name="lang"]' ).addClass( 'error' );
@@ -461,8 +586,8 @@ $(document).ready( function(){
                             format: 'json'
                         },function( data ) {
                             job.datatype = data.entities[job.p].datatype;
-							// TODO: monolingualtext, quantity, time
-                            if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
+							// TODO: monolingualtext, quantity, geocoordinate
+                            if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' ){
                                 reportStatus( 'loading..' );
                                 createConstraints( job );
                                 reportStatus( 'loading...' );

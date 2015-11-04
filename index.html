@@ -66,6 +66,14 @@
       <div class="div-table-col1">Value prefix</div>
       <div class="div-table-col2"><input type="text" name="prefix" value=""></div>
     </div>
+    <div class="div-table-row" id="calender" style="display:none;">
+      <div class="div-table-col1">Calender</div>
+      <div class="div-table-col2">
+          <select name="calender" size="1"><option value="http://www.wikidata.org/entity/Q1985727">Gregorian</option><option value="http://www.wikidata.org/entity/Q1985786">Julian</option></select> if year 
+          <select name="rel" size="1"><option>=></option><option><=</option></select>
+          <input type="number" name="year" style="width:60px" min="1" value="1926">
+      </div>
+    </div>
     <div class="div-table-row">
       <div class="div-table-col1"></div>
       <div class="div-table-col2"><input type="submit" value="get pages" id="getpages" class="run"></div>

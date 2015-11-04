@@ -90,6 +90,17 @@ input[type="number"]{
     text-align: center;
 }
 
+select{
+    background-color: #E0E0E0;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    box-sizing:content-box;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box;
+}
+
 input[type="submit"]{
     color: #FFF;
     border: 1px solid #AFAFAF;
