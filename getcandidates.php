@@ -12,13 +12,15 @@ header('Content-Type: application/json');
 ini_set( 'memory_limit', '4G' );
 ini_set( 'max_execution_time', 0);
 
-function getDBname ( $lang, $project ){
+function getDBname( $lang, $project ){
     $lang = strtolower($lang);
     $project = strtolower($project);
     $dbname = $lang;
     if ( $lang == 'commons' || $project == 'commons' ) $dbname = 'commonswiki_p';
+    elseif ( $lang == 'mediawiki' || $project == 'mediawiki' ) $dbname = 'mediawikiwiki_p';
     elseif ( $lang == 'wikidata' || $project == 'wikidata' ) $dbname = 'wikidatawiki_p';
-	elseif ( $lang == 'species' && $project == 'wikimedia' ) $dbname = 'specieswiki_p';
+    elseif ( $lang == 'meta' && $project == 'wikimedia' ) $dbname = 'metawiki_p';
+    elseif ( $lang == 'species' && $project == 'wikimedia' ) $dbname = 'specieswiki_p';
     elseif ( $project == 'wikipedia' ) $dbname .= 'wiki_p';
     elseif ( $project == 'wikisource' ) $dbname .= 'wikisource_p';
     elseif ( $project == 'wiktionary' ) $dbname .= 'wiktionary_p';
