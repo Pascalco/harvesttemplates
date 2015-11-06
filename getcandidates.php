@@ -12,26 +12,6 @@ header('Content-Type: application/json');
 ini_set( 'memory_limit', '4G' );
 ini_set( 'max_execution_time', 0);
 
-function getDBname( $lang, $project ){
-    $lang = strtolower($lang);
-    $project = strtolower($project);
-    $dbname = $lang;
-    if ( $lang == 'commons' || $project == 'commons' ) $dbname = 'commonswiki_p';
-    elseif ( $lang == 'mediawiki' || $project == 'mediawiki' ) $dbname = 'mediawikiwiki_p';
-    elseif ( $lang == 'wikidata' || $project == 'wikidata' ) $dbname = 'wikidatawiki_p';
-    elseif ( $lang == 'meta' && $project == 'wikimedia' ) $dbname = 'metawiki_p';
-    elseif ( $lang == 'species' && $project == 'wikimedia' ) $dbname = 'specieswiki_p';
-    elseif ( $project == 'wikipedia' ) $dbname .= 'wiki_p';
-    elseif ( $project == 'wikisource' ) $dbname .= 'wikisource_p';
-    elseif ( $project == 'wiktionary' ) $dbname .= 'wiktionary_p';
-    elseif ( $project == 'wikibooks' ) $dbname .= 'wikibooks_p';
-    elseif ( $project == 'wikinews' ) $dbname .= 'wikinews_p';
-    elseif ( $project == 'wikivoyage' ) $dbname .= 'wikivoyage_p';
-    elseif ( $project == 'wikiquote' ) $dbname .= 'wikiquote_p';
-    else $dbname = '';
-    return $dbname;
-}
-
 function getPagesWithTemplate( $template, $category){
     $ret = array();
     $ret2 = array();
@@ -68,9 +48,8 @@ function getPagesWithClaim( $p, $offset ){
      return $ret;
 }
 
-function openDB( $lang, $project ){
-    $dbname = getDBname( $lang, $project );
-    $server = substr( $dbname, 0, -2) . '.labsdb';
+function openDB( $dbname ){
+    $server = $dbname . '.labsdb';
 
     $file = '/data/project/pltools/replica.my.cnf';
 
@@ -85,15 +64,15 @@ function openDB( $lang, $project ){
         if ( trim( $foo[0] ) == 'password' ) $password = $foo[1];
     }
     $conn =  mysql_connect( $server, $username, $password ) OR die(mysql_error());
-    mysql_select_db( $dbname, $conn );
+    mysql_select_db( $dbname.'_p', $conn );
     return $conn;
 }
 
-if ( empty( $_GET['lang'] ) or empty( $_GET['project'] ) or empty( $_GET['p'] ) ){
+if ( empty( $_GET['dbname'] ) or empty( $_GET['template'] ) or empty( $_GET['p'] ) ){
     exit(0);
 }
 
-$conn = openDB( $_GET['lang'], $_GET['project'] );
+$conn = openDB( $_GET['dbname'] );
 $r = getPagesWithTemplate( $_GET['template'], $_GET['category'] );
 mysql_close( $conn );
 

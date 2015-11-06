@@ -79,33 +79,53 @@ function createConstraints( job ){
     }
 }
 
-function getWpEditionId( lang, project ){
+
+function getSiteid( siteid, project ){
+    if ( project == 'mediawiki' || project == 'wikidata' ){
+        return 'www';
+    } else {
+        return siteid.toLowerCase();
+    }
+}
+
+function getLanguage( siteid, project ){
+    if ( project == 'mediawiki' || project == 'wikidata' || project == 'wikimedia' ){
+        return 'en';
+    }
+    langExceptions = {no: 'nb', simple: 'en', als: 'gsw'}
+    if (siteid in langExceptions){
+        return langExceptions[siteid];
+    }
+    return siteid.toLowerCase();
+}
+
+function getDbname( siteid, project ){
     var qid = 0;
     if ( project == 'wikipedia' ){
-        project = 'wiki';
-    } else if ( project == 'commons' || lang == 'commons' ){
-        project = 'commonswiki';
-        lang = '';
-    } else if ( project == 'mediawiki' || lang == 'mediawiki' ){
-        project = 'mediawikiwiki';
-        lang = '';
-    } else if ( project == 'wikidata' || lang == 'wikidata' ){
-        project = 'wikidatawiki';
-        lang = '';
-    } else if ( project == 'wikimedia' && lang == 'species' ){
-        project = 'specieswiki';
-        lang = '';
-    } else if ( project == 'wikimedia' && lang == 'meta' ){
-        project = 'metawiki';
-        lang = '';
+        return siteid+'wiki';
+    } else if ( siteid == 'commons' && project == 'wikimedia' ){
+        return 'commonswiki';
+    } else if ( siteid == 'species' && project == 'wikimedia' ){
+        return 'specieswiki';
+    } else if ( siteid == 'meta' && project == 'wikimedia' ){
+        return 'metawiki';
+    } else if ( siteid == 'www' && project == 'wikidata' ){
+        return 'wikidatawiki';
+    } else if ( siteid == 'www' && project == 'mediawiki' ){
+        return 'mediawikiwiki';
+    } else {
+        return siteid+project;
     }
+}
+
+function getWpEditionId( dbname ){
     $.ajax({
         type: 'GET',
         url: 'wpeditionids.json',
         dataType: 'json',
         async: false
     }).done(function( data ) {
-        qid = data[lang+project];
+        qid = data[dbname];
     });
     return qid;
 }
@@ -311,7 +331,7 @@ function handleValue( pageid, qid, value ){
             report( pageid, 'error', 'no target page found', qid );
             return 0;
         }
-        $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
+        $.getJSON( 'https://'+job.siteid+'.'+job.project+'.org/w/api.php?callback=?', {
             action : 'query',
             prop : 'pageprops',
             titles : res,
@@ -439,7 +459,7 @@ function proceedOnePage(){
     i += 1;
     if ( el.prop( 'checked' ) ){
         setTimeout(function(){
-            $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
+            $.getJSON( 'https://'+job.siteid+'.'+job.project+'.org/w/api.php?callback=?', {
                 action : 'query',
                 prop : 'revisions',
                 pageids : el.attr('id'),
@@ -458,7 +478,7 @@ function proceedOnePage(){
 
 function createCheckboxlist( pageids ){
     for ( var j in pageids ){
-        $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
+        $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.siteid+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
     }
     $('#addvalues').show();
     $('#demo').show();
@@ -467,15 +487,14 @@ function createCheckboxlist( pageids ){
 
 function getPages() {
     $.getJSON( 'getcandidates.php?', {
-        lang : job.lang,
-        project : job.project,
+        dbname : job.dbname,
         template : job.template,
         category : job.category,
         p: job.p
     })
     .done( function( pageids ) {
         reportStatus( 'loading....' );
-        $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
+        $.getJSON( 'https://'+job.siteid+'.'+job.project+'.org/w/api.php?callback=?', {
             action : 'query',
             prop : 'redirects',
             titles : 'Template:'+job.template,
@@ -549,7 +568,7 @@ $(document).ready( function(){
                     i = 0;
                     job = {
                         p: 'P'+$('input[name="property"]').val(),
-                        lang: $('input[name="lang"]').val(),
+                        siteid: $('input[name="siteid"]').val(),
                         project: $('input[name="project"]').val(),
                         template: $('input[name="template"]').val().capitalizeFirstLetter().replace( /_/g, ' ' ),
                         parameter: $('input[name="parameter"]').val(),
@@ -562,8 +581,8 @@ $(document).ready( function(){
                             year: $('input[name="year"]').val()
                         }
                     };
-                    if ( job.lang === '' ){
-                        $( 'input[name="lang"]' ).addClass( 'error' );
+                    if ( job.siteid === '' ){
+                        $( 'input[name="siteid"]' ).addClass( 'error' );
                         error = 1;
                     }
                     if ( job.project === '' || $.inArray(job.project, allProjects) == -1 ){
@@ -583,7 +602,10 @@ $(document).ready( function(){
                         error = 1;
                     }
                     if ( error === 0 ){
-                        job.wbeditionid = getWpEditionId( job.lang, job.project );
+                        job.siteid = getSiteid( job.siteid, job.project );
+                        job.lang = getLanguage( job.siteid, job.project );
+                        job.dbname = getDbname( job.siteid, job.project );
+                        job.wbeditionid = getWpEditionId( job.dbname );
                         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
                             action : 'wbgetentities',
                             ids : job.p,
