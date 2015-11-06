@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 */
-var allProjects = ['commons','wikibooks','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
+var allProjects = ['commons','wikibooks','wikimedia','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
 var run = 0;
 var uniqueValue = [];
 var regex = false;
@@ -18,15 +18,16 @@ String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-function report( pageid, status, value, title ){
+function report( pageid, status, value, qid ){
     if ( status == 'success' && job.datatype == 'wikibase-item' ){
         value = '<a href="//www.wikidata.org/wiki/'+value+'" target="_blank">'+value+'</a>';
     }
     if ( status == 'success' ){
-        $('#' + pageid).next().append( ' → <a href="//www.wikidata.org/wiki/'+title+'" target="_blank">'+title+'</a>: added value <i>'+value+'</i>' );
+        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → added value <i>'+value+'</i></span>' );
     } else {
         delay = 500;
-        $('#' + pageid).next().append( ' → '+value );
+        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → '+value+'</span>' );
+       
     }
     $('#' + pageid).parent().addClass( status );
 }
@@ -37,34 +38,45 @@ function reportStatus( status ){
 
 function stopJob(){
     run = 0;
-    $('#addvalues').val( 'add values' );
-    $('#addvalues').removeClass( 'stop' );
-    $('#addvalues').addClass( 'run' );
+    if ( $('.stop').attr('id') == 'addvalues' ){
+        $('#addvalues').val( 'add values' );
+        $('#addvalues').removeClass( 'stop' );
+        $('#addvalues').addClass( 'run' );
+        $('#demo').attr( 'disabled', false );
+    } else if ( $('.stop').attr('id') == 'demo' ){
+        $('#demo').val( 'demo' );
+        $('#demo').removeClass( 'stop' );
+        $('#demo').addClass( 'run' );
+        $('#addvalues').attr( 'disabled', false );
+        i=0;
+    }
     $( 'input[name="pagelist"]' ).attr( 'disabled', false );
+
 }
 
-function createConstraints(){
-    singleValue = [];
-    uniqueValue = [];
-    $.ajax({
-        type: 'GET',
-        url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
-        data: {query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:'+job.p+' ?value .}', format: 'json'},
-        dataType: 'json',
-        async: false
-    }).done(function( data ) {
-        for ( var row in data.results.bindings ){
-            uniqueValue.push( data.results.bindings[row].value.value );
-        }
+function createConstraints( job ){
+    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
+        uniqueValue = [];
         $.ajax({
             type: 'GET',
-            url: 'getregex.php',
-            data: {p: job.p},
+            url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
+            data: {query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:'+job.p+' ?value .} GROUP BY ?value', format: 'json'},
+            dataType: 'json',
             async: false
-        }).done(function(data) {
-            regex = data;
+        }).done(function( data ) {
+            for ( var row in data.results.bindings ){
+                uniqueValue.push( data.results.bindings[row].value.value );
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'getregex.php',
+                data: {p: job.p},
+                async: false
+            }).done(function(data) {
+                regex = data;
+            });
         });
-    });
+    }
 }
 
 function getWpEditionId( lang, project ){
@@ -92,9 +104,9 @@ function getWpEditionId( lang, project ){
     return qid;
 }
 
-function setSource( item, guid ){
+function setSource( qid, guid ){
     var sources = [
-        {type : 'wikibase-entityid', q: item, p : 'P143', numericid: job.wbeditionid}
+        {type : 'wikibase-entityid', q: qid, p : 'P143', numericid: job.wbeditionid}
     ];
     $.ajax({
         type: 'GET',
@@ -103,52 +115,181 @@ function setSource( item, guid ){
     });
 }
 
-function addValue( pageid, item, title, value ){
-    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url'){
-        claim = {type : 'string', q: item, p: job.p, text: value};
-    } else if ( job.datatype == 'wikibase-item'){
-        claim = {type : 'wikibase-entityid', q: item, p: job.p, numericid: value.substring(1)};
+function addValue( pageid, qid, value ){
+    if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
+        claim = {type : 'string', q: qid, p: job.p, text: value};
+    } else if ( job.datatype == 'wikibase-item' ){
+        claim = {type : 'wikibase-entityid', q: qid, p: job.p, numericid: value.substring(1)};
+    } else if ( job.datatype == 'time' ){
+        var precision = 9;
+        if ( value.substring(5,7) != '00' ){
+           precision = 10;
+           if ( value.substring(8,10) != '00' ){
+               precision = 11;
+           }
+        }
+        claim = {type : 'time', q: qid, p : job.p , date : '+'+value+'T00:00:00Z', precision : precision, calender: job.calender.model}
     } else {
-        reportStatus( 'not supported datatype' );
+        reportStatus( 'not supported datatype: '+job.datatype );
         return false;
     }
-    $.ajax({
-        type: 'GET',
-        url: '../oauth.php',
-        data: {action : 'createClaim', claim : claim}
-    })
-    .done(function( data ){
-        if ( data.indexOf('createdClaim') > -1 ){
-            var res = data.split('|');
-            var guid = res[1];
-            setSource( item, guid );
-            report( pageid, 'success', value, item );
-        } else {
-            report( pageid, 'fatalerror', data, title );
-        }
-    });
+    if ( job.demo == 1){
+        report( pageid, 'success', value, qid );
+    } else {
+        $.ajax({
+            type: 'GET',
+            url: '../oauth.php',
+            data: {action : 'createClaim', claim : claim}
+        })
+        .done(function( data ){
+            if ( data.indexOf('createdClaim') > -1 ){
+                var res = data.split('|');
+                var guid = res[1];
+                setSource( qid, guid );
+                report( pageid, 'success', value, qid );
+            } else {
+                report( pageid, 'error', data, qid );
+            }
+        });
+    }
 }
 
-function handleValue( pageid, item, title, value ){
-     if ( job.datatype == 'string' || job.datatype == 'url' ){
+function checkConstraints( pageid, qid, value){
+    // format check
+    if ( job.datatype == 'string' || job.datatype == 'url'){
         if ( regex !== false ){
-            var patt = new RegExp('^'+regex+'$');
-            if ( patt.test( value ) == true){
-                if ( uniqueValue.indexOf( value ) != -1 ){
-                    report( pageid, 'error', 'unique value violation', title );
-                    return false;
-                }
-                uniqueValue.push( value );
-                addValue( pageid, item, title, value );
-            } else {    
-                report( pageid, 'error', 'format violation of value <i>'+value+'</i>', title );
+            var patt = new RegExp('^('+regex+')$');
+            if ( patt.test( value ) == false){
+                report( pageid, 'error', 'format violation of value <i>'+value+'</i>', qid );
                 return false;
             }
         } else {
             reportStatus( 'no format expression found' );
+            return false;
         }
     }
-    else if ( job.datatype == 'wikibase-item' ){
+    // unique value check
+    if ( job.datatype == 'string' || job.datatype == 'url' || job.datatype == 'commonsMedia' ){
+        if ( uniqueValue.indexOf( value ) != -1 ){
+            report( pageid, 'error', 'unique value violation', qid );
+            return false;
+        }
+        if (job.demo != 1){
+            uniqueValue.push( value );
+        }
+    }
+    //disam check
+    if ( job.datatype == 'wikibase-item' ){
+        $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
+            action : 'wbgetentities',
+            ids : value,
+            format: 'json'
+        })
+        .done( function( data2 ) {
+            if ('P31' in data2.entities[value].claims){
+                if (data2.entities[value].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
+                    report( pageid, 'error', 'target page is a disambiguation page', qid );
+                    return false;
+                }
+            }
+            addValue( pageid, qid, value );
+        });
+    } else {
+       addValue( pageid, qid, value );
+    }
+}
+
+function parseDate( value ){
+    var date = false;
+    $.ajax({
+        type: 'GET',
+        url: 'monthnames.json',
+        dataType: 'json',
+        async: false
+    }).done( function( monthnames ) {
+        value = value.replace( /–|-|—/g, '-' );
+        digits = {'०':0,'१':1,'२':2,'३':3,'४':4,'५':5,'६':6,'७':7,'८':8,'९':9}
+        roman = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
+        $.each(digits, function( k, v) {
+            r = new RegExp(k,'g');
+            value = value.replace( r , v )
+        });
+        //only year
+        r = new RegExp( '^(\\d{4})$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-00-00';
+        }
+        $.each ( ( monthnames[job.lang]||{} ) , function ( name , num ) {
+            // month and year
+            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{4})$' ,'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[2]+'-'+num+'-00';
+            }
+            // day, month, year
+            r = new RegExp( '^(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?('+name+')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[5]+'-'+num+'-'+res[1];
+            }
+            // month, day, year
+            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{1,2})t?h?\\,? (\\d{4})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[3]+'-'+num+'-'+res[2];
+            }
+            // year, month, day
+            r = new RegExp( '^(\\d{4})(e?ko|\\.|,)? ('+name+')(aren)? (\\d{1,2})(a|ean|an)?$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[1]+'-'+num+'-'+res[5];
+            }
+        } );
+        for ( var num = 1; num <= 12; num++ ) {
+            // day, month (number), year
+            r = new RegExp( '^(\\d{1,2})([. /]+| tháng )(0?'+num+'|'+roman[num]+')([., /]+| năm )(\\d{4})$' ,'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[5]+'-'+num+'-'+res[1];
+            }
+            // year, month (number), day
+            r = new RegExp( '^(\\d{4})( - |/)(0?'+num+'|'+roman[num]+')( - |/)(\\d{1,2})$', 'i' );
+            var res = value.match( r );
+            if ( res !== null){
+                date = res[1]+'-'+num+'-'+res[5];
+            }
+        }
+        // Japanese/Chinese/Korean
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-00-00';
+        }
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-'+res[3]+'-00';
+        }
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)$' );
+        var res = value.match( r );
+        if ( res !== null){
+            date = res[1]+'-'+res[3]+'-'+res[5];
+        }
+        if (date !== false){
+            date = date.replace( /-(\d)-/, '-0\$1-' );
+            date = date.replace( /-(\d)$/, '-0\$1' );
+        }
+    });
+    return date;
+}
+
+function handleValue( pageid, qid, value ){
+    if ( job.datatype == 'string'){
+        checkConstraints( pageid, qid, job.prefix + value );
+    } else if ( job.datatype == 'url' ){
+        checkConstraints( pageid, qid, value );
+    } else if ( job.datatype == 'wikibase-item' ){
         var res = value.match(/^\[\[([^\|\]]+)/);
         if (res !== null){
             res = res[1];
@@ -156,12 +297,12 @@ function handleValue( pageid, item, title, value ){
             if ( job.wikisyntax ){
                 res = value;
             } else {
-                report( pageid, 'error', 'no target page found', title );
+                report( pageid, 'error', 'no target page found', qid );
                 return 0;
             }
         }
         if ( res.indexOf( '#' ) != -1 ){
-            report( pageid, 'error', 'no target page found', title );
+            report( pageid, 'error', 'no target page found', qid );
             return 0;
         }
         $.getJSON( 'https://'+job.lang+'.'+job.project+'.org/w/api.php?callback=?', {
@@ -176,28 +317,15 @@ function handleValue( pageid, item, title, value ){
                     if ( 'pageprops' in data.query.pages[m] ){
                         if ( 'wikibase_item' in data.query.pages[m].pageprops ){
                             newvalue = data.query.pages[m].pageprops.wikibase_item;
-                            $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
-                                action : 'wbgetentities',
-                                ids : newvalue,
-                                format: 'json'
-                            })
-                            .done( function( data2 ) {
-                                if ('P31' in data2.entities[newvalue].claims){
-                                    if (data2.entities[newvalue].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
-                                        report( pageid, 'error', 'target page is a disambiguation page', title );
-                                        return 0;
-                                    }
-                                }
-                                addValue( pageid, item, title, newvalue );
-                            });
+                            checkConstraints( pageid, qid, newvalue );
                         } else {
-                            report( pageid, 'error', 'target has no Wikidata item', title );
+                            report( pageid, 'error', 'target has no Wikidata item', qid );
                         }
                     } else {
-                        report( pageid, 'error', 'target has no Wikidata item', title );
+                        report( pageid, 'error', 'target has no Wikidata item', qid );
                     }
                 } else {
-                    report( pageid, 'error', 'no target page found', title );
+                    report( pageid, 'error', 'no target page found', qid );
                 }
             }
         });
@@ -210,48 +338,85 @@ function handleValue( pageid, item, title, value ){
         })
         .done( function ( data ) {
             if ('-1' in data.query.pages ){
-                report( pageid, 'error', 'File <i>'+value+'</i> does not exist on Commons', title );
-                return false;
+                report( pageid, 'error', 'File <i>'+value+'</i> does not exist on Commons', qid );
+            } else {
+                checkConstraints( pageid, qid, value );
             }
-            if ( uniqueValue.indexOf( value ) != -1 ){
-                report( pageid, 'error', 'unique value violation', title );
-                return false;
-            }
-            uniqueValue.push( value );
-            addValue( pageid, item, title, value );
         });
+    } else if ( job.datatype == 'time' ){
+        var newvalue = parseDate( value );
+        if ( newvalue !== false ){
+             if ( isNaN( parseInt( job.calender.year ) ) ){
+                 job.calender.year = 1926;
+             }
+             if (job.calender.rel == '=>'){
+                  if ( parseInt( newvalue.substring(0,4) ) >= job.calender.year  ){
+                       checkConstraints( pageid, qid, newvalue );
+                  } else {
+                       report( pageid, 'error', newvalue+' < '+job.calender.year, qid );
+                  }
+              } else {
+                  if ( parseInt( newvalue.substring(0,4) ) <= job.calender.year  ){
+                       checkConstraints( pageid, qid, newvalue );
+                  } else {
+                       report( pageid, 'error', newvalue+' > '+job.calender.year, qid );
+                  }
+              }
+        } else {
+             report( pageid, 'error', 'could not find a date', qid );
+        }
     }
 }
 
-function parseTemplate( text, pageid, wikidataid, title ){
+function parseTemplate( text, pageid, qid ){
     var open = 1;
     var save = 0;
     var result = '';
+    text = text.replace( /(\r\n|\n|\r)/gm, '' ) //remove linebreaks
+    text = text.replace( /<ref((?!<\/ref>).)*<\/ref>/g, '' ); //remove references
+    text = text.replace( /<ref([^>]+)>/g, '' ); //remove reference tags
     text = text.replace( new RegExp( '{{\\s*'+job.templates, 'i' ), '{{'+job.template );
     var txt = text.split( '{{'+job.template );
     if ( txt.length == 1 ){
-        report( 'fatalerror', 'unknown error', title );
+        report( pageid, 'error', 'Template not found', qid );
         return false;
     }
-    parts = txt[1].split( /(\{\{|\}\}|\||\=|\[\[|\]\])/ );
-    $.each(parts,function(i,m){
-        m = m.trim();
-        if (save == 1 && open == 1 && m == '|') return false; //end of value
-        if (m == '{{' || m == '[[') open += 1; //one level deeper
-        if (m == '}}' || m == ']]') open -= 1; //one level higher
-        if (open === 0) return false; //end of template
-        if (save == 1 && (result !== '' || m != '=')) result += m;
-        if (open == 1 && m.toLowerCase() == job.parameter.toLowerCase()) save = 1; //found parameter on the correct level
-    });
-    if ( result === '' && !isNaN( job.parameter ) ){
-        parts = txt[1].split( /(\||\}\})/ );
-        result = parts[2*job.parameter];
+    text = txt[1];
+    var patt = new RegExp( '{{((?!}}|{{).)*}}' );
+    while ( true ){
+        if ( patt.test( text ) ){
+            text = text.replace( patt, '' ); //remove all other templates
+        } else {
+             break;
+        }
     }
+    txt = text.split( '}}' );
+    text = txt[0];
+    text = text.replace( /\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]' ); //simplify links
+    parts = text.split( '|' );
+    var unnamed = [];
+    $.each( parts, function( i, m ){
+       if (m.indexOf('=') != '-1'){
+            sp = m.split('=');
+            if (sp[0].toLowerCase().trim() == job.parameter.toLowerCase()){
+                result = sp.slice(1).join( '=' ).trim();
+            }
+        } else {
+           unnamed.push( m.trim() );
+        }
+   });
+   if ( result === '' && !isNaN( job.parameter ) ){
+        if ( unnamed.length > job.parameter ){
+            result = unnamed[job.parameter];
+        }
+   }
     if ( result !== '' ){
-        delay = 5000;
-        handleValue( pageid, wikidataid, title, result );
+        if ( job.demo != 1 ){
+            delay = 5000;
+        }
+        handleValue( pageid, qid, result );
     } else {
-        report( pageid, 'error', 'no value', title );
+        report( pageid, 'error', 'no value', qid );
     }
 }
 
@@ -278,7 +443,7 @@ function proceedOnePage(){
                 format: 'json'
             })
             .done( function( data2 ) {
-                parseTemplate( data2.query.pages[el.attr('id')].revisions[0]['*'], el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].title );                
+                parseTemplate( data2.query.pages[el.attr('id')].revisions[0]['*'], el.attr('id'), el.attr('data-qid') );
                 proceedOnePage();
             });
         }, delay );
@@ -292,6 +457,7 @@ function createCheckboxlist( pageids ){
         $('#result').append( '<div><input type="checkbox" name="pagelist" id="'+pageids[j][0]+'" data-qid="'+pageids[j][1]+'" checked><span><a href="//'+job.lang+'.'+job.project+'.org/wiki/'+pageids[j][2]+'" target="_blank">'+pageids[j][2].replace( /_/g, ' ' )+'</a></span></div>' );
     }
     $('#addvalues').show();
+    $('#demo').show();
     reportStatus(pageids.length == 1 ? 'Found one page' : 'Found '+pageids.length+' pages');
 }
 
@@ -341,6 +507,9 @@ $(document).ready( function(){
         $(this).removeClass( 'error' );
     });
     $( 'input[name="property"]' ).change(function (){
+        $( '#wikisyntax' ).hide();
+        $( '#prefix' ).hide();
+        $( '#calender' ).hide();
         $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?',{
             action : 'wbgetentities',
             ids : 'P'+$( 'input[name="property"]' ).val(),
@@ -348,8 +517,10 @@ $(document).ready( function(){
         },function( data ) {
             if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'wikibase-item' ){
                 $( '#wikisyntax' ).show();
-            } else{
-                $( '#wikisyntax' ).hide();
+            } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'string' ){
+                $( '#prefix' ).show();
+            } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'time' ){
+                $( '#calender' ).show();
             }
         });
     });
@@ -369,6 +540,7 @@ $(document).ready( function(){
                     var error = 0;
                     $('#result').html( '' );
                     $('#addvalues').hide();
+                    $('#demo').hide();
                     stopJob();
                     i = 0;
                     job = {
@@ -378,13 +550,19 @@ $(document).ready( function(){
                         template: $('input[name="template"]').val().capitalizeFirstLetter().replace( /_/g, ' ' ),
                         parameter: $('input[name="parameter"]').val(),
                         category: $('input[name="category"]').val(),
-                        wikisyntax: $('input[name="wikisyntax"]').prop('checked')
+                        wikisyntax: $('input[name="wikisyntax"]').prop('checked'),
+                        prefix: $('input[name="prefix"]').val(),
+                        calender: {
+                            model: $('select[name="calender"]').val(),
+                            rel: $('select[name="rel"]').val(),
+                            year: $('input[name="year"]').val()
+                        }
                     };
                     if ( job.lang === '' ){
                         $( 'input[name="lang"]' ).addClass( 'error' );
                         error = 1;
                     }
-                    if ( job.project === '' || $.inArray(job.project, allProjects) == -1 || !(job.lang == 'species' && job.project == 'wikimedia') ){
+                    if ( job.project === '' || $.inArray(job.project, allProjects) == -1 ){
                         $( 'input[name="project"]' ).addClass( 'error' );
                         error = 1;
                     }
@@ -408,10 +586,10 @@ $(document).ready( function(){
                             format: 'json'
                         },function( data ) {
                             job.datatype = data.entities[job.p].datatype;
-							// TODO: monolingualtext, quantity, time
-                            if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
+							// TODO: monolingualtext, quantity, geocoordinate
+                            if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' ){
                                 reportStatus( 'loading..' );
-                                createConstraints();
+                                createConstraints( job );
                                 reportStatus( 'loading...' );
                                 getPages();
                             } else {
@@ -421,7 +599,20 @@ $(document).ready( function(){
                     }
                 }
             });
-        } else if ( $(this).attr('id') == 'addvalues' && $(this).val() == 'add values' ){
+        } else if ( $(this).val() == 'demo' || $(this).val() == 'add values' ){
+            if (job.demo == 1){
+                $("#result").find('div').each(function(index, value) {
+                    $(this).removeClass();
+                    $(this).find('.value').html('');
+                });
+            }
+            if ( $(this).val() == 'demo' ){
+                job.demo = 1;
+                $( '#addvalues' ).attr( 'disabled', true );
+            } else {
+                job.demo = 0;
+                $( '#demo' ).attr( 'disabled', true );
+            }
             run = 1;
             $( 'input[name="pagelist"]' ).attr( 'disabled', true );
             $(this).val('stop');

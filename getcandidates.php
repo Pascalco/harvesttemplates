@@ -9,6 +9,8 @@
 **/
 
 header('Content-Type: application/json');
+ini_set( 'memory_limit', '4G' );
+ini_set( 'max_execution_time', 0);
 
 function getDBname ( $lang, $project ){
     $lang = strtolower($lang);
@@ -28,11 +30,16 @@ function getDBname ( $lang, $project ){
     return $dbname;
 }
 
-function getPagesWithTemplate( $template, $namespace = 0 ){
+function getPagesWithTemplate( $template, $category){
     $ret = array();
     $ret2 = array();
     $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
-    $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from' );
+    if ( empty( $category )){
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace=0 AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from' );
+    } else {
+        $category = trim( str_replace( ' ', '_', $category ) );
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace=0 AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to = "'.$category.'")');
+    }
     while ( $row = mysql_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
         $ret2[$row['tl_from']] = $row['page_title'];
@@ -40,26 +47,24 @@ function getPagesWithTemplate( $template, $namespace = 0 ){
     return array( $ret, $ret2 );
 }
 
-function getPagesInCategory( $category, $namespace = 0 ){
-    $ret = array();
-    $category = trim( str_replace( ' ', '_', $category ) );
-    $result = mysql_query( 'SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to = "'.$category.'"' );
-    while ( $row = mysql_fetch_assoc( $result ) ){
-        $ret[$row['cl_from']] = 0;
-    }
-    return $ret;
+function getPagesWithClaim( $p, $offset ){
+     $ret = array();
+     $query = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?item WHERE {?item wdt:".$p." ?value .} LIMIT 500000 OFFSET ".$offset;
+     $url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?'
+           .'query='.urlencode( $query )
+           .'&format=json';
+     $ch = curl_init();
+     curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+     curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+     curl_setopt( $ch, CURLOPT_URL, $url );
+     $data = json_decode( curl_exec( $ch ), true );
+     foreach( $data['results']['bindings'] as $item ){
+         $ret[] = str_replace( 'http://www.wikidata.org/entity/', '', $item['item']['value'] );
+     }
+     curl_close( $ch );
+     unset( $data );
+     return $ret;
 }
-
-function getPagesWithClaim( $p, $namespace = 0 ){
-    ini_set( 'memory_limit', '1G' );
-    $ret = array();
-    $result = mysql_query( 'SELECT DISTINCT page_title FROM page, pagelinks WHERE page_id=pl_from AND pl_title = "'.$p.'" AND pl_from_namespace=0 AND pl_namespace=120' );
-    while ( $row = mysql_fetch_assoc( $result ) ){
-        $ret[] = $row['page_title'];
-    }
-    return $ret;
-}
-
 
 function openDB( $lang, $project ){
     $dbname = getDBname( $lang, $project );
@@ -87,17 +92,16 @@ if ( empty( $_GET['lang'] ) or empty( $_GET['project'] ) or empty( $_GET['p'] ) 
 }
 
 $conn = openDB( $_GET['lang'], $_GET['project'] );
-$r = getPagesWithTemplate( $_GET['template'], 0 );
-if ( !empty( $_GET['category'] ) ){
-    $r[0] = array_intersect_key( $r[0], getPagesInCategory( $_GET['category'] ) );
-}
+$r = getPagesWithTemplate( $_GET['template'], $_GET['category'] );
 mysql_close( $conn );
-if ( !empty( $_GET['p'] ) ){
-    $conn = openDB( 'Wikidata', 'Wikidata' );
-    $single = getPagesWithClaim( $_GET['p'] );
-    mysql_close( $conn );
-    $r[0] = array_diff( $r[0], $single );
-}
+
+
+$single = array();
+do{
+    $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
+} while (count($single) % 500000 == 0);
+
+$r[0] = array_diff( $r[0], $single );
 $r[1] = array_intersect_key( $r[1], $r[0] );
 
 echo json_encode( array_map( null, array_keys( $r[0] ), array_values( $r[0] ), array_values( $r[1] ) ) );

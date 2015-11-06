@@ -59,13 +59,14 @@ div#main{
     display: table-column;
     float:left;
     width:100px;
-    padding-top: 5px;
+    padding-top: 2px;
 }
 
 .div-table-col2{
     display: table-column;
     float:left;
     width:300px;
+    padding-top: 2px;
 }
 
 input[type="text"]{
@@ -89,12 +90,27 @@ input[type="number"]{
     text-align: center;
 }
 
+select{
+    background-color: #E0E0E0;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    box-sizing:content-box;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box;
+}
+
 input[type="submit"]{
     color: #FFF;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
     padding: 4px;
     width: 250px;
+}
+
+#demo{
+    width: 80px;
 }
 
 input[type="text"]:focus,
@@ -104,6 +120,11 @@ input[type="number"]:focus{
 
 input[type="submit"]:hover{
     color: #000;
+}
+
+input[type="submit"]:disabled{
+    color: #000;
+    background-color: #C0C0C0;
 }
 
 
