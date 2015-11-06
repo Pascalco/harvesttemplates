@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 */
-var allProjects = ['commons','wikibooks','wikimedia','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
+var allProjects = ['commons','mediawiki','wikibooks','wikimedia','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
 var run = 0;
 var uniqueValue = [];
 var regex = false;
@@ -27,7 +27,7 @@ function report( pageid, status, value, qid ){
     } else {
         delay = 500;
         $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → '+value+'</span>' );
-       
+
     }
     $('#' + pageid).parent().addClass( status );
 }
@@ -83,14 +83,20 @@ function getWpEditionId( lang, project ){
     var qid = 0;
     if ( project == 'wikipedia' ){
         project = 'wiki';
-    } else if( project == 'commons' || lang == 'commons' ){
+    } else if ( project == 'commons' || lang == 'commons' ){
         project = 'commonswiki';
+        lang = '';
+    } else if ( project == 'mediawiki' || lang == 'mediawiki' ){
+        project = 'mediawikiwiki';
         lang = '';
     } else if ( project == 'wikidata' || lang == 'wikidata' ){
         project = 'wikidatawiki';
         lang = '';
     } else if ( project == 'wikimedia' && lang == 'species' ){
         project = 'specieswiki';
+        lang = '';
+    } else if ( project == 'wikimedia' && lang == 'meta' ){
+        project = 'metawiki';
         lang = '';
     }
     $.ajax({
@@ -222,7 +228,7 @@ function parseDate( value ){
         }
         $.each ( ( monthnames[job.lang]||{} ) , function ( name , num ) {
             // month and year
-            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{4})$' ,'i' );
+            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{4})$', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[2]+'-'+num+'-00';
@@ -369,8 +375,6 @@ function handleValue( pageid, qid, value ){
 }
 
 function parseTemplate( text, pageid, qid ){
-    var open = 1;
-    var save = 0;
     var result = '';
     text = text.replace( /(\r\n|\n|\r)/gm, '' ) //remove linebreaks
     text = text.replace( /<ref((?!<\/ref>).)*<\/ref>/g, '' ); //remove references
