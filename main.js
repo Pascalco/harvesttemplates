@@ -23,10 +23,10 @@ function report( pageid, status, value, qid ){
         value = '<a href="//www.wikidata.org/wiki/'+value+'" target="_blank">'+value+'</a>';
     }
     if ( status == 'success' ){
-        $('#' + pageid).next().append( '<span class="value"> â†’ <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> â†’ added value <i>'+value+'</i></span>' );
+        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → added value <i>'+value+'</i></span>' );
     } else {
         delay = 500;
-        $('#' + pageid).next().append( '<span class="value"> â†’ <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> â†’ '+value+'</span>' );
+        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → '+value+'</span>' );
        
     }
     $('#' + pageid).parent().addClass( status );
@@ -207,8 +207,8 @@ function parseDate( value ){
         dataType: 'json',
         async: false
     }).done( function( monthnames ) {
-        value = value.replace( /â€“|-|â€”/g, '-' );
-        digits = {'à¥¦':0,'à¥§':1,'à¥¨':2,'à¥©':3,'à¥ª':4,'à¥«':5,'à¥¬':6,'à¥­':7,'à¥®':8,'à¥¯':9}
+        value = value.replace( /–|-|—/g, '-' );
+        digits = {'०':0,'१':1,'२':2,'३':3,'४':4,'५':5,'६':6,'७':7,'८':8,'९':9}
         roman = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
         $.each(digits, function( k, v) {
             r = new RegExp(k,'g');
@@ -228,7 +228,7 @@ function parseDate( value ){
                 date = res[2]+'-'+num+'-00';
             }
             // day, month, year
-            r = new RegExp( '^(\\d{1,2})( |\\. |Âº |er | - an? de | de | d\')?('+name+')(,| del?|, à¤‡.à¤¸.| à¸ž.à¸¨.)? (\\d{4})$', 'i' );
+            r = new RegExp( '^(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?('+name+')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})$', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[5]+'-'+num+'-'+res[1];
@@ -248,7 +248,7 @@ function parseDate( value ){
         } );
         for ( var num = 1; num <= 12; num++ ) {
             // day, month (number), year
-            r = new RegExp( '^(\\d{1,2})([. /]+| thÃ¡ng )(0?'+num+'|'+roman[num]+')([., /]+| nÄƒm )(\\d{4})$' ,'i' );
+            r = new RegExp( '^(\\d{1,2})([. /]+| tháng )(0?'+num+'|'+roman[num]+')([., /]+| năm )(\\d{4})$' ,'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[5]+'-'+num+'-'+res[1];
@@ -261,17 +261,17 @@ function parseDate( value ){
             }
         }
         // Japanese/Chinese/Korean
-        r = new RegExp( '^(\\d{4})(å¹´|å¹´\ï¼‰|å¹´[ã€ˆï¼ˆ\(][^ï¼‰ã€‰\)]+[ã€‰|ï¼‰|\)]|ë…„)$' );
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)$' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-00-00';
         }
-        r = new RegExp( '^(\\d{4})(å¹´|å¹´\ï¼‰|å¹´[ã€ˆï¼ˆ\(][^ï¼‰ã€‰\)]+[ã€‰|ï¼‰|\)]|ë…„ )(\\d{1,2})(æœˆ|ì›”)$' );
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)$' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-'+res[3]+'-00';
         }
-        r = new RegExp( '^(\\d{4})(å¹´|å¹´\ï¼‰|å¹´[ã€ˆï¼ˆ\(][^ï¼‰ã€‰\)]+[ã€‰|ï¼‰|\)]|ë…„ )(\\d{1,2})(æœˆ|ì›” )(\\d{1,2})(æ—¥|ì¼)$' );
+        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)$' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-'+res[3]+'-'+res[5];
