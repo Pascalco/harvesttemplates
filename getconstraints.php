@@ -8,7 +8,7 @@
  * CC0 Public Domain Dedication.
 **/
 
-header( 'Content-type: text/plain' );
+header('Content-Type: application/json');
 
 $url = 'https://www.wikidata.org/w/api.php?';
 $data = array('action' => 'query', 'titles' => 'Property_talk:'.$_GET['p'], 'prop' => 'revisions', 'rvprop' => 'content', 'format' => 'json');
@@ -24,17 +24,21 @@ curl_setopt_array( $curl, array(
 $query = json_decode( curl_exec( $curl ) );
 curl_close( $curl );
 
-
 foreach( $query->query->pages as $k => $v ){
     $text = $v->revisions[0]->{'*'};
 }
 
-$foo = explode( '{{Constraint:Format|pattern=<nowiki>', $text );
-if ( count( $foo ) > 1){
-    $foo2 = explode( '</nowiki>', $foo[1] );
-} else {
-    $foo = explode( '{{Constraint:Format|pattern=', $text );
-    $foo2 = explode('}}', $foo[1] );
+$con = array();
+
+if ( strpos( $text, '{{Constraint:Format|pattern=' ) !== false ){
+    $foo = explode( '{{Constraint:Format|pattern=<nowiki>', $text );
+    if ( count( $foo ) > 1){
+        $foo2 = explode( '</nowiki>', $foo[1] );
+    } else {
+        $foo = explode( '{{Constraint:Format|pattern=', $text );
+        $foo2 = explode('}}', $foo[1] );
+    }
+    $con['format'] = $foo2[0];
 }
-echo $foo2[0];
+echo json_encode( $con );
 ?>

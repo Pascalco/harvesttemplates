@@ -54,7 +54,7 @@ function stopJob(){
 
 }
 
-function createConstraints( job ){
+function createConstraints(){
     if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
         uniqueValue = [];
         $.ajax({
@@ -67,16 +67,18 @@ function createConstraints( job ){
             for ( var row in data.results.bindings ){
                 uniqueValue.push( data.results.bindings[row].value.value );
             }
-            $.ajax({
-                type: 'GET',
-                url: 'getregex.php',
-                data: {p: job.p},
-                async: false
-            }).done(function(data) {
-                regex = data;
-            });
         });
     }
+    $.ajax({
+        type: 'GET',
+        url: 'getconstraints.php',
+        data: {p: job.p},
+        async: false
+    }).done( function( data ) {
+        if ( data['format'] !== undefined ){
+            regex = data['format'];
+        }
+    });
 }
 
 
@@ -615,7 +617,7 @@ $(document).ready( function(){
 							// TODO: monolingualtext, quantity, geocoordinate
                             if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' ){
                                 reportStatus( 'loading..' );
-                                createConstraints( job );
+                                createConstraints();
                                 reportStatus( 'loading...' );
                                 getPages();
                             } else {
