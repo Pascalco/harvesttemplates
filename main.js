@@ -8,8 +8,7 @@
 */
 var allProjects = ['commons','mediawiki','wikibooks','wikidata','wikimedia','wikinews','wikipedia','wikiquote','wikisource','wikivoyage'];
 var run = 0;
-var uniqueValue = [];
-var regex = false;
+var constraints = false;
 var delay = 1000;
 var job = false;
 var i = 0;
@@ -55,8 +54,16 @@ function stopJob(){
 }
 
 function createConstraints(){
+    $.ajax({
+        type: 'GET',
+        url: 'getconstraints.php',
+        data: {p: job.p},
+        async: false
+    }).done( function( data ) {
+        constraints = data;
+    });
     if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
-        uniqueValue = [];
+        constraints['uniqueValue'] = [];
         $.ajax({
             type: 'GET',
             url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
@@ -65,20 +72,15 @@ function createConstraints(){
             async: false
         }).done(function( data ) {
             for ( var row in data.results.bindings ){
-                uniqueValue.push( data.results.bindings[row].value.value );
+                constraints['uniqueValue'].push( data.results.bindings[row].value.value );
             }
         });
     }
-    $.ajax({
-        type: 'GET',
-        url: 'getconstraints.php',
-        data: {p: job.p},
-        async: false
-    }).done( function( data ) {
-        if ( data['format'] !== undefined ){
-            regex = data['format'];
-        }
-    });
+    if ( (job.datatype == 'string' || job.datatype == 'url') && constraints['format'] === undefined ){
+        reportStatus( 'no format pattern found' );
+        return false;
+    }
+    return true;
 }
 
 
@@ -184,26 +186,21 @@ function addValue( pageid, qid, value ){
 
 function checkConstraints( pageid, qid, value){
     // format check
-    if ( job.datatype == 'string' || job.datatype == 'url'){
-        if ( regex !== false ){
-            var patt = new RegExp('^('+regex+')$');
-            if ( patt.test( value ) == false){
-                report( pageid, 'error', 'format violation of value <i>'+value+'</i>', qid );
-                return false;
-            }
-        } else {
-            reportStatus( 'no format expression found' );
+    if ( constraints['format'] !== undefined ){
+        var patt = new RegExp('^('+constraints['format']+')$');
+        if ( patt.test( value ) == false){
+            report( pageid, 'error', 'format violation of value <i>'+value+'</i>', qid );
             return false;
         }
     }
     // unique value check
-    if ( job.datatype == 'string' || job.datatype == 'url' || job.datatype == 'commonsMedia' ){
-        if ( uniqueValue.indexOf( value ) != -1 ){
+    if ( constraints['uniqueValue'] !== undefined ){
+        if ( constraints['uniqueValue'].indexOf(value) != -1 ){
             report( pageid, 'error', 'unique value violation', qid );
             return false;
         }
         if (job.demo != 1){
-            uniqueValue.push( value );
+            constraints['uniqueValue'].push( value );
         }
     }
     //disam check
@@ -617,9 +614,10 @@ $(document).ready( function(){
 							// TODO: monolingualtext, quantity, geocoordinate
                             if ( job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' ){
                                 reportStatus( 'loading..' );
-                                createConstraints();
-                                reportStatus( 'loading...' );
-                                getPages();
+                                if (createConstraints()){
+                                    reportStatus( 'loading...' );
+                                    getPages();
+                                }
                             } else {
                                 reportStatus( 'datatype '+job.datatype+' is not yet supported');
                             }
