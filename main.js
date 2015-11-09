@@ -187,7 +187,7 @@ function addValue( pageid, qid, value ){
 function checkConstraints( pageid, qid, value){
     // format check
     if ( constraints['format'] !== undefined ){
-        var patt = new RegExp('^('+constraints['format']+')$');
+        var patt = new RegExp('^('+constraints['format']['pattern']+')$', constraints['format']['modifier']);
         if ( patt.test( value ) == false){
             report( pageid, 'error', 'format violation of value <i>'+value+'</i>', qid );
             return false;

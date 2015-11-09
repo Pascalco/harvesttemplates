@@ -38,7 +38,11 @@ if ( strpos( $text, '{{Constraint:Format|pattern=' ) !== false ){
         $foo = explode( '{{Constraint:Format|pattern=', $text );
         $foo2 = explode('}}', $foo[1] );
     }
-    $con['format'] = $foo2[0];
+    if (substr($foo2[0],0,4) == '(?i)'){
+        $con['format'] = array( 'pattern' => substr($foo2[0],4), 'modifier' => 'i' );
+    } else {
+        $con['format'] = array( 'pattern' => $foo2[0], 'modifier' => '' );
+    }
 }
 echo json_encode( $con );
 ?>
