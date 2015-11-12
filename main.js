@@ -61,6 +61,36 @@ function createConstraints(){
         async: false
     }).done( function( data ) {
         constraints = data;
+        if ( constraints['type'] !== undefined ){
+            var cl = 'wd:'+constraints['type']['class'].join(' wd:');
+            constraints['type']['values'] =  [];
+            $.ajax({
+                type: 'GET',
+                url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
+                data: {query: 'PREFIX wd: <http://www.wikidata.org/entity/> PREFIX wdt: <http://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {'+cl+'} ?value wdt:P279* ?cl .}', format: 'json'},
+                dataType: 'json',
+                async: false
+            }).done(function( data ) {
+                for ( var row in data.results.bindings ){
+                    constraints['type']['values'].push( parseInt(data.results.bindings[row].value.value.replace( 'http://www.wikidata.org/entity/Q', '' ) ) );
+                }
+            });
+        }
+        if ( constraints['valuetype'] !== undefined ){
+            var cl = 'wd:'+constraints['valuetype']['class'].join(' wd:');
+            constraints['valuetype']['values'] =  [];
+            $.ajax({
+                type: 'GET',
+                url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
+                data: {query: 'PREFIX wd: <http://www.wikidata.org/entity/> PREFIX wdt: <http://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {'+cl+'} ?value wdt:P279* ?cl .}', format: 'json'},
+                dataType: 'json',
+                async: false
+            }).done(function( data ) {
+                for ( var row in data.results.bindings ){
+                    constraints['valuetype']['values'].push( parseInt(data.results.bindings[row].value.value.replace( 'http://www.wikidata.org/entity/Q', '' ) ) );
+                }
+            });
+        }
     });
     if ( job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url' ){
         constraints['uniqueValue'] = [];
@@ -184,7 +214,81 @@ function addValue( pageid, qid, value ){
     }
 }
 
-function checkConstraints( pageid, qid, value){
+function checkConstraintValuetype( pageid, qid, value ){
+    var rel = constraints['valuetype']['relation'] == 'instance' ? 'P31' : '279';
+    $.ajax({
+        type: 'GET',
+        url: 'https://www.wikidata.org/w/api.php?callback=?',
+        data: {
+            action : 'wbgetentities',
+            ids : value,
+            format: 'json'
+        },
+        dataType: 'json',
+        async: false
+    })
+    .done( function( data ) {
+        if ( data.entities[value].claims[rel] === undefined ){
+            report ( pageid, 'error', 'value type constraint violation', qid );
+            return false;
+        }
+        var checkok = 0;
+        for ( var m in data.entities[value].claims[rel] ){
+            if ( data.entities[value].claims[rel][m].mainsnak.snaktype == 'value' ){
+                var numericid = data.entities[value].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
+                if ( constraints.valuetype.values.indexOf( numericid )  != -1 ){
+                    checkok = 1;
+                }
+            }
+        }
+        if ( checkok == 0 ){
+            report( pageid, 'error', 'value type constraint violation', qid );
+            return false;
+        }
+        addValue( pageid, qid, value );
+    });
+}
+
+function checkConstraintType( pageid, qid, value ){
+    var rel = constraints['type']['relation'] == 'instance' ? 'P31' : '279';
+    $.ajax({
+        type: 'GET',
+        url: 'https://www.wikidata.org/w/api.php?callback=?',
+        data: {
+            action : 'wbgetentities',
+            ids : qid,
+            format: 'json'
+        },
+        dataType: 'json',
+        async: false
+    })
+    .done( function( data ) {
+        if ( data.entities[qid].claims[rel] === undefined ){
+            report ( pageid, 'error', 'type constraint violation', qid );
+            return false;
+        }
+        var checkok = 0;
+        for ( var m in data.entities[qid].claims[rel] ){
+            if ( data.entities[qid].claims[rel][m].mainsnak.snaktype == 'value' ){
+                var numericid = data.entities[qid].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
+                if ( constraints.type.values.indexOf( numericid )  != -1 ){
+                    checkok = 1;
+                }
+            }
+        }
+        if ( checkok == 0 ){
+            report( pageid, 'error', 'type constraint violation', qid );
+            return false;
+        }
+        if ( constraints['valuetype'] !== undefined ){
+            checkConstraintValuetype( pageid, qid, value );
+        } else {
+            addValue( pageid, qid, value );
+        }
+    });
+}
+
+function checkConstraints( pageid, qid, value ){
     // format check
     if ( constraints['format'] !== undefined ){
         var patt = new RegExp('^('+constraints['format']['pattern']+')$', constraints['format']['modifier']);
@@ -203,24 +307,13 @@ function checkConstraints( pageid, qid, value){
             constraints['uniqueValue'].push( value );
         }
     }
-    //disam check
-    if ( job.datatype == 'wikibase-item' ){
-        $.getJSON( 'https://www.wikidata.org/w/api.php?callback=?', {
-            action : 'wbgetentities',
-            ids : value,
-            format: 'json'
-        })
-        .done( function( data2 ) {
-            if ('P31' in data2.entities[value].claims){
-                if (data2.entities[value].claims.P31[0].mainsnak.datavalue.value['numeric-id'] == 4167410){
-                    report( pageid, 'error', 'target page is a disambiguation page', qid );
-                    return false;
-                }
-            }
-            addValue( pageid, qid, value );
-        });
+    //(value-)type check
+    if ( constraints['type'] !== undefined ){
+        checkConstraintType( pageid, qid, value );
+    } else if ( constraints['valuetype'] !== undefined ){
+        checkConstraintValuetype( pageid, qid, value );
     } else {
-       addValue( pageid, qid, value );
+        addValue( pageid, qid, value );
     }
 }
 

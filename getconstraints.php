@@ -44,5 +44,21 @@ if ( strpos( $text, '{{Constraint:Format|pattern=' ) !== false ){
         $con['format'] = array( 'pattern' => $foo2[0], 'modifier' => '' );
     }
 }
+if ( strpos( $text, '{{Constraint:Value type|class' ) !== false ){
+    $pattern = '/{{Constraint:Value type\|class(?:es)?=([0-9Q{}\|\s,]+)\|relation=(instance|subclass)/';
+    if ( preg_match( $pattern, $text, $matches ) ){
+        $res = explode( ',', $matches[1] );
+        $res = array_map( 'trim', $res );
+        $con['valuetype'] = array('class' => $res, 'relation' => $matches[2]);
+    }
+}
+if ( strpos( $text, '{{Constraint:Type|class' ) !== false ){
+    $pattern = '/{{Constraint:Type\|class(?:es)?=([0-9Q{}\|\s,]+)\|relation=(instance|subclass)/';
+    if ( preg_match( $pattern, $text, $matches ) ){
+        $res = explode( ',', $matches[1] );
+        $res = array_map( 'trim', $res );
+        $con['type'] = array('class' => $res, 'relation' => $matches[2]);
+    }
+}
 echo json_encode( $con );
 ?>
