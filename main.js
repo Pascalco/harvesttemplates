@@ -413,7 +413,7 @@ function handleValue( pageid, qid, value ){
             res = res[1];
         } else {
             if ( job.wikisyntax ){
-                res = value;
+                res = job.prefix + value;
             } else {
                 report( pageid, 'error', 'no target page found', qid );
                 return 0;
@@ -632,6 +632,7 @@ $(document).ready( function(){
         },function( data ) {
             if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'wikibase-item' ){
                 $( '#wikisyntax' ).show();
+                $( '#prefix' ).show();
             } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'string' ){
                 $( '#prefix' ).show();
             } else if ( data.entities['P'+$( 'input[name="property"]' ).val()].datatype == 'time' ){
