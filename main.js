@@ -215,7 +215,7 @@ function addValue( pageid, qid, value ){
 }
 
 function checkConstraintValuetype( pageid, qid, value ){
-    var rel = constraints['valuetype']['relation'] == 'instance' ? 'P31' : '279';
+    var rel = constraints['valuetype']['relation'] == 'instance' ? 'P31' : 'P279';
     $.ajax({
         type: 'GET',
         url: 'https://www.wikidata.org/w/api.php?callback=?',
@@ -250,7 +250,7 @@ function checkConstraintValuetype( pageid, qid, value ){
 }
 
 function checkConstraintType( pageid, qid, value ){
-    var rel = constraints['type']['relation'] == 'instance' ? 'P31' : '279';
+    var rel = constraints['type']['relation'] == 'instance' ? 'P31' : 'P279';
     $.ajax({
         type: 'GET',
         url: 'https://www.wikidata.org/w/api.php?callback=?',
