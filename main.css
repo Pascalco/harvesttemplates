@@ -140,6 +140,11 @@ input.error{
     background-color: #CC4444;
 }
 
+div.rightbox{
+    text-align: right;
+    width: 100%;
+}
+
 #status{
     font-size: 20px;
 }

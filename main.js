@@ -17,15 +17,49 @@ String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
+function toFile( format ) {
+    var del = (format == 'CSV') ? ';' : '\t';
+    var fileData = ['article'+del+'qid'+del+'value'+del+'result'];
+    $('#result').find( 'div' ).each( function() {
+        var tmpArr = [];
+        tmpArr.push( $(this).find('span').eq(0).find('a').text() );
+        if ( $(this).find('span').eq(1).html() !== undefined ){
+            var data = $(this).find('span').eq(1).html().split( ' → ' );
+            tmpArr.push( $(this).find('span').eq(1).find('a').eq(0).text() );
+            var val = data[2].match(/<i>(.*)<\/i>/);
+            if (val !== null){
+                tmpArr.push( val[1] );
+                tmpArr.push( data[2].replace( '<i>', '' ).replace( '</i>', '' ) );
+            } else {
+                tmpArr.push( '' );
+                tmpArr.push( data[2] );
+            }
+        } else {
+            tmpArr.push( '' );
+            tmpArr.push( '' );
+            tmpArr.push( '' );
+        }
+        fileData.push( tmpArr.join( del ) );
+    });
+    var output = fileData.join( '\n' );
+    var uri = 'data:application/'+format+';charset=UTF-8,' + encodeURIComponent( output );
+    $(this)
+        .attr({
+        'download': 'harvesttemplates.'+format,
+            'href': uri,
+            'target': '_blank'
+    });
+}
+
 function report( pageid, status, value, qid ){
     if ( status == 'success' && job.datatype == 'wikibase-item' ){
         value = '<a href="//www.wikidata.org/wiki/'+value+'" target="_blank">'+value+'</a>';
     }
     if ( status == 'success' ){
-        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → added value <i>'+value+'</i></span>' );
+        $('#' + pageid).next().after( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → added value <i>'+value+'</i></span>' );
     } else {
         delay = 500;
-        $('#' + pageid).next().append( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → '+value+'</span>' );
+        $('#' + pageid).next().after( '<span class="value"> → <a href="//www.wikidata.org/wiki/'+qid+'" target="_blank">'+qid+'</a> → '+value+'</span>' );
 
     }
     $('#' + pageid).parent().addClass( status );
@@ -574,6 +608,7 @@ function createCheckboxlist( pageids ){
     }
     $('#addvalues').show();
     $('#demo').show();
+    $('.rightbox').show()
     reportStatus(pageids.length == 1 ? 'Found one page' : 'Found '+pageids.length+' pages');
 }
 
@@ -639,6 +674,11 @@ $(document).ready( function(){
                 $( '#calender' ).show();
             }
         });
+    });
+
+
+    $( ".download" ).click( function( e ) {
+        toFile.apply(this, [$(this).text()]);
     });
 
     $( 'input[type="submit"]' ).click( function( e ) {
@@ -743,4 +783,5 @@ $(document).ready( function(){
             stopJob();
         }
     });
+
 });
