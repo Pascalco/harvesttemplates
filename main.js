@@ -482,7 +482,7 @@ function handleValue( pageid, qid, value ){
             }
         });
     } else if ( job.datatype == 'commonsMedia' ){
-        value = value.replace( /_/g, ' ' );
+        value = decodeURIComponent(value.replace( /_/g, ' ' ));
         $.getJSON( 'https://commons.wikimedia.org/w/api.php?callback=?', {
             action : 'query',
             titles : 'File:'+value,
