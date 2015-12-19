@@ -80,7 +80,7 @@ mysql_close( $conn );
 $single = array();
 do{
     $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
-} while (count($single) == 500000);
+} while (count($single) % 500000 == 0 && count($single) != 0);
 
 $r[0] = array_diff( $r[0], $single );
 $r[1] = array_intersect_key( $r[1], $r[0] );
