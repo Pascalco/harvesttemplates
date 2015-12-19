@@ -360,6 +360,7 @@ function parseDate( value ){
         async: false
     }).done( function( monthnames ) {
         value = value.replace( /–|-|—/g, '-' );
+        value = value.replace( /\[\[|\]\]/g, '' );
         digits = {'०':0,'१':1,'२':2,'३':3,'४':4,'५':5,'६':6,'७':7,'८':8,'९':9}
         roman = {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
         $.each(digits, function( k, v) {
