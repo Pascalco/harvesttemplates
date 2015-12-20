@@ -7,81 +7,70 @@
  * CC0 Public Domain Dedication.
 **/
 
-
-body{
-    font-family:'Helvetica Neue', 'Lucida Grande', Tahoma, Verdana, sans-serif;
+body {
+    font-family: 'Helvetica Neue', 'Lucida Grande', Tahoma, Verdana, sans-serif;
     font-size: 14px;
 }
-
-a{
+a {
     color: #0645AD;
     text-decoration: none;
 }
-
-h1{
-   font-size: 20px;
+h1 {
+    font-size: 20px;
 }
-
-h2{
+h2 {
     font-size: 16px;
 }
-
-div#main{
+div#main {
     width: 800px;
     margin: 30px auto;
     background-color: #F5F5F5;
 }
-
-#inst{
+#inst {
     width: 200px;
     border: 1px solid black;
-    float:right;
+    float: right;
     border-radius: 5px;
     margin: 10px;
     padding: 5px;
     font-size: 80%;
 }
-
-.div-table{
+.div-table {
     display: table;
     width: 500px;
-    border-spacing:5px;/*cellspacing:poor IE support for  this*/
+    border-spacing: 5px;
+    /*cellspacing:poor IE support for  this*/
 }
-
-.div-table-row{
+.div-table-row {
     display: table-row;
-    width:auto;
-    clear:both;
+    width: auto;
+    clear: both;
     height: 50px;
 }
-
-.div-table-col1{
+.div-table-col1 {
     display: table-column;
-    float:left;
-    width:100px;
+    float: left;
+    width: 100px;
     padding-top: 2px;
 }
-
-.div-table-col2{
+.div-table-col2 {
     display: table-column;
-    float:left;
-    width:300px;
+    float: left;
+    width: 300px;
     padding-top: 2px;
 }
-
-input[type="text"]{
+input[type="text"] {
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
     padding: 4px;
     width: 250px;
-    box-sizing:content-box;
-    -ms-box-sizing:content-box;
-    -moz-box-sizing:content-box;
-    -webkit-box-sizing:content-box;
+    box-sizing: content-box;
+    -ms-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
 }
-
-input[type="number"]{
+input[type="number"] {
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
@@ -89,97 +78,78 @@ input[type="number"]{
     width: 40px;
     text-align: center;
 }
-
-select{
+select {
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
     padding: 4px;
-    box-sizing:content-box;
-    -ms-box-sizing:content-box;
-    -moz-box-sizing:content-box;
-    -webkit-box-sizing:content-box;
+    box-sizing: content-box;
+    -ms-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
 }
-
-input[type="submit"]{
+input[type="submit"] {
     color: #FFF;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
     padding: 4px;
     width: 250px;
 }
-
-#demo{
+#demo {
     width: 80px;
 }
-
-input[type="text"]:focus,
-input[type="number"]:focus{
+input[type="text"]:focus, input[type="number"]:focus {
     border-color: #808080;
 }
-
-input[type="submit"]:hover{
+input[type="submit"]:hover {
     color: #000;
 }
-
-input[type="submit"]:disabled{
+input[type="submit"]:disabled {
     color: #000;
     background-color: #C0C0C0;
 }
-
-
-input.error{
+input.error {
     border-color: #FF0000;
 }
-
-.run{
+.run {
     background-color: #3366CC;
 }
-
-.stop{
+.stop {
     background-color: #CC4444;
 }
-
-div.rightbox{
+div.rightbox {
     text-align: right;
     width: 100%;
 }
-
-#status{
+#status {
     font-size: 20px;
 }
-
-#result{
+#result {
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
-    clear:both;
+    clear: both;
 }
-
-#result div{
+#result div {
     width: 100%;
     padding: 3px;
     margin: 1px;
 }
-
-#result a{
+#result a {
     color: #000;
 }
-
-#result .fatalerror{
+#result .fatalerror {
     background-color: #CC4444;
     color: #FFF;
 }
-
-#result .error{
+#result .error {
     background-color: #FFA9A7 !important;
     border: 1px solid #C0C0C0;
 }
-#result .success{
+#result .success {
     background-color: #B0DEB3 !important;
     border: 1px solid #C0C0C0;
 }
-
-#result div:nth-child(odd){
+#result div:nth-child(odd) {
     background-color: #FFF;
 }
