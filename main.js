@@ -368,32 +368,32 @@ function parseDate( value ){
             value = value.replace( r , v )
         });
         //only year
-        r = new RegExp( '^(\\d{4})$' );
+        r = new RegExp( '(\\d{4})' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-00-00';
         }
         $.each ( ( monthnames[job.lang]||{} ) , function ( name , num ) {
             // month and year
-            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{4})$', 'i' );
+            r = new RegExp( '('+name+'|'+name.substr(0,3)+') (\\d{4})', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[2]+'-'+num+'-00';
             }
             // day, month, year
-            r = new RegExp( '^(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?('+name+')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})$', 'i' );
+            r = new RegExp( '(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?('+name+')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[5]+'-'+num+'-'+res[1];
             }
             // month, day, year
-            r = new RegExp( '^('+name+'|'+name.substr(0,3)+') (\\d{1,2})t?h?\\,? (\\d{4})$', 'i' );
+            r = new RegExp( '('+name+'|'+name.substr(0,3)+') (\\d{1,2})t?h?\\,? (\\d{4})', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[3]+'-'+num+'-'+res[2];
             }
             // year, month, day
-            r = new RegExp( '^(\\d{4})(e?ko|\\.|,)? ('+name+')(aren)? (\\d{1,2})(a|ean|an)?$', 'i' );
+            r = new RegExp( '(\\d{4})(e?ko|\\.|,)? ('+name+')(aren)? (\\d{1,2})(a|ean|an)?', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[1]+'-'+num+'-'+res[5];
@@ -401,30 +401,30 @@ function parseDate( value ){
         } );
         for ( var num = 1; num <= 12; num++ ) {
             // day, month (number), year
-            r = new RegExp( '^(\\d{1,2})([. /]+| tháng )(0?'+num+'|'+roman[num]+')([., /]+| năm )(\\d{4})$' ,'i' );
+            r = new RegExp( '(\\d{1,2})([. /]+| tháng )(0?'+num+'|'+roman[num]+')([., /]+| năm )(\\d{4})' ,'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[5]+'-'+num+'-'+res[1];
             }
             // year, month (number), day
-            r = new RegExp( '^(\\d{4})( - |/)(0?'+num+'|'+roman[num]+')( - |/)(\\d{1,2})$', 'i' );
+            r = new RegExp( '(\\d{4})( - |/)(0?'+num+'|'+roman[num]+')( - |/)(\\d{1,2})', 'i' );
             var res = value.match( r );
             if ( res !== null){
                 date = res[1]+'-'+num+'-'+res[5];
             }
         }
         // Japanese/Chinese/Korean
-        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)$' );
+        r = new RegExp( '(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-00-00';
         }
-        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)$' );
+        r = new RegExp( '(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-'+res[3]+'-00';
         }
-        r = new RegExp( '^(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)$' );
+        r = new RegExp( '(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)' );
         var res = value.match( r );
         if ( res !== null){
             date = res[1]+'-'+res[3]+'-'+res[5];
