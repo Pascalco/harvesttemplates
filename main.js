@@ -17,6 +17,17 @@ String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
+
+function prefillForm() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+        if ($('input[name='+key+']') !== undefined){
+            $('input[name='+key+']').val( decodeURIComponent( value.replace( '+', ' ') ) );
+        }
+    });
+}
+
+
 function toFile( format ) {
     var del = (format == 'CSV') ? ';' : '\t';
     var fileData = ['article'+del+'qid'+del+'value'+del+'result'];
@@ -654,6 +665,9 @@ function getPages() {
 }
 
 $(document).ready( function(){
+
+    prefillForm();
+
     $( 'input' ).change( function(){
         $(this).removeClass( 'error' );
     });
@@ -677,8 +691,22 @@ $(document).ready( function(){
         });
     });
 
+    $( '.permalink').click( function( e ) {
+        url = '//tools.wmflabs.org/pltools/harvesttemplates/?'
+        params = {
+            property: $('input[name="property"]').val(),
+            siteid: $('input[name="siteid"]').val(),
+            project: $('input[name="project"]').val(),
+            template: $('input[name="template"]').val(),
+            parameter: $('input[name="parameter"]').val(),
+            category: $('input[name="category"]').val(),
+            prefix: $('input[name="prefix"]').val(),
+        };
+        console.log(url+$.param( params ));
+        window.open(url+$.param( params ));
+    });
 
-    $( ".download" ).click( function( e ) {
+    $( '.download' ).click( function( e ) {
         toFile.apply(this, [$(this).text()]);
     });
 
@@ -784,5 +812,4 @@ $(document).ready( function(){
             stopJob();
         }
     });
-
 });

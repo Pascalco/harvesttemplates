@@ -93,7 +93,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
     </div>
   </div>
 </form>
-<div class="rightbox" style="display:none;">download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></div>
+<div class="rightbox" style="display:none;"><a class="permalink" href="#">Permalink</a> | download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></div>
 <div id="result"></div>
 </div>
 
