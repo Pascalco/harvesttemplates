@@ -16,7 +16,10 @@
 <link href="../common.css" rel="stylesheet">
 
 <script src="//tools-static.wmflabs.org/static/jquery/1.11.0/jquery.min.js"></script>
-<script src="main.js"></script>
+<?php
+$commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
+?>
+<script src="main.js?version=<?php echo $commit; ?>"></script>
 <script src="../common.js"></script>
 
 </head>
@@ -71,7 +74,7 @@
     <div class="div-table-row" id="calender" style="display:none;">
       <div class="div-table-col1">Calender</div>
       <div class="div-table-col2">
-          <select name="calender" size="1"><option value="http://www.wikidata.org/entity/Q1985727">Gregorian</option><option value="http://www.wikidata.org/entity/Q1985786">Julian</option></select> if year 
+          <select name="calender" size="1"><option value="http://www.wikidata.org/entity/Q1985727">Gregorian</option><option value="http://www.wikidata.org/entity/Q1985786">Julian</option></select> if year
           <select name="rel" size="1"><option>=></option><option><=</option></select>
           <input type="number" name="year" style="width:60px" min="1" value="1926">
       </div>
