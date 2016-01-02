@@ -603,6 +603,7 @@ function parseTemplate(text, pageid, qid) {
     text = text.replace(/(\r\n|\n|\r)/gm, '') //remove linebreaks
     text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
     text = text.replace(/<ref([^>]+)>/g, ''); //remove reference tags
+    text = text.replace(/\s\s+/g, ' '); //remove multiple spaces
     text = text.replace(new RegExp('{{\\s*' + job.templates, 'i'), '{{' + job.template);
     var txt = text.split('{{' + job.template);
     if (txt.length == 1) {
