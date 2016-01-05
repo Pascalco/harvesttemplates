@@ -598,7 +598,7 @@ function handleValue(pageid, qid, value) {
     }
 }
 
-function parseTemplate(text, pageid, qid) {
+function parseTemplate(pageid, qid, text) {
     var result = '';
     text = text.replace(/(\r\n|\n|\r)/gm, '') //remove linebreaks
     text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
@@ -643,9 +643,10 @@ function parseTemplate(text, pageid, qid) {
         if (job.demo != 1) {
             delay = 5000;
         }
-        handleValue(pageid, qid, result);
+        return result;
     } else {
         report(pageid, 'error', 'no value', qid);
+        return false;
     }
 }
 
@@ -672,7 +673,10 @@ function proceedOnePage() {
                     format: 'json'
                 })
                 .done(function(data2) {
-                    parseTemplate(data2.query.pages[el.attr('id')].revisions[0]['*'], el.attr('id'), el.attr('data-qid'));
+                    var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*']);
+                    if (value !== false){
+                        handleValue(el.attr('id'), el.attr('data-qid'), value);
+                    }
                     proceedOnePage();
                 });
         }, delay);
