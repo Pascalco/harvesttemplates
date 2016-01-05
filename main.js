@@ -735,17 +735,8 @@ function getPages() {
         });
 }
 
-$(document).ready(function() {
-
-    prefillForm();
-
-    $('input').change(function() {
-        $(this).removeClass('error');
-    });
-    $('input[name="property"]').change(function() {
-        $('#wikisyntax').hide();
-        $('#prefix').hide();
-        $('#calender').hide();
+function showAdditionalFields(){
+    if ($('input[name="property"]').val() != ''){
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
             action: 'wbgetentities',
             ids: 'P' + $('input[name="property"]').val(),
@@ -760,6 +751,27 @@ $(document).ready(function() {
                 $('#calender').show();
             }
         });
+    }
+}
+
+function hideAdditionalFields(){
+    $('#wikisyntax').hide();
+    $('#prefix').hide();
+    $('#calender').hide();
+}
+
+
+$(document).ready(function() {
+
+    prefillForm();
+    showAdditionalFields();
+
+    $('input').change(function() {
+        $(this).removeClass('error');
+    });
+    $('input[name="property"]').change(function() {
+        hideAdditionalFields();
+        showAdditionalFields();
     });
 
     $('.permalink').click(function(e) {
