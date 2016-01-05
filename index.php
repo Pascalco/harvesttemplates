@@ -87,10 +87,10 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                         <input type="text" name="prefix" value="">
                     </div>
                 </div>
-                <div class="div-table-row" id="calender" style="display:none;">
-                    <div class="div-table-col1">Calender</div>
+                <div class="div-table-row timeparameters" style="display:none;">
+                    <div class="div-table-col1">Calendar</div>
                     <div class="div-table-col2">
-                        <select name="calender" size="1">
+                        <select name="calendar" size="1">
                             <option value="http://www.wikidata.org/entity/Q1985727">Gregorian</option>
                             <option value="http://www.wikidata.org/entity/Q1985786">Julian</option>
                         </select> if year
@@ -99,7 +99,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                             <option>
                                 <=</option>
                         </select>
-                        <input type="number" name="year" style="width:60px" min="1" value="1926">
+                        <input type="number" name="limityear" style="width:60px" min="1" value="1926">
                     </div>
                 </div>
                 <div class="div-table-row">

@@ -271,7 +271,7 @@ function addValue(pageid, qid, value) {
             p: job.p,
             date: '+' + value + 'T00:00:00Z',
             precision: precision,
-            calender: job.calender.model
+            calendar: job.calendar.model
         }
     } else {
         reportStatus('not supported datatype: ' + job.datatype);
@@ -576,20 +576,20 @@ function handleValue(pageid, qid, value) {
     } else if (job.datatype == 'time') {
         var newvalue = parseDate(value);
         if (newvalue !== false) {
-            if (isNaN(parseInt(job.calender.year))) {
-                job.calender.year = 1926;
+            if (isNaN(parseInt(job.calendar.limityear))) {
+                job.calendar.limityear = 1926;
             }
-            if (job.calender.rel == '=>') {
-                if (parseInt(newvalue.substring(0, 4)) >= job.calender.year) {
+            if (job.calendar.rel == '=>') {
+                if (parseInt(newvalue.substring(0, 4)) >= job.calendar.limityear) {
                     checkConstraints(pageid, qid, newvalue);
                 } else {
-                    report(pageid, 'error', newvalue + ' < ' + job.calender.year, qid);
+                    report(pageid, 'error', newvalue + ' < ' + job.calendar.limityear, qid);
                 }
             } else {
-                if (parseInt(newvalue.substring(0, 4)) <= job.calender.year) {
+                if (parseInt(newvalue.substring(0, 4)) <= job.calendar.limityear) {
                     checkConstraints(pageid, qid, newvalue);
                 } else {
-                    report(pageid, 'error', newvalue + ' > ' + job.calender.year, qid);
+                    report(pageid, 'error', newvalue + ' > ' + job.calendar.limityear, qid);
                 }
             }
         } else {
@@ -748,7 +748,7 @@ function showAdditionalFields(){
             } else if (data.entities['P' + $('input[name="property"]').val()].datatype == 'string') {
                 $('#prefix').show();
             } else if (data.entities['P' + $('input[name="property"]').val()].datatype == 'time') {
-                $('#calender').show();
+                $('.timeparameters').show();
             }
         });
     }
@@ -757,7 +757,7 @@ function showAdditionalFields(){
 function hideAdditionalFields(){
     $('#wikisyntax').hide();
     $('#prefix').hide();
-    $('#calender').hide();
+    $('.timeparameters').hide();
 }
 
 
@@ -821,10 +821,10 @@ $(document).ready(function() {
                             category: $('input[name="category"]').val(),
                             wikisyntax: $('input[name="wikisyntax"]').prop('checked'),
                             prefix: $('input[name="prefix"]').val(),
-                            calender: {
-                                model: $('select[name="calender"]').val(),
+                            calendar: {
+                                model: $('select[name="calendar"]').val(),
                                 rel: $('select[name="rel"]').val(),
-                                year: $('input[name="year"]').val()
+                                limityear: $('input[name="limityear"]').val()
                             }
                         };
                         if (job.siteid === '') {
