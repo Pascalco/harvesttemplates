@@ -776,17 +776,9 @@ $(document).ready(function() {
     });
 
     $('.permalink').click(function(e) {
-        url = '//tools.wmflabs.org/pltools/harvesttemplates/?'
-        params = {
-            property: $('input[name="property"]').val(),
-            siteid: $('input[name="siteid"]').val(),
-            project: $('input[name="project"]').val(),
-            template: $('input[name="template"]').val(),
-            parameter: $('input[name="parameter"]').val(),
-            category: $('input[name="category"]').val(),
-            prefix: $('input[name="prefix"]').val(),
-        };
-        window.open(url + $.param(params));
+        var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
+        var params = $( 'form input:visible' ).serialize();
+        window.open(url + params);
     });
 
     $('.download').click(function(e) {
