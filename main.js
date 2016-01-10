@@ -103,7 +103,7 @@ function createConstraints() {
         type: 'GET',
         url: 'getconstraints.php',
         data: {
-            p: job.p
+            p: job.property
         },
         async: false
     }).done(function(data) {
@@ -151,7 +151,7 @@ function createConstraints() {
             type: 'GET',
             url: 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?',
             data: {
-                query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:' + job.p + ' ?value .} GROUP BY ?value',
+                query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
                 format: 'json'
             },
             dataType: 'json',
@@ -247,14 +247,14 @@ function addValue(pageid, qid, value) {
         claim = {
             type: 'string',
             q: qid,
-            p: job.p,
+            p: job.property,
             text: value
         };
     } else if (job.datatype == 'wikibase-item') {
         claim = {
             type: 'wikibase-entityid',
             q: qid,
-            p: job.p,
+            p: job.property,
             numericid: value.substring(1)
         };
     } else if (job.datatype == 'time') {
@@ -268,10 +268,10 @@ function addValue(pageid, qid, value) {
         claim = {
             type: 'time',
             q: qid,
-            p: job.p,
+            p: job.property,
             date: '+' + value + 'T00:00:00Z',
             precision: precision,
-            calendar: job.calendar.model
+            calendar: job.calendar
         }
     } else {
         reportStatus('not supported datatype: ' + job.datatype);
@@ -576,20 +576,20 @@ function handleValue(pageid, qid, value) {
     } else if (job.datatype == 'time') {
         var newvalue = parseDate(value);
         if (newvalue !== false) {
-            if (isNaN(parseInt(job.calendar.limityear))) {
-                job.calendar.limityear = 1926;
+            if (isNaN(parseInt(job.limityear))) {
+                job.limityear = 1926;
             }
-            if (job.calendar.rel == '=>') {
-                if (parseInt(newvalue.substring(0, 4)) >= job.calendar.limityear) {
+            if (job.rel == '=>') {
+                if (parseInt(newvalue.substring(0, 4)) >= job.limityear) {
                     checkConstraints(pageid, qid, newvalue);
                 } else {
-                    report(pageid, 'error', newvalue + ' < ' + job.calendar.limityear, qid);
+                    report(pageid, 'error', newvalue + ' < ' + job.limityear, qid);
                 }
             } else {
-                if (parseInt(newvalue.substring(0, 4)) <= job.calendar.limityear) {
+                if (parseInt(newvalue.substring(0, 4)) <= job.limityear) {
                     checkConstraints(pageid, qid, newvalue);
                 } else {
-                    report(pageid, 'error', newvalue + ' > ' + job.calendar.limityear, qid);
+                    report(pageid, 'error', newvalue + ' > ' + job.limityear, qid);
                 }
             }
         } else {
@@ -696,11 +696,12 @@ function createCheckboxlist(pageids) {
 }
 
 function getPages() {
+    job.template = job.template.capitalizeFirstLetter().replace(/_/g, ' ')
     $.getJSON('getcandidates.php?', {
             dbname: job.dbname,
             template: job.template,
             category: job.category,
-            p: job.p
+            p: job.property
         })
         .done(function(pageids) {
             reportStatus('loading....');
@@ -813,21 +814,13 @@ $(document).ready(function() {
                         stopJob();
                         i = 0;
 
-                        job = {
-                            p: 'P' + $('input[name="property"]').val(),
-                            siteid: $('input[name="siteid"]').val(),
-                            project: $('input[name="project"]').val(),
-                            template: $('input[name="template"]').val().capitalizeFirstLetter().replace(/_/g, ' '),
-                            parameter: $('input[name="parameter"]').val(),
-                            category: $('input[name="category"]').val(),
-                            wikisyntax: $('input[name="wikisyntax"]').prop('checked'),
-                            prefix: $('input[name="prefix"]').val(),
-                            calendar: {
-                                model: $('select[name="calendar"]').val(),
-                                rel: $('select[name="rel"]').val(),
-                                limityear: $('input[name="limityear"]').val()
-                            }
-                        };
+                        job = {}
+                        var fields = $( 'form' ).serializeArray();
+                        jQuery.each( fields, function( i, field ) {
+                          job[field.name] = field.value;
+                        });
+                        job.property = 'P'+job.property
+
                         if (job.siteid === '') {
                             $('input[name="siteid"]').addClass('error');
                             error = 1;
@@ -844,7 +837,7 @@ $(document).ready(function() {
                             $('input[name="parameter"]').addClass('error');
                             error = 1;
                         }
-                        if (job.p == 'P') {
+                        if (job.property == 'P') {
                             $('input[name="property"]').addClass('error');
                             error = 1;
                         }
@@ -855,10 +848,10 @@ $(document).ready(function() {
                             job.wbeditionid = getWpEditionId(job.dbname);
                             $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
                                 action: 'wbgetentities',
-                                ids: job.p,
+                                ids: job.property,
                                 format: 'json'
                             }, function(data) {
-                                job.datatype = data.entities[job.p].datatype;
+                                job.datatype = data.entities[job.property].datatype;
                                 // TODO: monolingualtext, quantity, geocoordinate
                                 if (job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
                                     reportStatus('loading..');
