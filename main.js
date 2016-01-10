@@ -812,6 +812,7 @@ $(document).ready(function() {
                         $('#demo').hide();
                         stopJob();
                         i = 0;
+
                         job = {
                             p: 'P' + $('input[name="property"]').val(),
                             siteid: $('input[name="siteid"]').val(),
