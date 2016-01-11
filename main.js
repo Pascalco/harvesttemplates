@@ -701,6 +701,7 @@ function getPages() {
             dbname: job.dbname,
             template: job.template,
             category: job.category,
+            namespace: job.namespace,
             p: job.property
         })
         .done(function(pageids) {
@@ -831,6 +832,10 @@ $(document).ready(function() {
                         }
                         if (job.property == 'P') {
                             $('input[name="property"]').addClass('error');
+                            error = 1;
+                        }
+                        if (job.namespace === '') {
+                            $('input[name="namespace"]').addClass('error');
                             error = 1;
                         }
                         if (error === 0) {

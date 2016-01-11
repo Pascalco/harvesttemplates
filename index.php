@@ -46,17 +46,31 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
 
         <form id="spec">
             <div class="div-table">
-                <div class="div-table-row">
-                    <div class="div-table-col1">Property</div>
-                    <div class="div-table-col2">P
-                        <input type="number" name="property" style="width:50px;" min="1" value=1>
-                    </div>
-                </div>
+                <h3>Load pages from</h3>
                 <div class="div-table-row">
                     <div class="div-table-col1">Wiki</div>
                     <div class="div-table-col2">
                         <input type="text" name="siteid" style="width:50px;" value="en"> .
                         <input type="text" name="project" style="width:150px;" value="wikipedia">.org</div>
+                </div>
+                <div class="div-table-row">
+                    <div class="div-table-col1">Namespace</div>
+                    <div class="div-table-col2">
+                        <input type="number" name="namespace" style="width:50px;" min="0" value=0>
+                    </div>
+                </div>
+                <div class="div-table-row">
+                    <div class="div-table-col1">Category</div>
+                    <div class="div-table-col2">
+                        <input type="text" name="category" value="">
+                    </div>
+                </div>
+                <h3>Import data</h3>
+                <div class="div-table-row">
+                    <div class="div-table-col1">Property</div>
+                    <div class="div-table-col2">P
+                        <input type="number" name="property" style="width:50px;" min="1" value=1>
+                    </div>
                 </div>
                 <div class="div-table-row">
                     <div class="div-table-col1">Template</div>
@@ -68,12 +82,6 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                     <div class="div-table-col1">Parameter</div>
                     <div class="div-table-col2">
                         <input type="text" name="parameter" value="">
-                    </div>
-                </div>
-                <div class="div-table-row">
-                    <div class="div-table-col1">Category</div>
-                    <div class="div-table-col2">
-                        <input type="text" name="category" value="">
                     </div>
                 </div>
                 <div class="div-table-row" id="wikisyntax" style="display:none;">

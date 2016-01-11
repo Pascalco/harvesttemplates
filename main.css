@@ -21,6 +21,11 @@ h1 {
 h2 {
     font-size: 16px;
 }
+h3 {
+    font-weight: normal;
+    font-style: italic;
+}
+
 div#main {
     width: 800px;
     margin: 30px auto;
