@@ -506,10 +506,6 @@ function parseDate(value) {
         if (res !== null) {
             date = res[1] + '-' + res[3] + '-' + res[5];
         }
-        if (date !== false) {
-            date = date.replace(/-(\d)-/, '-0\$1-');
-            date = date.replace(/-(\d)$/, '-0\$1');
-        }
     });
     return date;
 }
@@ -574,8 +570,20 @@ function handleValue(pageid, qid, value) {
                 }
             });
     } else if (job.datatype == 'time') {
-        var newvalue = parseDate(value);
+        if (typeof value === 'string') {
+            var newvalue = parseDate(value);
+        } else{
+            if (value[1] === '' || value[1] == false){
+                value[1] = '00';
+            }
+            if (value[2] === '' || value[1] == false){
+                value[2] = '00';
+            }
+            var newvalue = value[0]+'-'+value[1]+'-'+value[2];
+        }
         if (newvalue !== false) {
+            newvalue = newvalue.replace(/-(\d)-/, '-0\$1-');
+            newvalue = newvalue.replace(/-(\d)$/, '-0\$1');
             if (isNaN(parseInt(job.limityear))) {
                 job.limityear = 1926;
             }
@@ -598,7 +606,7 @@ function handleValue(pageid, qid, value) {
     }
 }
 
-function parseTemplate(pageid, qid, text) {
+function parseTemplate(pageid, qid, text, parameter) {
     var result = '';
     text = text.replace(/(\r\n|\n|\r)/gm, '') //remove linebreaks
     text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
@@ -627,16 +635,16 @@ function parseTemplate(pageid, qid, text) {
     $.each(parts, function(i, m) {
         if (m.indexOf('=') != '-1') {
             sp = m.split('=');
-            if (sp[0].toLowerCase().trim() == job.parameter.toLowerCase()) {
+            if (sp[0].toLowerCase().trim() == parameter.toLowerCase()) {
                 result = sp.slice(1).join('=').trim();
             }
         } else {
             unnamed.push(m.trim());
         }
     });
-    if (result === '' && !isNaN(job.parameter)) {
-        if (unnamed.length > job.parameter) {
-            result = unnamed[job.parameter];
+    if (result === '' && !isNaN(parameter)) {
+        if (unnamed.length > parameter) {
+            result = unnamed[parameter];
         }
     }
     if (result !== '') {
@@ -645,7 +653,6 @@ function parseTemplate(pageid, qid, text) {
         }
         return result;
     } else {
-        report(pageid, 'error', 'no value', qid);
         return false;
     }
 }
@@ -673,9 +680,23 @@ function proceedOnePage() {
                     format: 'json'
                 })
                 .done(function(data2) {
-                    var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*']);
-                    if (value !== false){
-                        handleValue(el.attr('id'), el.attr('data-qid'), value);
+                    if (job.parameter !== '') {
+                        var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job.parameter);
+                        if (value !== false){
+                            handleValue(el.attr('id'), el.attr('data-qid'), value);
+                        } else {
+                            report(el.attr('id'), 'error', 'no value', el.attr('data-qid'));
+                        }
+                    } else {
+                        var value = [];
+                        for (var kk = 1; kk <= 3; kk++) {
+                            value.push(parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]));
+                        }
+                        if (value[0] !== false){
+                            handleValue(el.attr('id'), el.attr('data-qid'), value);
+                        } else {
+                            report(el.attr('id'), 'error', 'no value', el.attr('data-qid'));
+                        }
                     }
                     proceedOnePage();
                 });
@@ -826,7 +847,7 @@ $(document).ready(function() {
                             $('input[name="template"]').addClass('error');
                             error = 1;
                         }
-                        if (job.parameter === '') {
+                        if (job.parameter === '' && job.aparameter1 === '') {
                             $('input[name="parameter"]').addClass('error');
                             error = 1;
                         }
