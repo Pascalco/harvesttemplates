@@ -576,7 +576,7 @@ function handleValue(pageid, qid, value) {
             if (value[1] === '' || value[1] == false){
                 value[1] = '00';
             }
-            if (value[2] === '' || value[1] == false){
+            if (value[2] === '' || value[2] == false){
                 value[2] = '00';
             }
             var newvalue = value[0]+'-'+value[1]+'-'+value[2];
