@@ -22,7 +22,7 @@ function prefillForm() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         if ($('input[name=' + key + ']') !== undefined) {
-            $('input[name=' + key + ']').val(decodeURIComponent(value.replace('+', ' ')));
+            $('input[name=' + key + ']').val(decodeURIComponent(value.replace(/\+/g, ' ')));
         }
     });
 }
