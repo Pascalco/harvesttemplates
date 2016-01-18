@@ -308,7 +308,7 @@ function checkConstraintValuetype(pageid, qid, value) {
             url: 'https://www.wikidata.org/w/api.php?callback=?',
             data: {
                 action: 'wbgetentities',
-                ids: value,
+                ids: qid,
                 format: 'json'
             },
             dataType: 'json',
