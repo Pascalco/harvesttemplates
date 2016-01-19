@@ -514,6 +514,10 @@ function handleValue(pageid, qid, value) {
     if (job.datatype == 'string') {
         checkConstraints(pageid, qid, job.prefix + value);
     } else if (job.datatype == 'url') {
+        var res = value.match(/\[([^\s]+)\s(.*)\]/);
+        if (res !== null) {
+            value = res[1];
+        }
         checkConstraints(pageid, qid, value);
     } else if (job.datatype == 'wikibase-item') {
         var res = value.match(/^\[\[([^\|\]]+)/);
