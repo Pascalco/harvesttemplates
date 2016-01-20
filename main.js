@@ -514,7 +514,7 @@ function handleValue(pageid, qid, value) {
     if (job.datatype == 'string') {
         checkConstraints(pageid, qid, job.prefix + value);
     } else if (job.datatype == 'url') {
-        var res = value.match(/\[([^\s]+)\s(.*)\]/);
+        var res = value.match(/\[([^\s]+)(\s(.*))?\]/);
         if (res !== null) {
             value = res[1];
         }
