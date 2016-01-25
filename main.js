@@ -539,6 +539,7 @@ function handleValue(pageid, qid, value) {
                 action: 'query',
                 prop: 'pageprops',
                 titles: res,
+                redirects: 1,
                 format: 'json'
             })
             .done(function(data) {
