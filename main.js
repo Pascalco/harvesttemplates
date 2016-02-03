@@ -17,6 +17,9 @@ String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
+function preg_quote( str ){
+    return (str+'').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
+}
 
 function prefillForm() {
     var vars = {};
@@ -726,12 +729,12 @@ function getPages() {
                     format: 'json'
                 })
                 .done(function(data) {
-                    job.templates = '(' + job.template + '|' + job.template.replace(/ /g, '_');
+                    job.templates = '(' + preg_quote(job.template) + '|' + preg_quote(job.template).replace(/ /g, '_');
                     for (var m in data.query.pages) {
                         if ('redirects' in data.query.pages[m]) {
                             for (var red in data.query.pages[m].redirects) {
                                 var title = data.query.pages[m].redirects[red].title.split(':', 2);
-                                job.templates += '|' + title[1] + '|' + title[1].replace(/ /g, '_');
+                                job.templates += '|' + preg_quote(title[1]) + '|' + preg_quote(title[1]).replace(/ /g, '_');
                             }
                         }
                     }
