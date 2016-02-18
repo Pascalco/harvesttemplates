@@ -30,7 +30,6 @@ function prefillForm() {
     });
 }
 
-
 function toFile(format) {
     var del = (format == 'CSV') ? ';' : '\t';
     var fileData = ['article' + del + 'qid' + del + 'value' + del + 'result'];
@@ -220,7 +219,7 @@ function setSource(qid, guid) {
 }
 
 function addValue(pageid, qid, value) {
-    if (job.datatype == 'string' || job.datatype == 'commonsMedia' || job.datatype == 'url') {
+    if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'commonsMedia' || job.datatype == 'url') {
         claim = {
             type: 'string',
             q: qid,
@@ -511,7 +510,7 @@ function parseDate(value) {
 }
 
 function handleValue(pageid, qid, value) {
-    if (job.datatype == 'string') {
+    if (job.datatype == 'string' || job.datatype == 'external-id') {
         checkConstraints(pageid, qid, job.prefix + value, 0);
     } else if (job.datatype == 'url') {
         var res = value.match(/\[([^\s]+)(\s(.*))?\]/);
@@ -566,7 +565,7 @@ function handleValue(pageid, qid, value) {
     } else if (job.datatype == 'time') {
         if (typeof value === 'string') {
             var newvalue = parseDate(value);
-        } else{
+        } else {
             if (value[1] === '' || value[1] == false){
                 value[1] = '00';
             }
@@ -759,12 +758,13 @@ function showAdditionalFields(){
             ids: 'P' + $('input[name="property"]').val(),
             format: 'json'
         }, function(data) {
-            if (data.entities['P' + $('input[name="property"]').val()].datatype == 'wikibase-item') {
+			var datatype = data.entities['P' + $('input[name="property"]').val()].datatype;
+            if (datatype == 'wikibase-item') {
                 $('#wikisyntax').show();
                 $('#prefix').show();
-            } else if (data.entities['P' + $('input[name="property"]').val()].datatype == 'string') {
+            } else if (datatype == 'string' || datatype == 'external-id') {
                 $('#prefix').show();
-            } else if (data.entities['P' + $('input[name="property"]').val()].datatype == 'time') {
+            } else if (datatype == 'time') {
                 $('.timeparameters').show();
             }
         });
@@ -864,8 +864,8 @@ $(document).ready(function() {
                                 format: 'json'
                             }, function(data) {
                                 job.datatype = data.entities[job.property].datatype;
-                                // TODO: monolingualtext, quantity, geocoordinate
-                                if (job.datatype == 'string' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
+                                // TODO: monolingualtext, quantity, geocoordinate, math
+                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
                                     reportStatus('loading..');
                                     createConstraints( function() {
                                         reportStatus('loading...');
