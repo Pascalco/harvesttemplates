@@ -12,15 +12,15 @@ header('Content-Type: application/json');
 ini_set( 'memory_limit', '4G' );
 ini_set( 'max_execution_time', 0);
 
-function getPagesWithTemplate( $template, $category){
+function getPagesWithTemplate( $template, $category, $namespace){
     $ret = array();
     $ret2 = array();
     $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
     if ( empty( $category )){
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace=0 AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from' );
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY pp_value DESC' );
     } else {
         $category = trim( str_replace( ' ', '_', $category ) );
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace=0 AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to = "'.$category.'")');
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to = "'.$category.'")  ORDER BY pp_value DESC');
     }
     while ( $row = mysql_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
@@ -73,14 +73,14 @@ if ( empty( $_GET['dbname'] ) or empty( $_GET['template'] ) or empty( $_GET['p']
 }
 
 $conn = openDB( $_GET['dbname'] );
-$r = getPagesWithTemplate( $_GET['template'], $_GET['category'] );
+$r = getPagesWithTemplate( $_GET['template'], $_GET['category'], $_GET['namespace'] );
 mysql_close( $conn );
 
 
 $single = array();
 do{
     $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
-} while (count($single) % 500000 == 0);
+} while (count($single) % 500000 == 0 && count($single) != 0);
 
 $r[0] = array_diff( $r[0], $single );
 $r[1] = array_intersect_key( $r[1], $r[0] );
