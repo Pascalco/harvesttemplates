@@ -81,7 +81,9 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <div class="div-table-row">
                     <div class="div-table-col1">Parameter</div>
                     <div class="div-table-col2">
-                        <input type="text" name="parameter" value="">
+                        <div class="parameters">
+                            <input type="text" name="parameter" value=""> <br /> <a href="#" id="addalias">+ add alias</a>
+                        </div>
                         <div class="timeparameters" style="display:none;">
                             <br /><i>or</i><br />
                             <input type="text" name="aparameter1" value="" class="shorter"> year<br />

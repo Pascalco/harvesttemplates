@@ -25,7 +25,10 @@ function prefillForm() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         if ($('input[name=' + key + ']') !== undefined) {
-            $('input[name=' + key + ']').val(decodeURIComponent(value.replace(/\+/g, ' ')));
+            if (key == 'parameter' && $('input[name=' + key + ']').val() != ''){
+                addAlias();
+            }
+            $('input[name=' + key + ']').last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
         }
     });
 }
@@ -674,7 +677,11 @@ function proceedOnePage() {
                 })
                 .done(function(data2) {
                     if (job.parameter !== '') {
-                        var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job.parameter);
+                        var value = false;
+                        $.each ( job.parameter, function( k, v ){
+                            value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
+                            return (value == false);
+                        });
                         if (value !== false){
                             handleValue(el.attr('id'), el.attr('data-qid'), value);
                         } else {
@@ -777,6 +784,10 @@ function hideAdditionalFields(){
     $('.timeparameters').hide();
 }
 
+function addAlias(){
+    $('.parameters').append('<input type="text" name="parameter" value="">');
+}
+
 
 $(document).ready(function() {
 
@@ -793,14 +804,21 @@ $(document).ready(function() {
 
     $('.permalink').click(function(e) {
         var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
-        var params = $( 'form input:visible' ).serialize();
-        window.open(url + params);
+        var params = $( 'form input:visible' ).serializeArray();
+        $.each( params, function( i, field ) {
+            url += field.name+'='+field.value+'&';
+        });
+        window.open(url);
     });
 
     $('.download').click(function(e) {
         toFile.apply(this, [$(this).text()]);
     });
 
+    $('#addalias').click(function(e) {
+        e.preventDefault();
+        addAlias();
+    });
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
         if ($(this).attr('id') == 'getpages') {
@@ -822,10 +840,14 @@ $(document).ready(function() {
                         stopJob();
                         i = 0;
 
-                        job = {}
+                        job = {'parameter' : []};
                         var fields = $( 'form' ).serializeArray();
-                        jQuery.each( fields, function( i, field ) {
-                          job[field.name] = field.value;
+                        $.each( fields, function( i, field ) {
+                            if (field.name != 'parameter'){
+                                job[field.name] = field.value;
+                            } else if (field.value != ''){
+                                job[field.name].push(field.value);
+                            }
                         });
                         job.property = 'P'+job.property
 
@@ -841,7 +863,7 @@ $(document).ready(function() {
                             $('input[name="template"]').addClass('error');
                             error = 1;
                         }
-                        if (job.parameter === '' && job.aparameter1 === '') {
+                        if (job.parameter.length == 0 && job.aparameter1 === '') {
                             $('input[name="parameter"]').addClass('error');
                             error = 1;
                         }
