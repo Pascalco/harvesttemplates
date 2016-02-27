@@ -9,9 +9,10 @@
 var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage'];
 var run = 0;
 var constraints = [];
-var delay = 1000;
+var delay = 500;
 var job = false;
 var i = 0;
+var bot = 0;
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -644,7 +645,7 @@ function parseTemplate(pageid, qid, text, parameter) {
         }
     }
     if (result !== '') {
-        if (job.demo != 1) {
+        if (job.demo != 1 && bot == 0 ) {
             delay = 5000;
         }
         return result;
@@ -830,6 +831,9 @@ $(document).ready(function() {
                     }
                 })
                 .done(function(data) {
+                    if (data.query.userinfo.groups.indexOf('bot') > -1){
+                        bot = 1;
+                    }
                     if ('error' in data) {
                         reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
                     } else {
