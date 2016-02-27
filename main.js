@@ -676,7 +676,7 @@ function proceedOnePage() {
                     format: 'json'
                 })
                 .done(function(data2) {
-                    if (job.parameter !== '') {
+                    if (job.parameter.length != 0) {
                         var value = false;
                         $.each ( job.parameter, function( k, v ){
                             value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
