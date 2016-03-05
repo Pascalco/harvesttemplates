@@ -70,7 +70,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <div class="div-table-row">
                     <div class="div-table-col1">Property</div>
                     <div class="div-table-col2">P
-                        <input type="number" name="property" style="width:50px;" min="1" value=1>
+                        <input type="number" name="property" style="width:50px;" min="1" value=1> <span id="plabel"></span>
                     </div>
                 </div>
                 <div class="div-table-row">

@@ -761,13 +761,17 @@ function getPages() {
 }
 
 function showAdditionalFields(){
+    var p = 'P' + $('input[name="property"]').val()
     if ($('input[name="property"]').val() != ''){
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
             action: 'wbgetentities',
-            ids: 'P' + $('input[name="property"]').val(),
+            ids: p,
             format: 'json'
         }, function(data) {
-			var datatype = data.entities['P' + $('input[name="property"]').val()].datatype;
+            if (data.entities[p].missing !== undefined){
+                return 0;
+            }
+			var datatype = data.entities[p].datatype;
             if (datatype == 'wikibase-item') {
                 $('#wikisyntax').show();
                 $('#prefix').show();
@@ -775,6 +779,9 @@ function showAdditionalFields(){
                 $('#prefix').show();
             } else if (datatype == 'time') {
                 $('.timeparameters').show();
+            }
+            if (data.entities[p].labels['en'] !== undefined){
+                $('#plabel').text(data.entities[p].labels['en'].value);
             }
         });
     }
