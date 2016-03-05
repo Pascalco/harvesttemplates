@@ -8,19 +8,35 @@
  * CC0 Public Domain Dedication.
 **/
 
-header('Content-Type: application/json');
+header( 'Content-Type: application/json' );
 ini_set( 'memory_limit', '4G' );
 ini_set( 'max_execution_time', 0);
 
-function getPagesWithTemplate( $template, $category, $namespace){
+function getSubcats( &$cats, $root, $depth ){
+    $c = array();
+    foreach ( $root as $r ){
+        if ( isset ( $cats[$r] ) ) continue;
+        $cats[] = $r;
+        $c[] = $r;
+    }
+    if ( $depth == 0) return;
+    if ( count( $c ) == 0) return;
+    $result = mysql_query( 'SELECT DISTINCT page_title FROM page, categorylinks WHERE page_id=cl_from AND cl_to IN ("'.implode('","', $c).'") AND cl_type="subcat"');
+    $res = array();
+    while( $row = mysql_fetch_assoc( $result ) ){
+        $res[] = $row['page_title'];
+    }
+    getSubcats( $cats, $res, $depth - 1 );
+}
+
+function getPagesWithTemplate( $template, $cats, $namespace){
     $ret = array();
     $ret2 = array();
     $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
-    if ( empty( $category )){
+    if ( count( $cats ) == 0){
         $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY pp_value DESC' );
     } else {
-        $category = trim( str_replace( ' ', '_', $category ) );
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to = "'.$category.'")  ORDER BY pp_value DESC');
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to IN ("'.implode('","', $cats).'") )  ORDER BY pp_value DESC');
     }
     while ( $row = mysql_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
@@ -73,7 +89,14 @@ if ( empty( $_GET['dbname'] ) or empty( $_GET['template'] ) or empty( $_GET['p']
 }
 
 $conn = openDB( $_GET['dbname'] );
-$r = getPagesWithTemplate( $_GET['template'], $_GET['category'], $_GET['namespace'] );
+$cats = array();
+if ( !empty( $_GET['category'] ) ){
+    $depth = (!empty( $_GET['depth'] ) ? $_GET['depth'] : 0);
+    $root = array( trim( str_replace( ' ', '_', $_GET['category'] ) ) );
+    getSubcats( $cats, $root, $depth );
+}
+$r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
+
 mysql_close( $conn );
 
 

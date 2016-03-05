@@ -63,6 +63,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                     <div class="div-table-col1">Category</div>
                     <div class="div-table-col2">
                         <input type="text" name="category" value="">
+                        Depth <input type="number" name="depth" value="0" min="0" max="10">
                     </div>
                 </div>
                 <h3>Import data</h3>

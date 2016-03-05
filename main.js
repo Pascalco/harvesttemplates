@@ -724,7 +724,8 @@ function getPages() {
             template: job.template,
             category: job.category,
             namespace: job.namespace,
-            p: job.property
+            p: job.property,
+            depth: job.depth,
         })
         .done(function(pageids) {
             reportStatus('loading....');
