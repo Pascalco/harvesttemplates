@@ -299,7 +299,7 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     else if (co.type == 'Unique value') {
         if (co.values.indexOf(value) != -1) {
-            report(pageid, 'error', 'Constraint violation: Unique value', qid);
+            report(pageid, 'error', 'Constraint violation: Unique value <i>' + value + '</i>', qid);
             return false;
         }
         if (job.demo != 1) {
@@ -316,7 +316,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[qid].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Type', qid);
+                report(pageid, 'error', 'Constraint violation: Type <i>' + value + '</i>', qid);
                 return false;
             }
             for (var m in data.entities[qid].claims[rel]) {
@@ -328,7 +328,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Type', qid);
+            report(pageid, 'error', 'Constraint violation: Type <i>' + value + '</i>', qid);
             return false;
         });
     }
@@ -340,7 +340,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[value].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Value type', qid);
+                report(pageid, 'error', 'Constraint violation: Value type <i>' + value + '</i>', qid);
                 return false;
             }
             for (var m in data.entities[value].claims[rel]) {
@@ -352,13 +352,13 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Value type', qid);
+            report(pageid, 'error', 'Constraint violation: Value type <i>' + value + '</i>', qid);
             return false;
         });
     }
     else if (co.type == 'One of'){
         if (co.values.indexOf(value) == -1) {
-            report(pageid, 'error', 'Constraint violation: One of', qid);
+            report(pageid, 'error', 'Constraint violation: One of <i>' + value +'</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ii+1);
