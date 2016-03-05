@@ -174,7 +174,6 @@ function getLanguage(siteid, project) {
 }
 
 function getDbname(siteid, project) {
-    var qid = 0;
     if (project == 'wikipedia') {
         return siteid + 'wiki';
     } else if (siteid == 'commons' && project == 'wikimedia') {
@@ -193,6 +192,7 @@ function getDbname(siteid, project) {
 }
 
 function getWpEditionId(dbname) {
+    var qid = 0;
     $.ajax({
         type: 'GET',
         url: 'wpeditionids.json',
