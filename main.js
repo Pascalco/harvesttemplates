@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
  */
-var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage'];
+var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage', 'wikiversity'];
 var run = 0;
 var constraints = [];
 var delay = 500;
