@@ -119,6 +119,20 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                         <input type="number" name="limityear" style="width:60px" min="1" value="1926">
                     </div>
                 </div>
+                <div class="div-table-row quantityparameters" style="display:none;">
+                    <div class="div-table-col1">Unit</div>
+                    <div class="div-table-col2">
+                        <select name="unit" size="1">
+                        </select>
+                    </div>
+                    <div class="div-table-col1">Decimal mark</div>
+                    <div class="div-table-col2">
+                        <select name="decimalmark" size="1">
+                            <option>.</option>
+                            <option>,</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="div-table-row">
                     <div class="div-table-col1"></div>
                     <div class="div-table-col2">

@@ -82,7 +82,7 @@ $text = str_replace(array('|classes','| classes'),'|class',$text);
 
 $con = array();
 
-$constraints = array('Format' => array('pattern'),'Unique value'=> array(), 'Value type' => array('class','relation'), 'Type' => array('class','relation'), 'One of' => array('values'), 'Commons link' => array('namespace'), 'Conflicts with' => array('list'));
+$constraints = array('Format' => array('pattern'),'Unique value'=> array(), 'Value type' => array('class','relation'), 'Type' => array('class','relation'), 'One of' => array('values'), 'Commons link' => array('namespace'), 'Conflicts with' => array('list'), 'Range' => array('min','max'));
 
 
 foreach($constraints as $constraint => $mparas){

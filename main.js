@@ -252,7 +252,17 @@ function addValue(pageid, qid, value) {
             date: '+' + value + 'T00:00:00Z',
             precision: precision,
             calendar: job.calendar
-        }
+        };
+    } else if (job.datatype == 'quantity') {
+        claim = {
+            type: 'quantity',
+            q: qid,
+            p: job.property,
+            amount: value,
+            unit: job.unit,
+            upper: value,
+            lower: value
+        };
     } else {
         reportStatus('not supported datatype: ' + job.datatype);
         return false;
@@ -404,6 +414,14 @@ function checkConstraints(pageid, qid, value, ii) {
             checkConstraints(pageid, qid, value, ii+1);
             return true;
         });
+    }
+    else if (co.type == 'Range') {
+        if (value < co.min || value > co.max) {
+            report(pageid, 'error', 'Constraint violation: Range <i>' + value + '</i>', qid);
+            return false;
+        }
+        checkConstraints(pageid, qid, value, ii+1);
+        return true;
     }
 }
 
@@ -600,6 +618,16 @@ function handleValue(pageid, qid, value) {
         } else {
             report(pageid, 'error', 'could not find a date', qid);
         }
+    } else if (job.datatype == 'quantity'){
+        value = value.replace(/(\d)(&nbsp;|\s|')(\d)/g,'$1$3'); //remove thousands separator
+        if (job.decimalmark == '.'){
+            value = value.replace(',',''); //remove thousands separator
+        } else if (job.decimalmark == ','){
+            value = value.replace('.',''); //remove thousands separator
+            value = value.replace(',','.'); //replace decimal mark , by .
+        }
+        value = value.match(/[0-9.]+/);
+        checkConstraints(pageid, qid, value[0], 0);
     }
 }
 
@@ -760,7 +788,37 @@ function getPages() {
         });
 }
 
+function loadUnits(claims){
+    var ids = [];
+    for (var c in claims){
+        if (claims[c].mainsnak.snaktype == 'novalue'){
+            $('select[name="unit"]').append('<option value="1">no unit</option>');
+        } else if (claims[c].mainsnak.snaktype == 'value'){
+            ids.push('Q'+claims[c].mainsnak.datavalue.value['numeric-id']);
+        }
+    }
+    if (ids.length > 0){
+        $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
+            action: 'wbgetentities',
+            ids: ids.join('|'),
+            props: 'labels',
+            languages: 'en',
+            format: 'json'
+        }, function(data) {
+            for (var q in data.entities){
+                if (data.entities[q].labels.en !== undefined){
+                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
+                } else {
+                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+q+'</option>');
+                }
+            }
+        });
+    }
+}
+
 function showAdditionalFields(){
+    $('#getpages').removeAttr('disabled');
+    reportStatus('');
     var p = 'P' + $('input[name="property"]').val()
     if ($('input[name="property"]').val() != ''){
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
@@ -779,6 +837,14 @@ function showAdditionalFields(){
                 $('#prefix').show();
             } else if (datatype == 'time') {
                 $('.timeparameters').show();
+            } else if (datatype == 'quantity') {
+                if (data.entities[p].claims.P2237 !== undefined){
+                    loadUnits(data.entities[p].claims.P2237);
+                    $('.quantityparameters').show();
+                } else {
+                    reportStatus('P2237 on property page missing');
+                    $('#getpages').attr('disabled','disabled');
+                }
             }
             if (data.entities[p].labels['en'] !== undefined){
                 $('#plabel').text(data.entities[p].labels['en'].value);
@@ -791,6 +857,8 @@ function hideAdditionalFields(){
     $('#wikisyntax').hide();
     $('#prefix').hide();
     $('.timeparameters').hide();
+    $('.quantityparameters').hide();
+    $('select[name="unit"]').html('');
 }
 
 function addAlias(){
@@ -898,8 +966,8 @@ $(document).ready(function() {
                                 format: 'json'
                             }, function(data) {
                                 job.datatype = data.entities[job.property].datatype;
-                                // TODO: monolingualtext, quantity, geocoordinate, math
-                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
+                                // TODO: monolingualtext, geocoordinate, math
+                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' || job.datatype == 'quantity') {
                                     reportStatus('loading..');
                                     createConstraints( function() {
                                         reportStatus('loading...');
