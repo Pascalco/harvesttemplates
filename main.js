@@ -967,8 +967,8 @@ $(document).ready(function() {
                                 format: 'json'
                             }, function(data) {
                                 job.datatype = data.entities[job.property].datatype;
-                                // TODO: monolingualtext, geocoordinate, math
-                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' || job.datatype == 'quantity') {
+                                // TODO: monolingualtext, geocoordinate, math, quantity
+                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
                                     reportStatus('loading..');
                                     createConstraints( function() {
                                         reportStatus('loading...');
