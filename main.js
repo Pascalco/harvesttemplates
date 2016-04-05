@@ -908,12 +908,12 @@ $(document).ready(function() {
                     }
                 })
                 .done(function(data) {
-                    if (data.query.userinfo.groups.indexOf('bot') > -1){
-                        bot = 1;
-                    }
                     if ('error' in data) {
                         reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
                     } else {
+                        if (data.query.userinfo.groups.indexOf('bot') > -1){
+                            bot = 1;
+                        }
                         var error = 0;
                         $('#result').html('');
                         $('#addvalues').hide();
