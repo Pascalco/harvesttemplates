@@ -22,6 +22,15 @@ function preg_quote( str ){
     return (str+'').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
 }
 
+function escapeHTML (str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/\'/g, '&#39;');
+}
+
 function prefillForm() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
@@ -73,7 +82,7 @@ function report(pageid, status, value, qid) {
         value = '<a href="//www.wikidata.org/wiki/' + value + '" target="_blank">' + value + '</a>';
     }
     if (status == 'success') {
-        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
+        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + escapeHTML(value) + '</i></span>');
     } else {
         delay = 500;
         $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '</span>');
@@ -301,7 +310,7 @@ function checkConstraints(pageid, qid, value, ii) {
     if (co.type == 'Format') {
         var patt = new RegExp('^(' + co['pattern'] + ')$', co['modifier']);
         if (patt.test(value) == false) {
-            report(pageid, 'error', 'Constraint violation: Format <i>' + value + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Format <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ii+1);
@@ -309,7 +318,7 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     else if (co.type == 'Unique value') {
         if (co.values.indexOf(value) != -1) {
-            report(pageid, 'error', 'Constraint violation: Unique value <i>' + value + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Unique value <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
         if (job.demo != 1) {
@@ -326,7 +335,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[qid].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Type <i>' + value + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Type <i>' + escapeHTML(value) + '</i>', qid);
                 return false;
             }
             for (var m in data.entities[qid].claims[rel]) {
@@ -338,7 +347,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Type <i>' + value + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Type <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         });
     }
@@ -350,7 +359,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[value].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Value type <i>' + value + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Value type <i>' + escapeHTML(value) + '</i>', qid);
                 return false;
             }
             for (var m in data.entities[value].claims[rel]) {
@@ -362,13 +371,13 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Value type <i>' + value + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Value type <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         });
     }
     else if (co.type == 'One of'){
         if (co.values.indexOf(value) == -1) {
-            report(pageid, 'error', 'Constraint violation: One of <i>' + value +'</i>', qid);
+            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) +'</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ii+1);
@@ -381,7 +390,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if ('-1' in data.query.pages) {
-                report(pageid, 'error', 'Constraint violation: Commons link <i>' + value + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Commons link <i>' + escapeHTML(value) + '</i>', qid);
                 return false;
             }
             checkConstraints(pageid, qid, value, ii+1);
@@ -417,7 +426,7 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     else if (co.type == 'Range') {
         if (value < co.min || value > co.max) {
-            report(pageid, 'error', 'Constraint violation: Range <i>' + value + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Range <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ii+1);
