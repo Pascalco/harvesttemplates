@@ -748,7 +748,7 @@ function proceedOnePage() {
 function createCheckboxlist(pageids) {
     namespaces = {0 : '', 1: 'Talk:', 2: 'User:', 3: 'User_talk:', 4: 'Wikipedia:', 5: 'Wikipedia_talk:', 6: 'File:', 7: 'File_talk:', 8: 'MediaWiki:', 9: 'MediaWiki_talk:', 10: 'Template', 11: 'Template_talk:', 12: 'Help:', 13: 'Help_talk:', 14: 'Category:', 15: 'Category_talk:', 100: 'Portal:', 101: 'Portal_talk:', 108: 'Book:', 109: 'Book_talk:', 118: 'Draft:', 119: 'Draft_talk:' }
     for (var j in pageids) {
-        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/'+namespaces[job.namespace] + pageids[j][2] + '" target="_blank">' + pageids[j][2].replace(/_/g, ' ') + '</a></span></div>');
+        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/'+namespaces[job.namespace] + escapeHTML(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
     }
     $('#addvalues').show();
     $('#demo').show();
