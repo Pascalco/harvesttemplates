@@ -71,7 +71,7 @@ function toFile(format) {
     var uri = 'data:application/' + format + ';charset=UTF-8,' + encodeURIComponent(output);
     $(this)
         .attr({
-            'download': 'harvesttemplates.' + format,
+            'download': 'harvesttemplates_' + job.property + '_'+ job.dbname + '.' + format,
             'href': uri,
             'target': '_blank'
         });
