@@ -651,8 +651,7 @@ function parseTemplate(pageid, qid, text, parameter) {
     text = text.replace(new RegExp('{{\\s*' + job.templates, 'i'), '{{' + job.template);
     var txt = text.split('{{' + job.template);
     if (txt.length == 1) {
-        report(pageid, 'error', 'Template not found', qid);
-        return false;
+        return [false,'Template not found'];
     }
     text = txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
@@ -687,9 +686,9 @@ function parseTemplate(pageid, qid, text, parameter) {
         if (job.demo != 1 && bot == 0 ) {
             delay = 5000;
         }
-        return result;
+        return [true,result];
     } else {
-        return false;
+        return [false,'no value'];
     }
 }
 
@@ -720,12 +719,12 @@ function proceedOnePage() {
                         var value = false;
                         $.each ( job.parameter, function( k, v ){
                             value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
-                            return (value == false);
+                            return (value[0] == false);
                         });
-                        if (value !== false){
-                            handleValue(el.attr('id'), el.attr('data-qid'), value);
+                        if (value[0] == true){
+                            handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
                         } else {
-                            report(el.attr('id'), 'error', 'no value', el.attr('data-qid'));
+                            report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
                         }
                     } else {
                         var value = [];
