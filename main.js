@@ -865,6 +865,7 @@ function showAdditionalFields(){
 }
 
 function hideAdditionalFields(){
+    $('#plabel').text('');
     $('#wikisyntax').hide();
     $('#prefix').hide();
     $('.timeparameters').hide();
