@@ -78,15 +78,16 @@ function toFile(format) {
 }
 
 function report(pageid, status, value, qid) {
-    if (status == 'success' && job.datatype == 'wikibase-item') {
-        value = '<a href="//www.wikidata.org/wiki/' + value + '" target="_blank">' + value + '</a>';
-    }
     if (status == 'success') {
-        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + escapeHTML(value) + '</i></span>');
+        if (job.datatype == 'wikibase-item') {
+            value = '<a href="//www.wikidata.org/wiki/' + value + '" target="_blank">' + value + '</a>';
+        } else {
+            value = escapeHTML(value);
+        }
+    	$('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
     } else {
         delay = 500;
         $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '</span>');
-
     }
     $('#' + pageid).parent().addClass(status);
 }
