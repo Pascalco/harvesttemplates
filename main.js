@@ -54,8 +54,8 @@ function toFile(format) {
             tmpArr.push($(this).find('span').eq(1).find('a').eq(0).text());
             var val = data[2].match(/<i>(.*)<\/i>/);
             if (val !== null) {
-                tmpArr.push(val[1]);
-                tmpArr.push(data[2].replace('<i>', '').replace('</i>', ''));
+                tmpArr.push(val[1].replace(/<\/?[ai][^>]*>/g, ''));
+                tmpArr.push(data[2].replace(/<\/?[ai][^>]*>/g, ''));
             } else {
                 tmpArr.push('');
                 tmpArr.push(data[2]);
