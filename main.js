@@ -727,14 +727,17 @@ function proceedOnePage() {
                             report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
                         }
                     } else {
-                        var value = [];
+                        var st = []
+                        var values = [];
                         for (var kk = 1; kk <= 3; kk++) {
-                            value.push(parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]));
+                            var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                            st.push(value[0])
+                            values.push(value[1]);
                         }
-                        if (value[0] !== false){
-                            handleValue(el.attr('id'), el.attr('data-qid'), value);
+                        if (st[0] !== false){
+                            handleValue(el.attr('id'), el.attr('data-qid'), values);
                         } else {
-                            report(el.attr('id'), 'error', 'no value', el.attr('data-qid'));
+                            report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
                         }
                     }
                     proceedOnePage();
