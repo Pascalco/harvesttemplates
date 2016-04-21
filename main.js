@@ -595,17 +595,17 @@ function handleValue(pageid, qid, value) {
         value = decodeURIComponent(value.replace(/_/g, ' '));
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
-        if (typeof value === 'string') {
-            var newvalue = parseDate(value);
-        } else {
-            if (value[1] === '' || value[1] == false){
+        if (typeof value !== 'string') {
+            if (value[1] === '' || value[1] == 'no value' || value[1] === undefined){
                 value[1] = '00';
             }
-            if (value[2] === '' || value[2] == false){
+            if (value[2] === '' || value[2] == 'no value' || value[2] === undefined){
                 value[2] = '00';
             }
-            var newvalue = value[0]+'-'+value[1]+'-'+value[2];
+            value = value[2]+' '+value[1]+' '+value[0];
         }
+        var newvalue = parseDate(value);
+
         if (newvalue !== false) {
             newvalue = newvalue.replace(/-(\d)-/, '-0\$1-');
             newvalue = newvalue.replace(/-(\d)$/, '-0\$1');
@@ -730,9 +730,11 @@ function proceedOnePage() {
                         var st = []
                         var values = [];
                         for (var kk = 1; kk <= 3; kk++) {
-                            var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
-                            st.push(value[0])
-                            values.push(value[1]);
+                            if (job['aparameter'+kk] !== undefined){
+                                var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                                st.push(value[0])
+                                values.push(value[1]);
+                            }
                         }
                         if (st[0] !== false){
                             handleValue(el.attr('id'), el.attr('data-qid'), values);
