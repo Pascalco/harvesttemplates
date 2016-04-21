@@ -59,13 +59,6 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                         <input type="number" name="namespace" style="width:50px;" min="0" value=0>
                     </div>
                 </div>
-                <div class="div-table-row">
-                    <div class="div-table-col1">Category</div>
-                    <div class="div-table-col2">
-                        <input type="text" name="category" value="">
-                        Depth <input type="number" name="depth" value="0" min="0" max="10">
-                    </div>
-                </div>
                 <h3>Import data</h3>
                 <div class="div-table-row">
                     <div class="div-table-col1">Property</div>
@@ -131,6 +124,20 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                             <option>.</option>
                             <option>,</option>
                         </select>
+                    </div>
+                </div>
+                <h3>Filter</h3>
+                <div class="div-table-row">
+                    <div class="div-table-col1">Category</div>
+                    <div class="div-table-col2">
+                        <input type="text" name="category" value="">
+                        Depth <input type="number" name="depth" value="0" min="0" max="10">
+                    </div>
+                </div>
+                <div class="div-table-row">
+                    <div class="div-table-col1">Already set</div>
+                    <div class="div-table-col2">
+                        <input type="checkbox" name="set" value="1" checked>don't load items with the property set
                     </div>
                 </div>
                 <div class="div-table-row">

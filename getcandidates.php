@@ -99,14 +99,15 @@ $r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
 
 mysql_close( $conn );
 
+if ( $_GET['set'] == 'set' ){
+    $single = array();
+    do{
+        $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
+    } while (count($single) % 500000 == 0 && count($single) != 0);
 
-$single = array();
-do{
-    $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
-} while (count($single) % 500000 == 0 && count($single) != 0);
-
-$r[0] = array_diff( $r[0], $single );
-$r[1] = array_intersect_key( $r[1], $r[0] );
+    $r[0] = array_diff( $r[0], $single );
+    $r[1] = array_intersect_key( $r[1], $r[0] );
+}
 
 echo json_encode( array_map( null, array_keys( $r[0] ), array_values( $r[0] ), array_values( $r[1] ) ) );
 ?>

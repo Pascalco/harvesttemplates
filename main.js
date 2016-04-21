@@ -762,7 +762,7 @@ function createCheckboxlist(pageids) {
 }
 
 function getPages() {
-    job.template = job.template.capitalizeFirstLetter().replace(/_/g, ' ')
+    job.template = job.template.capitalizeFirstLetter().replace(/_/g, ' ');
     $.getJSON('getcandidates.php?', {
             dbname: job.dbname,
             template: job.template,
@@ -770,6 +770,7 @@ function getPages() {
             namespace: job.namespace,
             p: job.property,
             depth: job.depth,
+            set: job.set
         })
         .done(function(pageids) {
             reportStatus('loading....');
@@ -977,6 +978,9 @@ $(document).ready(function() {
                             job.lang = getLanguage(job.siteid, job.project);
                             job.dbname = getDbname(job.siteid, job.project);
                             job.wbeditionid = getWpEditionId(job.dbname);
+                            if (job.set === undefined){
+                                job.set = 0;
+                            }
                             $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
                                 action: 'wbgetentities',
                                 ids: job.property,
