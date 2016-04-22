@@ -619,7 +619,7 @@ function handleValue(pageid, qid, value) {
                                 case 'wikiversity':
                                         project = 'wikibooks';
                                         break
-                                case 'voy:
+                                case 'voy':
                                 case 'wikivoyage':
                                         project = 'wikivoyage';
                                         break;
