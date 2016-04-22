@@ -567,11 +567,10 @@ function handleValue(pageid, qid, value) {
             return 0;
         }
 
-        var siteid = job.siteid;
-        var project = job.project;
-        var prefixes = $.merge(allProjects,
-                ['b', 'c', 'd', 'm', 'meta', 'mw', 'n', 'q', 's', 'species', 'v', 'voy', 'w', 'wikt']);
-        var length = prefixes.length;
+        var siteid = job.siteid,
+        	project = job.project,
+        	prefixes = $.merge(allProjects, ['b', 'c', 'd', 'm', 'meta', 'mw', 'n', 'q', 's', 'species', 'v', 'voy', 'w']),
+        	length = prefixes.length;
         for (var i = 0; i < length; i++) {
                 if (res.startsWith(prefixes[i] + ':')) {
                         res = res.slice(prefixes[i].length + 1);
@@ -626,10 +625,6 @@ function handleValue(pageid, qid, value) {
                                 case 'w':
                                 case 'wikipedia':
                                         project = 'wikipedia';
-                                        break;
-                                case 'wikt':
-                                case 'wiktionary':
-                                        project = 'wiktionary';
                                         break;
                         }
                 }
