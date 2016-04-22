@@ -99,7 +99,7 @@ $r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
 
 mysql_close( $conn );
 
-if ( $_GET['set'] == 'set' ){
+if ( $_GET['set'] == '1' ){
     $single = array();
     do{
         $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
