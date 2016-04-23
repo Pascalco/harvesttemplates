@@ -84,7 +84,7 @@ function report(pageid, status, value, qid) {
         } else {
             value = escapeHTML(value);
         }
-    	$('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
+        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
     } else {
         delay = 500;
         $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '</span>');
@@ -568,66 +568,66 @@ function handleValue(pageid, qid, value) {
         }
 
         var siteid = job.siteid,
-        	project = job.project,
-        	prefixes = $.merge(allProjects, ['b', 'c', 'd', 'm', 'meta', 'mw', 'n', 'q', 's', 'species', 'v', 'voy', 'w']),
-        	length = prefixes.length;
+            project = job.project,
+            prefixes = $.merge(allProjects, ['b', 'c', 'd', 'm', 'meta', 'mw', 'n', 'q', 's', 'species', 'v', 'voy', 'w']),
+            length = prefixes.length;
         for (var i = 0; i < length; i++) {
-                if (res.startsWith(prefixes[i] + ':')) {
-                        res = res.slice(prefixes[i].length + 1);
-                        switch (prefixes[i]) {
-                                case 'b':
-                                case 'wikibooks':
-                                        project = 'wikibooks';
-                                        break;
-                                case 'c':
-                                case 'commons':
-                                        siteid = 'commons';
-                                        project = 'wikimedia';
-                                        break;
-                                case 'd':
-                                case 'wikidata':
-                                        siteid = 'www';
-                                        project = 'wikidata';
-                                        break;
-                                case 'm':
-                                case 'meta':
-                                        siteid = 'meta';
-                                        project = 'wikimedia';
-                                        break;
-                                case 'mw':
-                                        siteid = 'www';
-                                        project = 'mediawiki';
-                                        break;
-                                case 'n':
-                                case 'wikinews':
-                                        project = 'wikinews';
-                                        break;
-                                case 'q':
-                                case 'wikiquote':
-                                        project = 'wikiquote';
-                                        break;
-                                case 's':
-                                case 'wikisource':
-                                        project = 'wikisource';
-                                        break;
-                                case 'species':
-                                case 'wikispecies':
-                                        project = 'wikispecies';
-                                        break;
-                                case 'v':
-                                case 'wikiversity':
-                                        project = 'wikibooks';
-                                        break
-                                case 'voy':
-                                case 'wikivoyage':
-                                        project = 'wikivoyage';
-                                        break;
-                                case 'w':
-                                case 'wikipedia':
-                                        project = 'wikipedia';
-                                        break;
-                        }
+            if (res.startsWith(prefixes[i] + ':')) {
+                res = res.slice(prefixes[i].length + 1);
+                switch (prefixes[i]) {
+                    case 'b':
+                    case 'wikibooks':
+                        project = 'wikibooks';
+                        break;
+                    case 'c':
+                    case 'commons':
+                        siteid = 'commons';
+                        project = 'wikimedia';
+                        break;
+                    case 'd':
+                    case 'wikidata':
+                        siteid = 'www';
+                        project = 'wikidata';
+                        break;
+                    case 'm':
+                    case 'meta':
+                        siteid = 'meta';
+                        project = 'wikimedia';
+                        break;
+                    case 'mw':
+                        siteid = 'www';
+                        project = 'mediawiki';
+                        break;
+                    case 'n':
+                    case 'wikinews':
+                        project = 'wikinews';
+                        break;
+                    case 'q':
+                    case 'wikiquote':
+                        project = 'wikiquote';
+                        break;
+                    case 's':
+                    case 'wikisource':
+                        project = 'wikisource';
+                        break;
+                    case 'species':
+                    case 'wikispecies':
+                        project = 'wikispecies';
+                        break;
+                    case 'v':
+                    case 'wikiversity':
+                        project = 'wikibooks';
+                        break
+                    case 'voy':
+                    case 'wikivoyage':
+                        project = 'wikivoyage';
+                        break;
+                    case 'w':
+                    case 'wikipedia':
+                        project = 'wikipedia';
+                        break;
                 }
+            }
         }
 
         $.getJSON('https://' + siteid + '.' + project + '.org/w/api.php?callback=?', {
@@ -638,20 +638,24 @@ function handleValue(pageid, qid, value) {
                 format: 'json'
             })
             .done(function(data) {
-                for (var m in data.query.pages) {
-                    if (m != '-1') {
-                        if ('pageprops' in data.query.pages[m]) {
-                            if ('wikibase_item' in data.query.pages[m].pageprops) {
-                                newvalue = data.query.pages[m].pageprops.wikibase_item;
-                                checkConstraints(pageid, qid, newvalue, 0);
+                if ('interwiki' in data.query) {
+                    report(pageid, 'error', 'no target page found', qid);
+                } else {
+                    for (var m in data.query.pages) {
+                        if (m != '-1') {
+                            if ('pageprops' in data.query.pages[m]) {
+                                if ('wikibase_item' in data.query.pages[m].pageprops) {
+                                    var newvalue = data.query.pages[m].pageprops.wikibase_item;
+                                    checkConstraints(pageid, qid, newvalue, 0);
+                                } else {
+                                    report(pageid, 'error', 'target has no Wikidata item', qid);
+                                }
                             } else {
                                 report(pageid, 'error', 'target has no Wikidata item', qid);
                             }
                         } else {
-                            report(pageid, 'error', 'target has no Wikidata item', qid);
+                            report(pageid, 'error', 'no target page found', qid);
                         }
-                    } else {
-                        report(pageid, 'error', 'no target page found', qid);
                     }
                 }
             });
@@ -910,7 +914,7 @@ function showAdditionalFields(){
             if (data.entities[p].missing !== undefined){
                 return 0;
             }
-			var datatype = data.entities[p].datatype;
+            var datatype = data.entities[p].datatype;
             if (datatype == 'wikibase-item') {
                 $('#wikisyntax').show();
                 $('#prefix').show();
