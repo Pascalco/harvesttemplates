@@ -426,7 +426,7 @@ function checkConstraints(pageid, qid, value, ii) {
         });
     }
     else if (co.type == 'Range') {
-        if (value < co.min || value > co.max) {
+        if (value < parseFloat(co.min) || value > parseFloat(co.max)) {
             report(pageid, 'error', 'Constraint violation: Range <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
