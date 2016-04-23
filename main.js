@@ -574,58 +574,58 @@ function handleValue(pageid, qid, value) {
         for (var i = 0; i < length; i++) {
             if (res.startsWith(prefixes[i] + ':')) {
                 res = res.slice(prefixes[i].length + 1);
-            switch (prefixes[i]) {
-                case 'b':
-                case 'wikibooks':
-                    project = 'wikibooks';
-                    break;
-                case 'c':
-                case 'commons':
-                    siteid = 'commons';
-                    project = 'wikimedia';
-                    break;
-                case 'd':
-                case 'wikidata':
-                    siteid = 'www';
-                    project = 'wikidata';
-                    break;
-                case 'm':
-                case 'meta':
-                    siteid = 'meta';
-                    project = 'wikimedia';
-                    break;
-                case 'mw':
-                    siteid = 'www';
-                    project = 'mediawiki';
-                    break;
-                case 'n':
-                case 'wikinews':
-                    project = 'wikinews';
-                    break;
-                case 'q':
-                case 'wikiquote':
-                    project = 'wikiquote';
-                    break;
-                case 's':
-                case 'wikisource':
-                    project = 'wikisource';
-                    break;
-                case 'species':
-                case 'wikispecies':
-                    project = 'wikispecies';
-                    break;
-                case 'v':
-                case 'wikiversity':
-                    project = 'wikibooks';
-                    break
-                case 'voy':
-                case 'wikivoyage':
-                    project = 'wikivoyage';
-                    break;
-                case 'w':
-                case 'wikipedia':
-                    project = 'wikipedia';
-                    break;
+                switch (prefixes[i]) {
+                    case 'b':
+                    case 'wikibooks':
+                        project = 'wikibooks';
+                        break;
+                    case 'c':
+                    case 'commons':
+                        siteid = 'commons';
+                        project = 'wikimedia';
+                        break;
+                    case 'd':
+                    case 'wikidata':
+                        siteid = 'www';
+                        project = 'wikidata';
+                        break;
+                    case 'm':
+                    case 'meta':
+                        siteid = 'meta';
+                        project = 'wikimedia';
+                        break;
+                    case 'mw':
+                        siteid = 'www';
+                        project = 'mediawiki';
+                        break;
+                    case 'n':
+                    case 'wikinews':
+                        project = 'wikinews';
+                        break;
+                    case 'q':
+                    case 'wikiquote':
+                        project = 'wikiquote';
+                        break;
+                    case 's':
+                    case 'wikisource':
+                        project = 'wikisource';
+                        break;
+                    case 'species':
+                    case 'wikispecies':
+                        project = 'wikispecies';
+                        break;
+                    case 'v':
+                    case 'wikiversity':
+                        project = 'wikibooks';
+                        break
+                    case 'voy':
+                    case 'wikivoyage':
+                        project = 'wikivoyage';
+                        break;
+                    case 'w':
+                    case 'wikipedia':
+                        project = 'wikipedia';
+                        break;
                 }
             }
         }
