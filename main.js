@@ -704,8 +704,16 @@ function handleValue(pageid, qid, value) {
             value = value.replace('.',''); //remove thousands separator
             value = value.replace(',','.'); //replace decimal mark , by .
         }
-        value = value.match(/[0-9.]+/);
-        checkConstraints(pageid, qid, value[0], 0);
+        var patt = /^[0-9.]+$/;
+        if (patt.test(value)){
+            if (value.indexOf('.') > -1){
+                report(pageid, 'error', 'floating point numbers are not supported', qid);
+            } else {
+                checkConstraints(pageid, qid, value, 0);
+            }
+        } else {
+            report(pageid, 'error', 'unclear value', qid);
+        }
     }
 }
 
@@ -1055,8 +1063,8 @@ $(document).ready(function() {
                                 format: 'json'
                             }, function(data) {
                                 job.datatype = data.entities[job.property].datatype;
-                                // TODO: monolingualtext, geocoordinate, math, quantity
-                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time') {
+                                // TODO: monolingualtext, geocoordinate, math
+                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' || job.datatype == 'quantity') {
                                     reportStatus('loading..');
                                     createConstraints( function() {
                                         reportStatus('loading...');
