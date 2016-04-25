@@ -336,7 +336,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[qid].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Type <i>' + escapeHTML(value) + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Type <i>undefined</i>', qid);
                 return false;
             }
             for (var m in data.entities[qid].claims[rel]) {
@@ -348,7 +348,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Type <i>' + escapeHTML(value) + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Type <i>Q' + data.entities[qid].claims[rel][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
             return false;
         });
     }
@@ -360,7 +360,7 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if (data.entities[value].claims[rel] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Value type <i>' + escapeHTML(value) + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Value type <i>undefined</i>', qid);
                 return false;
             }
             for (var m in data.entities[value].claims[rel]) {
@@ -372,7 +372,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Value type <i>' + escapeHTML(value) + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Value type <i>Q' + data.entities[value].claims[rel][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
             return false;
         });
     }
