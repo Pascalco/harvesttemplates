@@ -1018,9 +1018,9 @@ $(document).ready(function() {
                         var fields = $( 'form' ).serializeArray();
                         $.each( fields, function( i, field ) {
                             if (field.name != 'parameter'){
-                                job[field.name] = field.value;
+                                job[field.name] = field.value.trim();
                             } else if (field.value != ''){
-                                job[field.name].push(field.value);
+                                job[field.name].push(field.value.trim());
                             }
                         });
                         job.property = 'P'+job.property
