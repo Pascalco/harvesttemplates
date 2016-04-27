@@ -791,32 +791,36 @@ function proceedOnePage() {
                     format: 'json'
                 })
                 .done(function(data2) {
-                    if (job.parameter.length != 0) {
-                        var value = false;
-                        $.each ( job.parameter, function( k, v ){
-                            value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
-                            return (value[0] == false);
-                        });
-                        if (value[0] == true){
-                            handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
+                    if ('revisions' in data2.query.pages[el.attr('id')]){
+                        if (job.parameter.length != 0) {
+                            var value = false;
+                            $.each ( job.parameter, function( k, v ){
+                                value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
+                                return (value[0] == false);
+                            });
+                            if (value[0] == true){
+                                handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
+                            } else {
+                                report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
+                            }
                         } else {
-                            report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
-                        }
-                    } else {
-                        var st = []
-                        var values = [];
-                        for (var kk = 1; kk <= 3; kk++) {
-                            if (job['aparameter'+kk] !== undefined){
-                                var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
-                                st.push(value[0])
-                                values.push(value[1]);
+                            var st = []
+                            var values = [];
+                            for (var kk = 1; kk <= 3; kk++) {
+                                if (job['aparameter'+kk] !== undefined){
+                                    var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                                    st.push(value[0])
+                                    values.push(value[1]);
+                                }
+                            }
+                            if (st[0] !== false){
+                                handleValue(el.attr('id'), el.attr('data-qid'), values);
+                            } else {
+                                report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
                             }
                         }
-                        if (st[0] !== false){
-                            handleValue(el.attr('id'), el.attr('data-qid'), values);
-                        } else {
-                            report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
-                        }
+                    } else {
+                        report(el.attr('id'), 'error', 'page deleted', el.attr('data-qid'));
                     }
                     proceedOnePage();
                 });
