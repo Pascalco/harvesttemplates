@@ -680,7 +680,9 @@ function handleValue(pageid, qid, value) {
             if (isNaN(parseInt(job.limityear))) {
                 job.limityear = 1926;
             }
-            if (job.rel == '=>') {
+            if (newvalue.substring(5, 10) == '00-00') {
+                checkConstraints(pageid, qid, newvalue, 0);
+            } else if (job.rel == '=>') {
                 if (parseInt(newvalue.substring(0, 4)) >= job.limityear) {
                     checkConstraints(pageid, qid, newvalue, 0);
                 } else {
