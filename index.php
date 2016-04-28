@@ -33,7 +33,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
 
     <div id="main">
 
-        <div id="inst">Copy data from a Wikimedia template to Wikidata.<br />The tool parses templates and adds the found values to the item of the page in which the template is located in.<br />
+        <div id="inst">Copy data from a Wikimedia template to Wikidata.<br />The tool parses templates and adds the found values to the item of the page the template is located in.<br />
             <ul>
                 <li><i>Wiki:</i> language and project name of the wiki you're working on</li>
                 <li><i>Namespace:</i> default value 0 corresponds to the article namespace in Wikipedia</li>
@@ -41,12 +41,13 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <li><i>Template:</i> source template</li>
                 <li><i>Parameter:</i> parameter name in the template. Use numbers for nameless parameters</li>
                 <li><i>Category:</i> non-mandatory option to filter pages on wiki</li>
-                <li><i>Already set:</i> deactivate this option if you encounter performance issues
+                <li><i>Already set:</i> deactivate this option if you encounter performance issues</li>
             </ul>
             By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata. Alternatively, with <i>demo</i> only parsing is done without any edit action.<br />
             <br /><b><i>News</i></b>
             <ul>
                 <li>Partial support for quantity datatype</li>
+                <li>Handling interproject prefixes (e.g. "w:" for Wikipedia)</li>
             </ul>
         </div>
 
