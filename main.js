@@ -627,6 +627,7 @@ function handleValue(pageid, qid, value) {
                         project = 'wikipedia';
                         break;
                 }
+                break;
             }
         }
 
