@@ -7,6 +7,7 @@
  * CC0 Public Domain Dedication.
  */
 var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage', 'wikiversity'];
+var namespaces = {0 : '', 1: 'Talk', 2: 'User', 3: 'User_talk', 4: 'Wikipedia', 5: 'Wikipedia_talk', 6: 'File', 7: 'File_talk', 8: 'MediaWiki', 9: 'MediaWiki_talk', 10: 'Template', 11: 'Template_talk', 12: 'Help', 13: 'Help_talk', 14: 'Category', 15: 'Category_talk', 100: 'Portal', 101: 'Portal_talk', 108: 'Book', 109: 'Book_talk', 118: 'Draft', 119: 'Draft_talk' }
 var run = 0;
 var constraints = [];
 var delay = 500;
@@ -391,8 +392,14 @@ function checkConstraints(pageid, qid, value, ii) {
             format: 'json'
         }).done(function(data) {
             if ('-1' in data.query.pages) {
-                report(pageid, 'error', 'Constraint violation: Commons link <i>' + escapeHTML(value) + '</i>', qid);
+                report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
                 return false;
+            }
+            for (var m in data.query.pages){
+                if (namespaces[data.query.pages[m].ns] != co.namespace){
+                    report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
+                    return false;
+                }
             }
             checkConstraints(pageid, qid, value, ii+1);
             return true;
@@ -834,9 +841,8 @@ function proceedOnePage() {
 }
 
 function createCheckboxlist(pageids) {
-    namespaces = {0 : '', 1: 'Talk:', 2: 'User:', 3: 'User_talk:', 4: 'Wikipedia:', 5: 'Wikipedia_talk:', 6: 'File:', 7: 'File_talk:', 8: 'MediaWiki:', 9: 'MediaWiki_talk:', 10: 'Template', 11: 'Template_talk:', 12: 'Help:', 13: 'Help_talk:', 14: 'Category:', 15: 'Category_talk:', 100: 'Portal:', 101: 'Portal_talk:', 108: 'Book:', 109: 'Book_talk:', 118: 'Draft:', 119: 'Draft_talk:' }
     for (var j in pageids) {
-        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/'+namespaces[job.namespace] + escapeHTML(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
+        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/'+namespaces[job.namespace] + ':' + escapeHTML(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
     }
     $('#addvalues').show();
     $('#demo').show();
