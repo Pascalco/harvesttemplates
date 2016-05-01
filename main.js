@@ -296,7 +296,7 @@ function addValue(pageid, qid, value) {
                 setSource(qid, guid);
                 report(pageid, 'success', value, qid);
             } else {
-                report(pageid, 'error', data, qid);
+                report(pageid, 'error', escapeHTML(data), qid);
             }
         });
     }
