@@ -734,12 +734,12 @@ function parseTemplate(pageid, qid, text, parameter) {
     text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
     text = text.replace(/<ref([^>]+)>/g, ''); //remove reference tags
     text = text.replace(/\s\s+/g, ' '); //remove multiple spaces
-    text = text.replace(new RegExp('{{\\s*' + job.templates, 'i'), '{{' + job.template);
-    var txt = text.split('{{' + job.template);
+    text = text.replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
+    var txt = text.split('{{' + job.template + '|');
     if (txt.length == 1) {
         return [false,'Template not found'];
     }
-    text = txt[1];
+    text = '|'+txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
     while (true) {
         if (patt.test(text)) {
