@@ -112,7 +112,6 @@ function stopJob() {
         i = 0;
     }
     $('input[name="pagelist"]').attr('disabled', false);
-
 }
 
 function addMissingConstraintData( ii, callback ){
@@ -121,7 +120,7 @@ function addMissingConstraintData( ii, callback ){
         return 1;
     }
     if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
-        var cl = 'wd:' + constraints[ii]['class'].join(' wd:');
+        var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
                 query: 'PREFIX wd: <http://www.wikidata.org/entity/> PREFIX wdt: <http://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
@@ -152,7 +151,7 @@ function addMissingConstraintData( ii, callback ){
 
 
 function createConstraints( callback ) {
-    $.getJSON('getconstraints.php',{
+    $.getJSON('getconstraints.php', {
         p: job.property
     }).done(function(data) {
         constraints = data;
@@ -173,10 +172,10 @@ function getLanguage(siteid, project) {
     if (project == 'mediawiki' || project == 'wikidata' || project == 'wikimedia') {
         return 'en';
     }
-    langExceptions = {
+    var langExceptions = {
+        als: 'gsw',
         no: 'nb',
-        simple: 'en',
-        als: 'gsw'
+        simple: 'en'
     }
     if (siteid in langExceptions) {
         return langExceptions[siteid];
@@ -234,47 +233,57 @@ function setSource(qid, guid) {
 }
 
 function addValue(pageid, qid, value) {
-    if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'commonsMedia' || job.datatype == 'url') {
-        claim = {
-            type: 'string',
-            q: qid,
-            p: job.property,
-            text: value
-        };
-    } else if (job.datatype == 'wikibase-item') {
-        claim = {
-            type: 'wikibase-entityid',
-            q: qid,
-            p: job.property,
-            numericid: value.substring(1)
-        };
-    } else if (job.datatype == 'time') {
-        var precision = 9;
-        if (value.substring(5, 7) != '00') {
-            precision = 10;
-            if (value.substring(8, 10) != '00') {
-                precision = 11;
+    var claim;
+    switch (job.datatype) {
+        case 'commonsMedia':
+        case 'external-id':
+        case 'string':
+        case 'url':
+            claim = {
+                type: 'string',
+                q: qid,
+                p: job.property,
+                text: value
+            };
+            break;
+        case 'wikibase-item':
+            claim = {
+                type: 'wikibase-entityid',
+                q: qid,
+                p: job.property,
+                numericid: value.substring(1)
+            };
+            break;
+        case 'time':
+            var precision = 9;
+            if (value.substring(5, 7) != '00') {
+                precision = 10;
+                if (value.substring(8, 10) != '00') {
+                    precision = 11;
+                }
             }
-        }
-        claim = {
-            type: 'time',
-            q: qid,
-            p: job.property,
-            date: '+' + value + 'T00:00:00Z',
-            precision: precision,
-            calendar: job.calendar
-        };
-    } else if (job.datatype == 'quantity') {
-        claim = {
-            type: 'quantity',
-            q: qid,
-            p: job.property,
-            amount: value,
-            unit: job.unit,
-            upper: value,
-            lower: value
-        };
-    } else {
+            claim = {
+                type: 'time',
+                q: qid,
+                p: job.property,
+                date: '+' + value + 'T00:00:00Z',
+                precision: precision,
+                calendar: job.calendar
+            };
+            break;
+        case 'quantity':
+            claim = {
+                type: 'quantity',
+                q: qid,
+                p: job.property,
+                amount: value,
+                unit: job.unit,
+                upper: value,
+                lower: value
+            };
+            break;
+    }
+    if (!claim) {
         reportStatus('not supported datatype: ' + job.datatype);
         return false;
     }
@@ -452,7 +461,7 @@ function parseDate(value) {
     }).done(function(monthnames) {
         value = value.replace(/–|-|—/g, '-');
         value = value.replace(/\[\[|\]\]/g, '');
-        digits = {
+        var digits = {
             '०': 0,
             '१': 1,
             '२': 2,
@@ -464,7 +473,7 @@ function parseDate(value) {
             '८': 8,
             '९': 9
         }
-        roman = {
+        var roman = {
             1: 'I',
             2: 'II',
             3: 'III',
@@ -639,34 +648,34 @@ function handleValue(pageid, qid, value) {
         }
 
         $.getJSON('https://' + siteid + '.' + project + '.org/w/api.php?callback=?', {
-                action: 'query',
-                prop: 'pageprops',
-                titles: res,
-                redirects: 1,
-                format: 'json'
-            })
-            .done(function(data) {
-                if ('interwiki' in data.query) {
-                    report(pageid, 'error', 'no target page found', qid);
-                } else {
-                    for (var m in data.query.pages) {
-                        if (m != '-1') {
-                            if ('pageprops' in data.query.pages[m]) {
-                                if ('wikibase_item' in data.query.pages[m].pageprops) {
-                                    var newvalue = data.query.pages[m].pageprops.wikibase_item;
-                                    checkConstraints(pageid, qid, newvalue, 0);
-                                } else {
-                                    report(pageid, 'error', 'target has no Wikidata item', qid);
-                                }
+            action: 'query',
+            prop: 'pageprops',
+            titles: res,
+            redirects: 1,
+            format: 'json'
+        })
+        .done(function(data) {
+            if ('interwiki' in data.query) {
+                report(pageid, 'error', 'target not found <i>' + escapeHTML(data.query.interwiki[0].title) + '</i>', qid);
+            } else {
+                for (var m in data.query.pages) {
+                    if (m != '-1') {
+                        if ('pageprops' in data.query.pages[m]) {
+                            if ('wikibase_item' in data.query.pages[m].pageprops) {
+                                var newvalue = data.query.pages[m].pageprops.wikibase_item;
+                                checkConstraints(pageid, qid, newvalue, 0);
                             } else {
                                 report(pageid, 'error', 'target has no Wikidata item', qid);
                             }
                         } else {
-                            report(pageid, 'error', 'no target page found', qid);
+                            report(pageid, 'error', 'target has no Wikidata item', qid);
                         }
+                    } else {
+                        report(pageid, 'error', 'no target page found', qid);
                     }
                 }
-            });
+            }
+        });
     } else if (job.datatype == 'commonsMedia') {
         value = decodeURIComponent(value.replace(/_/g, ' '));
         checkConstraints(pageid, qid, value, 0);
@@ -678,10 +687,10 @@ function handleValue(pageid, qid, value) {
             if (value[2] === '' || value[2] == 'no value' || value[2] === undefined){
                 value[2] = '00';
             }
-            value = value[2]+' '+value[1]+' '+value[0];
+            value = value[2] + ' ' + value[1] + ' ' + value[0];
         }
-        var newvalue = parseDate(value);
 
+        var newvalue = parseDate(value);
         if (newvalue !== false) {
             newvalue = newvalue.replace(/-(\d)-/, '-0\$1-');
             newvalue = newvalue.replace(/-(\d)$/, '-0\$1');
@@ -794,46 +803,46 @@ function proceedOnePage() {
     if (el.prop('checked')) {
         setTimeout(function() {
             $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
-                    action: 'query',
-                    prop: 'revisions',
-                    pageids: el.attr('id'),
-                    rvprop: 'content',
-                    format: 'json'
-                })
-                .done(function(data2) {
-                    if ('revisions' in data2.query.pages[el.attr('id')]){
-                        if (job.parameter.length != 0) {
-                            var value = false;
-                            $.each ( job.parameter, function( k, v ){
-                                value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
-                                return (value[0] == false);
-                            });
-                            if (value[0] == true){
-                                handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
-                            } else {
-                                report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
-                            }
+                action: 'query',
+                prop: 'revisions',
+                pageids: el.attr('id'),
+                rvprop: 'content',
+                format: 'json'
+            })
+            .done(function(data2) {
+                if ('revisions' in data2.query.pages[el.attr('id')]){
+                    if (job.parameter.length != 0) {
+                        var value = false;
+                        $.each ( job.parameter, function( k, v ){
+                            value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
+                            return (value[0] == false);
+                        });
+                        if (value[0] == true){
+                            handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
                         } else {
-                            var st = []
-                            var values = [];
-                            for (var kk = 1; kk <= 3; kk++) {
-                                if (job['aparameter'+kk] !== undefined){
-                                    var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
-                                    st.push(value[0])
-                                    values.push(value[1]);
-                                }
-                            }
-                            if (st[0] !== false){
-                                handleValue(el.attr('id'), el.attr('data-qid'), values);
-                            } else {
-                                report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
-                            }
+                            report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
                         }
                     } else {
-                        report(el.attr('id'), 'error', 'page deleted', el.attr('data-qid'));
+                        var st = []
+                        var values = [];
+                        for (var kk = 1; kk <= 3; kk++) {
+                            if (job['aparameter'+kk] !== undefined){
+                                var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                                st.push(value[0])
+                                values.push(value[1]);
+                            }
+                        }
+                        if (st[0] !== false){
+                            handleValue(el.attr('id'), el.attr('data-qid'), values);
+                        } else {
+                            report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
+                        }
                     }
-                    proceedOnePage();
-                });
+                } else {
+                    report(el.attr('id'), 'error', 'page deleted', el.attr('data-qid'));
+                }
+                proceedOnePage();
+            });
         }, delay);
     } else {
         proceedOnePage();
@@ -853,45 +862,45 @@ function createCheckboxlist(pageids) {
 function getPages() {
     job.template = job.template.capitalizeFirstLetter().replace(/_/g, ' ');
     $.getJSON('getcandidates.php?', {
-            dbname: job.dbname,
-            template: job.template,
-            category: job.category,
-            namespace: job.namespace,
-            p: job.property,
-            depth: job.depth,
-            set: job.set
+        dbname: job.dbname,
+        template: job.template,
+        category: job.category,
+        namespace: job.namespace,
+        p: job.property,
+        depth: job.depth,
+        set: job.set
+    })
+    .done(function(pageids) {
+        reportStatus('loading....');
+        $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
+            action: 'query',
+            prop: 'redirects',
+            titles: 'Template:' + job.template,
+            rdnamespace: 10,
+            format: 'json'
         })
-        .done(function(pageids) {
-            reportStatus('loading....');
-            $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
-                    action: 'query',
-                    prop: 'redirects',
-                    titles: 'Template:' + job.template,
-                    rdnamespace: 10,
-                    format: 'json'
-                })
-                .done(function(data) {
-                    job.templates = '(' + preg_quote(job.template) + '|' + preg_quote(job.template).replace(/ /g, '_');
-                    for (var m in data.query.pages) {
-                        if ('redirects' in data.query.pages[m]) {
-                            for (var red in data.query.pages[m].redirects) {
-                                var title = data.query.pages[m].redirects[red].title.split(':', 2);
-                                job.templates += '|' + preg_quote(title[1]) + '|' + preg_quote(title[1]).replace(/ /g, '_');
-                            }
-                        }
+        .done(function(data) {
+            job.templates = '(' + preg_quote(job.template) + '|' + preg_quote(job.template).replace(/ /g, '_');
+            for (var m in data.query.pages) {
+                if ('redirects' in data.query.pages[m]) {
+                    for (var red in data.query.pages[m].redirects) {
+                        var title = data.query.pages[m].redirects[red].title.split(':', 2);
+                        job.templates += '|' + preg_quote(title[1]) + '|' + preg_quote(title[1]).replace(/ /g, '_');
                     }
-                    job.templates += ')';
-                    if (pageids.length > 0) {
-                        createCheckboxlist(pageids);
-                    } else {
-                        reportStatus('nothing to do');
-                    }
-                });
-        })
-        .fail(function(jqxhr, textStatus, error) {
-            var err = textStatus + ', ' + error;
-            reportStatus('Request Failed: ' + err);
+                }
+            }
+            job.templates += ')';
+            if (pageids.length > 0) {
+                createCheckboxlist(pageids);
+            } else {
+                reportStatus('nothing to do');
+            }
         });
+    })
+    .fail(function(jqxhr, textStatus, error) {
+        var err = textStatus + ', ' + error;
+        reportStatus('Request Failed: ' + err);
+    });
 }
 
 function loadUnits(claims){
@@ -1007,89 +1016,89 @@ $(document).ready(function() {
         e.preventDefault();
         if ($(this).attr('id') == 'getpages') {
             $.ajax({
-                    type: 'GET',
-                    url: '../oauth.php',
-                    data: {
-                        action: 'userinfo'
+                type: 'GET',
+                url: '../oauth.php',
+                data: {
+                    action: 'userinfo'
+                }
+            })
+            .done(function(data) {
+                if ('error' in data) {
+                    reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
+                } else {
+                    if (data.query.userinfo.groups.indexOf('bot') > -1){
+                        bot = 1;
                     }
-                })
-                .done(function(data) {
-                    if ('error' in data) {
-                        reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
-                    } else {
-                        if (data.query.userinfo.groups.indexOf('bot') > -1){
-                            bot = 1;
-                        }
-                        var error = 0;
-                        $('#result').html('');
-                        $('#addvalues').hide();
-                        $('#demo').hide();
-                        stopJob();
-                        i = 0;
+                    var error = 0;
+                    $('#result').html('');
+                    $('#addvalues').hide();
+                    $('#demo').hide();
+                    stopJob();
+                    i = 0;
 
-                        job = {'parameter' : []};
-                        var fields = $( 'form' ).serializeArray();
-                        $.each( fields, function( i, field ) {
-                            if (field.name != 'parameter'){
-                                job[field.name] = field.value.trim();
-                            } else if (field.value != ''){
-                                job[field.name].push(field.value.trim());
+                    job = {'parameter' : []};
+                    var fields = $( 'form' ).serializeArray();
+                    $.each( fields, function( i, field ) {
+                        if (field.name != 'parameter'){
+                            job[field.name] = field.value.trim();
+                        } else if (field.value != ''){
+                            job[field.name].push(field.value.trim());
+                        }
+                    });
+                    job.property = 'P'+job.property
+
+                    if (job.siteid === '') {
+                        $('input[name="siteid"]').addClass('error');
+                        error = 1;
+                    }
+                    if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
+                        $('input[name="project"]').addClass('error');
+                        error = 1;
+                    }
+                    if (job.template === '') {
+                        $('input[name="template"]').addClass('error');
+                        error = 1;
+                    }
+                    if (job.parameter.length == 0 && job.aparameter1 === '') {
+                        $('input[name="parameter"]').addClass('error');
+                        error = 1;
+                    }
+                    if (job.property == 'P') {
+                        $('input[name="property"]').addClass('error');
+                        error = 1;
+                    }
+                    if (job.namespace === '') {
+                        $('input[name="namespace"]').addClass('error');
+                        error = 1;
+                    }
+                    if (error === 0) {
+                        job.siteid = getSiteid(job.siteid, job.project);
+                        job.lang = getLanguage(job.siteid, job.project);
+                        job.dbname = getDbname(job.siteid, job.project);
+                        job.wbeditionid = getWpEditionId(job.dbname);
+                        if (job.set === undefined){
+                            job.set = 0;
+                        }
+                        $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
+                            action: 'wbgetentities',
+                            ids: job.property,
+                            format: 'json'
+                        }, function(data) {
+                            job.datatype = data.entities[job.property].datatype;
+                            // TODO: monolingualtext, geocoordinate, math
+                            if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item'])) {
+                                reportStatus('loading..');
+                                createConstraints( function() {
+                                    reportStatus('loading...');
+                                    getPages();
+                                });
+                            } else {
+                                reportStatus('datatype ' + job.datatype + ' is not yet supported');
                             }
                         });
-                        job.property = 'P'+job.property
-
-                        if (job.siteid === '') {
-                            $('input[name="siteid"]').addClass('error');
-                            error = 1;
-                        }
-                        if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
-                            $('input[name="project"]').addClass('error');
-                            error = 1;
-                        }
-                        if (job.template === '') {
-                            $('input[name="template"]').addClass('error');
-                            error = 1;
-                        }
-                        if (job.parameter.length == 0 && job.aparameter1 === '') {
-                            $('input[name="parameter"]').addClass('error');
-                            error = 1;
-                        }
-                        if (job.property == 'P') {
-                            $('input[name="property"]').addClass('error');
-                            error = 1;
-                        }
-                        if (job.namespace === '') {
-                            $('input[name="namespace"]').addClass('error');
-                            error = 1;
-                        }
-                        if (error === 0) {
-                            job.siteid = getSiteid(job.siteid, job.project);
-                            job.lang = getLanguage(job.siteid, job.project);
-                            job.dbname = getDbname(job.siteid, job.project);
-                            job.wbeditionid = getWpEditionId(job.dbname);
-                            if (job.set === undefined){
-                                job.set = 0;
-                            }
-                            $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
-                                action: 'wbgetentities',
-                                ids: job.property,
-                                format: 'json'
-                            }, function(data) {
-                                job.datatype = data.entities[job.property].datatype;
-                                // TODO: monolingualtext, geocoordinate, math
-                                if (job.datatype == 'string' || job.datatype == 'external-id' || job.datatype == 'wikibase-item' || job.datatype == 'commonsMedia' || job.datatype == 'url' || job.datatype == 'time' || job.datatype == 'quantity') {
-                                    reportStatus('loading..');
-                                    createConstraints( function() {
-                                        reportStatus('loading...');
-                                        getPages();
-                                    });
-                                } else {
-                                    reportStatus('datatype ' + job.datatype + ' is not yet supported');
-                                }
-                            });
-                        }
                     }
-                });
+                }
+            });
         } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
             if (job.demo == 1) {
                 $("#result").find('div').each(function(index, value) {
