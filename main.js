@@ -557,6 +557,55 @@ function parseDate(value) {
     return date;
 }
 
+function checkForInterwiki(res, url) {
+    $.getJSON(url + '/w/api.php?callback=?', {
+        action: 'query',
+        prop: 'pageprops',
+        titles: res,
+        redirects: 1,
+        format: 'json'
+    })
+    .done(function(data) {
+        if ('interwiki' in data.query) {
+            $.getJSON(url + '/w/api.php?callback=?', {
+                action: 'query',
+                meta: 'siteinfo',
+                siprop: 'interwikimap',
+                sifilteriw: 'local',
+                format: 'json'
+            })
+            .done(function(data2) {
+                var interwikimap = data2.query.interwikimap,
+                    iw = data.query.interwiki[0].iw;
+                for (var i in interwikimap) {
+                    if (interwikimap[i].prefix == iw) {
+                        checkForInterwiki(res.slice(iw.length + 1), interwikimap[i].url.replace('/wiki/$1', ''));
+                        return;
+                    }
+                }
+                report(pageid, 'error', 'no target page found', qid);
+            })
+        } else {
+            for (var m in data.query.pages) {
+                if (m != '-1') {
+                    if ('pageprops' in data.query.pages[m]) {
+                        if ('wikibase_item' in data.query.pages[m].pageprops) {
+                            var newvalue = data.query.pages[m].pageprops.wikibase_item;
+                            checkConstraints(pageid, qid, newvalue, 0);
+                        } else {
+                            report(pageid, 'error', 'target has no Wikidata item', qid);
+                        }
+                    } else {
+                        report(pageid, 'error', 'target has no Wikidata item', qid);
+                    }
+                } else {
+                    report(pageid, 'error', 'no target page found', qid);
+                }
+            }
+        }
+    });
+}
+
 function handleValue(pageid, qid, value) {
     if (job.datatype == 'string' || job.datatype == 'external-id') {
         checkConstraints(pageid, qid, job.prefix + value, 0);
@@ -582,100 +631,7 @@ function handleValue(pageid, qid, value) {
             report(pageid, 'error', 'no target page found', qid);
             return 0;
         }
-
-        var siteid = job.siteid,
-            project = job.project,
-            prefixes = $.merge(allProjects, ['b', 'c', 'd', 'm', 'meta', 'mw', 'n', 'q', 's', 'species', 'v', 'voy', 'w']),
-            length = prefixes.length;
-        for (var i = 0; i < length; i++) {
-            if (res.startsWith(prefixes[i] + ':')) {
-                res = res.slice(prefixes[i].length + 1);
-                switch (prefixes[i]) {
-                    case 'b':
-                    case 'wikibooks':
-                        project = 'wikibooks';
-                        break;
-                    case 'c':
-                    case 'commons':
-                        siteid = 'commons';
-                        project = 'wikimedia';
-                        break;
-                    case 'd':
-                    case 'wikidata':
-                        siteid = 'www';
-                        project = 'wikidata';
-                        break;
-                    case 'm':
-                    case 'meta':
-                        siteid = 'meta';
-                        project = 'wikimedia';
-                        break;
-                    case 'mw':
-                        siteid = 'www';
-                        project = 'mediawiki';
-                        break;
-                    case 'n':
-                    case 'wikinews':
-                        project = 'wikinews';
-                        break;
-                    case 'q':
-                    case 'wikiquote':
-                        project = 'wikiquote';
-                        break;
-                    case 's':
-                    case 'wikisource':
-                        project = 'wikisource';
-                        break;
-                    case 'species':
-                    case 'wikispecies':
-                        project = 'wikispecies';
-                        break;
-                    case 'v':
-                    case 'wikiversity':
-                        project = 'wikibooks';
-                        break
-                    case 'voy':
-                    case 'wikivoyage':
-                        project = 'wikivoyage';
-                        break;
-                    case 'w':
-                    case 'wikipedia':
-                        project = 'wikipedia';
-                        break;
-                }
-                break;
-            }
-        }
-
-        $.getJSON('https://' + siteid + '.' + project + '.org/w/api.php?callback=?', {
-            action: 'query',
-            prop: 'pageprops',
-            titles: res,
-            redirects: 1,
-            format: 'json'
-        })
-        .done(function(data) {
-            if ('interwiki' in data.query) {
-                report(pageid, 'error', 'target not found <i>' + escapeHTML(data.query.interwiki[0].title) + '</i>', qid);
-            } else {
-                for (var m in data.query.pages) {
-                    if (m != '-1') {
-                        if ('pageprops' in data.query.pages[m]) {
-                            if ('wikibase_item' in data.query.pages[m].pageprops) {
-                                var newvalue = data.query.pages[m].pageprops.wikibase_item;
-                                checkConstraints(pageid, qid, newvalue, 0);
-                            } else {
-                                report(pageid, 'error', 'target has no Wikidata item', qid);
-                            }
-                        } else {
-                            report(pageid, 'error', 'target has no Wikidata item', qid);
-                        }
-                    } else {
-                        report(pageid, 'error', 'no target page found', qid);
-                    }
-                }
-            }
-        });
+        checkForInterwiki(res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
         value = decodeURIComponent(value.replace(/_/g, ' '));
         checkConstraints(pageid, qid, value, 0);
