@@ -185,7 +185,7 @@ function getLanguage(siteid, project) {
 
 function getDbname(siteid, project) {
     if (project == 'wikipedia') {
-        return siteid + 'wiki';
+        return siteid.replace('-','_') + 'wiki';
     } else if (siteid == 'commons' && project == 'wikimedia') {
         return 'commonswiki';
     } else if (siteid == 'species' && project == 'wikimedia') {
@@ -197,7 +197,7 @@ function getDbname(siteid, project) {
     } else if (siteid == 'www' && project == 'mediawiki') {
         return 'mediawikiwiki';
     } else {
-        return siteid + project;
+        return siteid.replace('-','_') + project;
     }
 }
 
