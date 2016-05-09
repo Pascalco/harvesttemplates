@@ -557,7 +557,7 @@ function parseDate(value) {
     return date;
 }
 
-function checkForInterwiki(res, url) {
+function checkForInterwiki(pageid, qid, res, url) {
     $.getJSON(url + '/w/api.php?callback=?', {
         action: 'query',
         prop: 'pageprops',
@@ -579,7 +579,7 @@ function checkForInterwiki(res, url) {
                     iw = data.query.interwiki[0].iw;
                 for (var i in interwikimap) {
                     if (interwikimap[i].prefix == iw) {
-                        checkForInterwiki(res.slice(iw.length + 1), interwikimap[i].url.replace('/wiki/$1', ''));
+                        checkForInterwiki(pageid, qid, res.slice(iw.length + 1), interwikimap[i].url.replace('/wiki/$1', ''));
                         return;
                     }
                 }
@@ -631,7 +631,7 @@ function handleValue(pageid, qid, value) {
             report(pageid, 'error', 'no target page found', qid);
             return 0;
         }
-        checkForInterwiki(res, 'https://' + job.siteid + '.' + job.project + '.org');
+        checkForInterwiki(pageid, qid, res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
         value = decodeURIComponent(value.replace(/_/g, ' '));
         checkConstraints(pageid, qid, value, 0);
