@@ -123,11 +123,11 @@ function addMissingConstraintData( ii, callback ){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-                query: 'PREFIX wd: <http://www.wikidata.org/entity/> PREFIX wdt: <http://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
+                query: 'PREFIX wd: <https://www.wikidata.org/entity/> PREFIX wdt: <https://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
                 format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
-                constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
+                constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('https://www.wikidata.org/entity/Q', '')));
             }
             addMissingConstraintData( ii+1, callback );
         });
@@ -135,7 +135,7 @@ function addMissingConstraintData( ii, callback ){
     else if (constraints[ii].type == 'Unique value'){
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
+            query: 'PREFIX wdt: <https://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
@@ -878,9 +878,9 @@ function loadUnits(claims){
         }, function(data) {
             for (var q in data.entities){
                 if (data.entities[q].labels.en !== undefined){
-                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
+                    $('select[name="unit"]').append('<option value="https://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
                 } else {
-                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+q+'</option>');
+                    $('select[name="unit"]').append('<option value="https://www.wikidata.org/entity/'+q+'">'+q+'</option>');
                 }
             }
         });
