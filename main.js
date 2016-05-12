@@ -7,7 +7,7 @@
  * CC0 Public Domain Dedication.
  */
 var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage', 'wikiversity'];
-var namespaces = {0 : '', 1: 'Talk', 2: 'User', 3: 'User_talk', 4: 'Wikipedia', 5: 'Wikipedia_talk', 6: 'File', 7: 'File_talk', 8: 'MediaWiki', 9: 'MediaWiki_talk', 10: 'Template', 11: 'Template_talk', 12: 'Help', 13: 'Help_talk', 14: 'Category', 15: 'Category_talk', 100: 'Portal', 101: 'Portal_talk', 108: 'Book', 109: 'Book_talk', 118: 'Draft', 119: 'Draft_talk' }
+var namespaces = {0 : '', 1: 'Talk', 2: 'User', 3: 'User_talk', 4: 'Wikipedia', 5: 'Wikipedia_talk', 6: 'File', 7: 'File_talk', 8: 'MediaWiki', 9: 'MediaWiki_talk', 10: 'Template', 11: 'Template_talk', 12: 'Help', 13: 'Help_talk', 14: 'Category', 15: 'Category_talk', 100: 'Portal', 101: 'Portal_talk', 108: 'Book', 109: 'Book_talk', 118: 'Draft', 119: 'Draft_talk' };
 var run = 0;
 var constraints = [];
 var delay = 500;
@@ -33,10 +33,9 @@ function escapeHTML (str) {
 }
 
 function prefillForm() {
-    var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         if ($('input[name=' + key + ']') !== undefined) {
-            if (key == 'parameter' && $('input[name=' + key + ']').val() != ''){
+            if (key == 'parameter' && $('input[name=' + key + ']').val() !== ''){
                 addAlias();
             }
             $('input[name=' + key + ']').last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
@@ -176,7 +175,7 @@ function getLanguage(siteid, project) {
         als: 'gsw',
         no: 'nb',
         simple: 'en'
-    }
+    };
     if (siteid in langExceptions) {
         return langExceptions[siteid];
     }
@@ -184,9 +183,7 @@ function getLanguage(siteid, project) {
 }
 
 function getDbname(siteid, project) {
-    if (project == 'wikipedia') {
-        return siteid.replace('-','_') + 'wiki';
-    } else if (siteid == 'commons' && project == 'wikimedia') {
+    if (siteid == 'commons' && project == 'wikimedia') {
         return 'commonswiki';
     } else if (siteid == 'species' && project == 'wikimedia') {
         return 'specieswiki';
@@ -196,8 +193,12 @@ function getDbname(siteid, project) {
         return 'wikidatawiki';
     } else if (siteid == 'www' && project == 'mediawiki') {
         return 'mediawikiwiki';
+    }
+    siteid = siteid.replace('-','_');
+    if (project == 'wikipedia') {
+        return siteid + 'wiki';
     } else {
-        return siteid.replace('-','_') + project;
+        return siteid + project;
     }
 }
 
@@ -422,7 +423,7 @@ function checkConstraints(pageid, qid, value, ii) {
         }).done(function(data) {
             for (var pp in co.list){
                 if (data.entities[qid].claims[pp] !== undefined) {
-                    if (co.list[pp].length == 0){
+                    if (co.list[pp].length === 0){
                         report(pageid, 'error', 'Constraint violation: Conflics with', qid);
                         return false;
                     }
@@ -472,7 +473,7 @@ function parseDate(value) {
             '७': 7,
             '८': 8,
             '९': 9
-        }
+        };
         var roman = {
             1: 'I',
             2: 'II',
@@ -486,10 +487,11 @@ function parseDate(value) {
             10: 'X',
             11: 'XI',
             12: 'XII'
-        }
+        };
+        var r;
         $.each(digits, function(k, v) {
             r = new RegExp(k, 'g');
-            value = value.replace(r, v)
+            value = value.replace(r, v);
         });
         //only year
         r = new RegExp('(\\d{4})');
@@ -714,13 +716,12 @@ function parseTemplate(pageid, qid, text, parameter) {
         }
     }
     txt = text.split('}}');
-    text = txt[0];
-    text = text.replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
-    parts = text.split('|');
+    text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
+    var parts = text.split('|');
     var unnamed = [];
     $.each(parts, function(i, m) {
         if (m.indexOf('=') != '-1') {
-            sp = m.split('=');
+            var sp = m.split('=');
             if (sp[0].toLowerCase().trim() == parameter.toLowerCase()) {
                 result = sp.slice(1).join('=').trim();
             }
@@ -734,7 +735,7 @@ function parseTemplate(pageid, qid, text, parameter) {
         }
     }
     if (result !== '') {
-        if (job.demo != 1 && bot == 0 ) {
+        if (job.demo != 1 && bot == 0) {
             delay = 5000;
         }
         return [true,result];
@@ -754,8 +755,8 @@ function proceedOnePage() {
         return true;
     }
     reportStatus('running (' + i + '/' + $('input[name="pagelist"]').length + ')');
-    el = $('input[name="pagelist"]').eq(i);
-    i += 1;
+    var el = $('input[name="pagelist"]').eq(i);
+    i++;
     if (el.prop('checked')) {
         setTimeout(function() {
             $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
@@ -767,7 +768,7 @@ function proceedOnePage() {
             })
             .done(function(data2) {
                 if ('revisions' in data2.query.pages[el.attr('id')]){
-                    if (job.parameter.length != 0) {
+                    if (job.parameter.length !== 0) {
                         var value = false;
                         $.each ( job.parameter, function( k, v ){
                             value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
@@ -779,12 +780,12 @@ function proceedOnePage() {
                             report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
                         }
                     } else {
-                        var st = []
-                        var values = [];
+                        var st = [],
+                            values = [];
                         for (var kk = 1; kk <= 3; kk++) {
                             if (job['aparameter'+kk] !== undefined){
                                 var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
-                                st.push(value[0])
+                                st.push(value[0]);
                                 values.push(value[1]);
                             }
                         }
@@ -811,7 +812,7 @@ function createCheckboxlist(pageids) {
     }
     $('#addvalues').show();
     $('#demo').show();
-    $('.rightbox').show()
+    $('.rightbox').show();
     reportStatus(pageids.length == 1 ? 'Found one page' : 'Found ' + pageids.length + ' pages');
 }
 
@@ -890,8 +891,8 @@ function loadUnits(claims){
 function showAdditionalFields(){
     $('#getpages').removeAttr('disabled');
     reportStatus('');
-    var p = 'P' + $('input[name="property"]').val()
-    if ($('input[name="property"]').val() != ''){
+    var p = 'P' + $('input[name="property"]').val();
+    if ($('input[name="property"]').val() !== ''){
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
             action: 'wbgetentities',
             ids: p,
@@ -985,7 +986,6 @@ $(document).ready(function() {
                     if (data.query.userinfo.groups.indexOf('bot') > -1){
                         bot = 1;
                     }
-                    var error = 0;
                     $('#result').html('');
                     $('#addvalues').hide();
                     $('#demo').hide();
@@ -997,37 +997,31 @@ $(document).ready(function() {
                     $.each( fields, function( i, field ) {
                         if (field.name != 'parameter'){
                             job[field.name] = field.value.trim();
-                        } else if (field.value != ''){
+                        } else if (field.value !== ''){
                             job[field.name].push(field.value.trim());
                         }
                     });
-                    job.property = 'P'+job.property
+                    job.property = 'P'+job.property;
 
                     if (job.siteid === '') {
                         $('input[name="siteid"]').addClass('error');
-                        error = 1;
                     }
                     if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
                         $('input[name="project"]').addClass('error');
-                        error = 1;
                     }
                     if (job.template === '') {
                         $('input[name="template"]').addClass('error');
-                        error = 1;
                     }
-                    if (job.parameter.length == 0 && job.aparameter1 === '') {
+                    if (job.parameter.length === 0 && job.aparameter1 === '') {
                         $('input[name="parameter"]').addClass('error');
-                        error = 1;
                     }
                     if (job.property == 'P') {
                         $('input[name="property"]').addClass('error');
-                        error = 1;
                     }
                     if (job.namespace === '') {
                         $('input[name="namespace"]').addClass('error');
-                        error = 1;
                     }
-                    if (error === 0) {
+                    if ($('.error').length === 0) {
                         job.siteid = getSiteid(job.siteid, job.project);
                         job.lang = getLanguage(job.siteid, job.project);
                         job.dbname = getDbname(job.siteid, job.project);
