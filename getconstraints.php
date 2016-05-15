@@ -33,6 +33,10 @@ function replaceQPtemplates($text){
     return preg_replace('/{{(Q|P)\|(?:Q|P)?(\d+)}}/','$1$2',$text);
 }
 
+function replaceQlinks($text){
+    return preg_replace('/\[\[(Q\d+)\]\]/','$1',$text);
+}
+
 function replaceNowiki($text){
     $templ = array();
     $fields = explode('<nowiki>',$text);
@@ -75,6 +79,7 @@ foreach( $query->query->pages as $k => $v ){
 }
 
 $text = replaceQPtemplates($text);
+$text = replaceQlinks($text);
 $foo = replaceNowiki($text);
 $text = $foo[0];
 $templ = $foo[1];
