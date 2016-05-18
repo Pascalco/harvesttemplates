@@ -122,7 +122,7 @@ function addMissingConstraintData( ii, callback ){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-                query: 'PREFIX wd: <https://www.wikidata.org/entity/> PREFIX wdt: <https://www.wikidata.org/prop/direct/> SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
+                query: 'SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
                 format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
@@ -134,7 +134,7 @@ function addMissingConstraintData( ii, callback ){
     else if (constraints[ii].type == 'Unique value'){
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'PREFIX wdt: <https://www.wikidata.org/prop/direct/>SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
+            query: 'SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
