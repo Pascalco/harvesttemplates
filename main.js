@@ -126,7 +126,7 @@ function addMissingConstraintData( ii, callback ){
                 format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
-                constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('https://www.wikidata.org/entity/Q', '')));
+                constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
             }
             addMissingConstraintData( ii+1, callback );
         });
