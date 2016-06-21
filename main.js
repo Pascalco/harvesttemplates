@@ -1036,7 +1036,7 @@ $(document).ready(function() {
                         }, function(data) {
                             job.datatype = data.entities[job.property].datatype;
                             // TODO: monolingualtext, geocoordinate, math
-                            if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item'])) {
+                            if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
                                 reportStatus('loading..');
                                 createConstraints( function() {
                                     reportStatus('loading...');
