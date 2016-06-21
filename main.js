@@ -879,9 +879,9 @@ function loadUnits(claims){
         }, function(data) {
             for (var q in data.entities){
                 if (data.entities[q].labels.en !== undefined){
-                    $('select[name="unit"]').append('<option value="https://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
+                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
                 } else {
-                    $('select[name="unit"]').append('<option value="https://www.wikidata.org/entity/'+q+'">'+q+'</option>');
+                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+q+'</option>');
                 }
             }
         });
