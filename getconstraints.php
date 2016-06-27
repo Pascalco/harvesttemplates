@@ -105,7 +105,7 @@ foreach($constraints as $constraint => $mparas){
                 $newconstraint = array('type'=>$constraint);
                 foreach($mparas as $mpara){
                     $value = $res[$mpara];
-                    for ($i=0;$i<count($templ);$i++){
+                    for ($i=count($templ);$i>=0;$i--){
                         $value = str_replace('$$$'.($i+1),$templ[$i],$value);
                     }
                     if ($mpara == 'class' OR $mpara == 'values'){
