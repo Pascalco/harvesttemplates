@@ -129,6 +129,8 @@ function addMissingConstraintData( ii, callback ){
                 constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
             }
             addMissingConstraintData( ii+1, callback );
+        }).fail(function(data) {
+            reportStatus('WQS query expired');
         });
     }
     else if (constraints[ii].type == 'Unique value'){
@@ -141,6 +143,8 @@ function addMissingConstraintData( ii, callback ){
                 constraints[ii].values.push(data.results.bindings[row].value.value);
             }
             addMissingConstraintData( ii+1, callback );
+        }).fail(function(data) {
+            reportStatus('WQS query expired');
         });
     }
     else {
