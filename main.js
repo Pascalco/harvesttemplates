@@ -867,7 +867,7 @@ function getPages() {
 function loadUnits(claims){
     var ids = [];
     for (var c in claims){
-        if (claims[c].mainsnak.snaktype == 'novalue'){
+        if (claims[c].mainsnak.snaktype == 'novalue' || claims[c].mainsnak.datavalue.value['numeric-id'] == 21027105){
             $('select[name="unit"]').append('<option value="1">no unit</option>');
         } else if (claims[c].mainsnak.snaktype == 'value'){
             ids.push('Q'+claims[c].mainsnak.datavalue.value['numeric-id']);
