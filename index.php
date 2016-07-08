@@ -96,7 +96,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <div class="div-table-row" id="wikisyntax" style="display:none;">
                     <div class="div-table-col1"></div>
                     <div class="div-table-col2">
-                        <input type="checkbox" name="wikisyntax" value="wikisyntax">try to match target page even without wikisyntax</div>
+                        <input type="checkbox" name="wikisyntax" value="1">try to match target page even without wikisyntax</div>
                 </div>
                 <div class="div-table-row" id="prefix" style="display:none;">
                     <div class="div-table-col1">Value prefix</div>

@@ -38,7 +38,15 @@ function prefillForm() {
             if (key == 'parameter' && $('input[name=' + key + ']').val() !== ''){
                 addAlias();
             }
-            $('input[name=' + key + ']').last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
+            if ($('input[name=' + key + ']').attr('type') == 'checkbox') {
+                if (value == '1' || value == key){
+                    $('input[name=' + key + ']').prop('checked', true);
+                } else {
+                    $('input[name=' + key + ']').prop('checked', false);
+                }
+            } else {
+                $('input[name=' + key + ']').last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
+            }
         }
     });
 }
@@ -959,6 +967,9 @@ $(document).ready(function() {
     $('.permalink').click(function(e) {
         var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
         var params = $( 'form input:visible' ).serializeArray();
+        $('form input[type=checkbox]:not(:checked)').each(function() {
+            params.push({name: this.name, value: '0' });
+        });
         $.each( params, function( i, field ) {
             url += field.name+'='+field.value+'&';
         });
