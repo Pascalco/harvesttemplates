@@ -34,9 +34,9 @@ function getPagesWithTemplate( $template, $cats, $namespace){
     $ret2 = array();
     $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
     if ( count( $cats ) == 0){
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY pp_value DESC' );
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY page_latest DESC' );
     } else {
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to IN ("'.implode('","', $cats).'") )  ORDER BY pp_value DESC');
+        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to IN ("'.implode('","', $cats).'") )  ORDER BY page_latest DESC');
     }
     while ( $row = mysql_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
