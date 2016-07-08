@@ -843,7 +843,9 @@ function getPages() {
         namespace: job.namespace,
         p: job.property,
         depth: job.depth,
-        set: job.set
+        set: job.set,
+        offset: job.offset,
+        limit: job.limit
     })
     .done(function(pageids) {
         reportStatus('loading....');

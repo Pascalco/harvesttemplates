@@ -109,5 +109,6 @@ if ( $_GET['set'] == '1' ){
     $r[1] = array_intersect_key( $r[1], $r[0] );
 }
 
-echo json_encode( array_map( null, array_keys( $r[0] ), array_values( $r[0] ), array_values( $r[1] ) ) );
+#return an array of arrays (pageid, Qid, page title)
+echo json_encode( array_slice( array_map( null, array_keys( $r[0] ), array_values( $r[0] ), array_values( $r[1] ) ), $_GET['offset'], $_GET['limit'] ) );
 ?>
