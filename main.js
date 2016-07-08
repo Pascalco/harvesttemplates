@@ -505,6 +505,12 @@ function parseDate(value) {
             r = new RegExp(k, 'g');
             value = value.replace(r, v);
         });
+        //Spanish decades
+        r = new RegExp('años (\\d{4})');
+        var res = value.match(r);
+        if (res !== null) {
+            return date;
+        }
         //only year
         r = new RegExp('(\\d{4})');
         var res = value.match(r);
