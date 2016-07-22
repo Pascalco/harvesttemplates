@@ -714,7 +714,8 @@ function handleValue(pageid, qid, value) {
 
 function parseTemplate(pageid, qid, text, parameter) {
     var result = '';
-    text = text.replace(/(\r\n|\n|\r)/gm, ''); //remove linebreaks
+    text = text.replace(/(\n|\r)/gm, ''); //remove linebreaks
+    text = text.replace(/<!--.*?-->/g, ''); //remove comments
     text = text.replace(/<ref([^>]+)\/>/g, ''); //remove self-closing reference tags
     text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
     text = text.replace(/<ref([^>]+)>/g, ''); //remove reference tags
