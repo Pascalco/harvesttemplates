@@ -33,19 +33,20 @@ function escapeHTML (str) {
 }
 
 function prefillForm() {
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        if ($('input[name=' + key + ']') !== undefined) {
-            if (key == 'parameter' && $('input[name=' + key + ']').val() !== ''){
+    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+        $input = $('input[name=' + key + ']');
+        if ($input !== undefined) {
+            if (key == 'parameter' && $input.val() !== ''){
                 addAlias();
             }
-            if ($('input[name=' + key + ']').attr('type') == 'checkbox') {
+            if ($input.attr('type') == 'checkbox') {
                 if (value == '1' || value == key){
-                    $('input[name=' + key + ']').prop('checked', true);
+                    $input.prop('checked', true);
                 } else {
-                    $('input[name=' + key + ']').prop('checked', false);
+                    $input.prop('checked', false);
                 }
             } else {
-                $('input[name=' + key + ']').last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
+                $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
             }
         }
     });
@@ -107,14 +108,16 @@ function reportStatus(status) {
 function stopJob() {
     run = 0;
     if ($('.stop').attr('id') == 'addvalues') {
-        $('#addvalues').val('add values');
-        $('#addvalues').removeClass('stop');
-        $('#addvalues').addClass('run');
+        $('#addvalues')
+            .val('add values')
+            .removeClass('stop')
+            .addClass('run');
         $('#demo').attr('disabled', false);
     } else if ($('.stop').attr('id') == 'demo') {
-        $('#demo').val('demo');
-        $('#demo').removeClass('stop');
-        $('#demo').addClass('run');
+        $('#demo')
+            .val('demo')
+            .removeClass('stop')
+            .addClass('run');
         $('#addvalues').attr('disabled', false);
         i = 0;
     }
@@ -130,8 +133,8 @@ function addMissingConstraintData( ii, callback ){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-                query: 'SELECT ?value WHERE {VALUES ?cl {' + cl + '} ?value wdt:P279* ?cl .}',
-                format: 'json'
+            query: 'SELECT ?value WHERE { VALUES ?cl {' + cl + '} . ?value wdt:P279* ?cl }',
+            format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
                 constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
@@ -144,7 +147,7 @@ function addMissingConstraintData( ii, callback ){
     else if (constraints[ii].type == 'Unique value'){
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'SELECT ?value WHERE {?item wdt:' + job.property + ' ?value .} GROUP BY ?value',
+            query: 'SELECT ?value WHERE { ?item wdt:' + job.property + ' ?value } GROUP BY ?value',
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
@@ -725,7 +728,7 @@ function parseTemplate(pageid, qid, text, parameter) {
     if (txt.length == 1) {
         return [false,'Template not found'];
     }
-    text = '|'+txt[1];
+    text = '|' + txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
     while (true) {
         if (patt.test(text)) {
@@ -757,9 +760,9 @@ function parseTemplate(pageid, qid, text, parameter) {
         if (job.demo != 1 && bot == 0) {
             delay = 5000;
         }
-        return [true,result];
+        return [true, result];
     } else {
-        return [false,'no value'];
+        return [false, 'no value'];
     }
 }
 
@@ -768,13 +771,14 @@ function proceedOnePage() {
         reportStatus('stopped');
         return false;
     }
-    if (i == $('input[name="pagelist"]').length) {
+    var $pagelist = $('input[name="pagelist"]');
+    if (i == $pagelist.length) {
         reportStatus('done');
         stopJob();
         return true;
     }
-    reportStatus('running (' + i + '/' + $('input[name="pagelist"]').length + ')');
-    var el = $('input[name="pagelist"]').eq(i);
+    reportStatus('running (' + i + '/' + $pagelist.length + ')');
+    var el = $pagelist.eq(i);
     i++;
     if (el.prop('checked')) {
         setTimeout(function() {
@@ -790,32 +794,32 @@ function proceedOnePage() {
                     if (job.parameter.length !== 0) {
                         var value = false;
                         $.each ( job.parameter, function( k, v ){
-                            value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
+                            value = parseTemplate(el.attr('id'), el.data('qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
                             return (value[0] == false);
                         });
                         if (value[0] == true){
-                            handleValue(el.attr('id'), el.attr('data-qid'), value[1]);
+                            handleValue(el.attr('id'), el.data('qid'), value[1]);
                         } else {
-                            report(el.attr('id'), 'error', value[1], el.attr('data-qid'));
+                            report(el.attr('id'), 'error', value[1], el.data('qid'));
                         }
                     } else {
                         var st = [],
                             values = [];
                         for (var kk = 1; kk <= 3; kk++) {
                             if (job['aparameter'+kk] !== undefined){
-                                var value = parseTemplate(el.attr('id'), el.attr('data-qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                                var value = parseTemplate(el.attr('id'), el.data('qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
                                 st.push(value[0]);
                                 values.push(value[1]);
                             }
                         }
                         if (st[0] !== false){
-                            handleValue(el.attr('id'), el.attr('data-qid'), values);
+                            handleValue(el.attr('id'), el.data('qid'), values);
                         } else {
-                            report(el.attr('id'), 'error', values[0], el.attr('data-qid'));
+                            report(el.attr('id'), 'error', values[0], el.data('qid'));
                         }
                     }
                 } else {
-                    report(el.attr('id'), 'error', 'page deleted', el.attr('data-qid'));
+                    report(el.attr('id'), 'error', 'page deleted', el.data('qid'));
                 }
                 proceedOnePage();
             });
@@ -912,8 +916,9 @@ function loadUnits(claims){
 function showAdditionalFields(){
     $('#getpages').removeAttr('disabled');
     reportStatus('');
-    var p = 'P' + $('input[name="property"]').val();
-    if ($('input[name="property"]').val() !== ''){
+    var val = $('input[name="property"]').val();
+    if (val !== '') {
+        var p = 'P' + val;
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
             action: 'wbgetentities',
             ids: p,
@@ -1059,7 +1064,7 @@ $(document).ready(function() {
                             format: 'json'
                         }, function(data) {
                             job.datatype = data.entities[job.property].datatype;
-                            // TODO: monolingualtext, geocoordinate, math
+                            // TODO: monolingualtext, geocoordinate (math?)
                             if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
                                 reportStatus('loading..');
                                 createConstraints( function() {
@@ -1089,9 +1094,10 @@ $(document).ready(function() {
             }
             run = 1;
             $('input[name="pagelist"]').attr('disabled', true);
-            $(this).val('stop');
-            $(this).removeClass('run');
-            $(this).addClass('stop');
+            $(this)
+                .val('stop')
+                .removeClass('run')
+                .addClass('stop');
             proceedOnePage();
         } else {
             stopJob();
