@@ -64,7 +64,7 @@ div#main {
     width: 300px;
     padding-top: 2px;
 }
-input{
+input {
     margin: 2px;
 }
 input[type="text"] {
@@ -78,7 +78,7 @@ input[type="text"] {
     -moz-box-sizing: content-box;
     -webkit-box-sizing: content-box;
 }
-input[type="text"].shorter{
+input[type="text"].shorter {
     width: 200px;
 }
 input[type="number"] {
@@ -146,21 +146,18 @@ div.rightbox {
     width: 100%;
     padding: 3px;
     margin: 1px;
+    border: 1px solid transparent;
 }
 #result a {
     color: #000;
 }
-#result .fatalerror {
-    background-color: #CC4444;
-    color: #FFF;
-}
 #result .error {
     background-color: #FFA9A7 !important;
-    border: 1px solid #C0C0C0;
+    border-color: #C0C0C0;
 }
 #result .success {
     background-color: #B0DEB3 !important;
-    border: 1px solid #C0C0C0;
+    border-color: #C0C0C0;
 }
 #result div:nth-child(odd) {
     background-color: #FFF;
