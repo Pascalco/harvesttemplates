@@ -87,18 +87,33 @@ $text = str_replace(array('|classes','| classes'),'|class',$text);
 
 $con = array();
 
-$constraints = array('Format' => array('pattern'),'Unique value'=> array(), 'Value type' => array('class','relation'), 'Type' => array('class','relation'), 'One of' => array('values'), 'Commons link' => array('namespace'), 'Conflicts with' => array('list'), 'Range' => array('min','max'));
-
+$constraints = array(
+    'Qualifier' => array(),
+    'Source only' => array(),
+    'Format' => array('pattern'),
+    'Unique value'=> array(),
+    'Value type' => array('class','relation'),
+    'Type' => array('class','relation'),
+    'One of' => array('values'),
+    'Commons link' => array('namespace'),
+    'Conflicts with' => array('list'),
+    'Range' => array('min','max')
+);
 
 foreach($constraints as $constraint => $mparas){
-    $pat = '/{{Constraint:'.$constraint.'\s*\|([^}]+)}}/';
+    $pat = '/{{Constraint:'.$constraint.'\s*(?:\|([^}]+))?}}/';
     if ( preg_match_all( $pat, $text, $matches, PREG_SET_ORDER ) ){
+        if ( in_array( $constraint ), array( 'Qualifier', 'Source only' ) ) {
+            $con = array( array( 'type' => $constraint ) );
+            break;
+        }
         foreach($matches as $match){
             $ok = 1;
-            $res = parseTemplate($match[1]);
+            $res = isset( $match[1] ) ? parseTemplate($match[1]) : array();
             foreach($mparas as $mpara){
                 if (!array_key_exists($mpara,$res)){
                     $ok = 0;
+                    break;
                 }
             }
             if ($ok == 1){
