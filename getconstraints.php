@@ -89,7 +89,7 @@ $con = array();
 
 $constraints = array(
     'Qualifier' => array(),
-    'Source only' => array(),
+    'Source' => array(),
     'Format' => array('pattern'),
     'Unique value'=> array(),
     'Value type' => array('class','relation'),
