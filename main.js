@@ -129,7 +129,7 @@ function addMissingConstraintData( ii, callback ){
         callback();
         return 1;
     }
-    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source only') {
+    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
         reportStatus('Constraint violation: ' + constraints[ii].type);
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
