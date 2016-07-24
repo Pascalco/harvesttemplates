@@ -103,7 +103,7 @@ $constraints = array(
 foreach($constraints as $constraint => $mparas){
     $pat = '/{{Constraint:'.$constraint.'\s*(?:\|([^}]+))?}}/';
     if ( preg_match_all( $pat, $text, $matches, PREG_SET_ORDER ) ){
-        if ( in_array( $constraint ), array( 'Qualifier', 'Source only' ) ) {
+        if ( in_array( $constraint , array( 'Qualifier', 'Source only' ) ) ) {
             $con = array( array( 'type' => $constraint ) );
             break;
         }
