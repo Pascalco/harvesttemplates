@@ -129,7 +129,9 @@ function addMissingConstraintData( ii, callback ){
         callback();
         return 1;
     }
-    if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
+    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
+        reportStatus('Constraint violation: ' + constraints[ii].type);
+    } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
@@ -169,7 +171,7 @@ function createConstraints( callback ) {
         p: job.property
     }).done(function(data) {
         constraints = data;
-        addMissingConstraintData( 0, callback);
+        addMissingConstraintData( 0, callback );
     });
 }
 
