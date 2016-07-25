@@ -659,7 +659,7 @@ function handleValue(pageid, qid, value) {
         }
         checkForInterwiki(pageid, qid, res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
-        value = decodeURIComponent(value.replace(/_/g, ' '));
+        value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' '));
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
         if (typeof value !== 'string') {
