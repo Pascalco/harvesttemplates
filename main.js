@@ -36,8 +36,9 @@ function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         $input = $('input[name=' + key + ']');
         if ($input !== undefined) {
-            if (key == 'parameter' && $input.val() !== ''){
+            if (key == 'parameter' && $input.last().val() !== ''){
                 addAlias();
+                $input = $('input[name=' + key + ']'); // reload as we have one more field
             }
             if ($input.attr('type') == 'checkbox') {
                 if (value == '1' || value == key){
