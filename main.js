@@ -1004,6 +1004,7 @@ $(document).ready(function() {
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
         if ($(this).attr('id') == 'getpages') {
+            $(this).attr('disabled', true);
             $.ajax({
                 type: 'GET',
                 url: '../oauth.php',
@@ -1080,6 +1081,7 @@ $(document).ready(function() {
                         });
                     }
                 }
+                $(this).attr('disabled', false);
             });
         } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
             if (job.demo == 1) {
