@@ -917,7 +917,7 @@ function loadUnits(claims){
 }
 
 function showAdditionalFields(){
-    $('#getpages').removeAttr('disabled');
+    $('#getpages').attr('disabled', false);
     reportStatus('');
     var val = $('input[name="property"]').val();
     if (val !== '') {
@@ -944,7 +944,7 @@ function showAdditionalFields(){
                     $('.quantityparameters').show();
                 } else {
                     reportStatus('P2237 on property page missing');
-                    $('#getpages').attr('disabled','disabled');
+                    $('#getpages').attr('disabled', true);
                 }
             }
             if (data.entities[p].labels['en'] !== undefined){
@@ -1003,8 +1003,9 @@ $(document).ready(function() {
     });
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
-        if ($(this).attr('id') == 'getpages') {
-            $(this).attr('disabled', true);
+        var $this = $(this);
+        if ($this.attr('id') == 'getpages') {
+            $this.attr('disabled', true);
             $.ajax({
                 type: 'GET',
                 url: '../oauth.php',
@@ -1015,6 +1016,7 @@ $(document).ready(function() {
             .done(function(data) {
                 if ('error' in data) {
                     reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
+                    $this.attr('disabled', false);
                 } else {
                     if (data.query.userinfo.groups.indexOf('bot') > -1){
                         bot = 1;
@@ -1078,19 +1080,21 @@ $(document).ready(function() {
                             } else {
                                 reportStatus('datatype ' + job.datatype + ' is not yet supported');
                             }
+                            $this.attr('disabled', false);
                         });
+                    } else {
+                        $this.attr('disabled', false);
                     }
                 }
-                $(this).attr('disabled', false);
             });
-        } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
+        } else if ($this.val() == 'demo' || $this.val() == 'add values') {
             if (job.demo == 1) {
                 $("#result").find('div').each(function(index, value) {
                     $(this).removeClass();
                     $(this).find('.value').html('');
                 });
             }
-            if ($(this).val() == 'demo') {
+            if ($this.val() == 'demo') {
                 job.demo = 1;
                 $('#addvalues').attr('disabled', true);
             } else {
@@ -1099,7 +1103,7 @@ $(document).ready(function() {
             }
             run = 1;
             $('input[name="pagelist"]').attr('disabled', true);
-            $(this)
+            $this
                 .val('stop')
                 .removeClass('run')
                 .addClass('stop');
