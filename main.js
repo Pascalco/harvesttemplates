@@ -1090,8 +1090,8 @@ $(document).ready(function() {
         } else if ($this.val() == 'demo' || $this.val() == 'add values') {
             if (job.demo == 1) {
                 $("#result").find('div').each(function(index, value) {
-                    $this.removeClass();
-                    $this.find('.value').html('');
+                    $(this).removeClass();
+                    $(this).find('.value').html('');
                 });
             }
             if ($this.val() == 'demo') {
