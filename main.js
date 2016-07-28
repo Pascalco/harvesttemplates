@@ -973,7 +973,7 @@ $(document).ready(function() {
     prefillForm();
     showAdditionalFields();
 
-    $('input').change(function() {
+    $('.error').change(function() {
         $(this).removeClass('error');
     });
     $('input[name="property"]').change(function() {
