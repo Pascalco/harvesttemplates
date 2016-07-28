@@ -1003,7 +1003,7 @@ $(document).ready(function() {
     });
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
-        var $this = $(this)
+        var $this = $(this);
         if ($this.attr('id') == 'getpages') {
             $this.attr('disabled', true);
             $.ajax({
