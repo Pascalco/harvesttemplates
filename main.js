@@ -472,114 +472,107 @@ function checkConstraints(pageid, qid, value, ii) {
 
 function parseDate(value) {
     var date = false;
-    $.ajax({
-        type: 'GET',
-        url: 'monthnames.json',
-        dataType: 'json',
-        async: false
-    }).done(function(monthnames) {
-        value = value.replace(/–|-|—/g, '-');
-        value = value.replace(/\[\[|\]\]/g, '');
-        var digits = {
-            '०': 0,
-            '१': 1,
-            '२': 2,
-            '३': 3,
-            '४': 4,
-            '५': 5,
-            '६': 6,
-            '७': 7,
-            '८': 8,
-            '९': 9
-        };
-        var roman = {
-            1: 'I',
-            2: 'II',
-            3: 'III',
-            4: 'IV',
-            5: 'V',
-            6: 'VI',
-            7: 'VII',
-            8: 'VIII',
-            9: 'IX',
-            10: 'X',
-            11: 'XI',
-            12: 'XII'
-        };
-        var r;
-        $.each(digits, function(k, v) {
-            r = new RegExp(k, 'g');
-            value = value.replace(r, v);
-        });
-        //Spanish decades
-        r = new RegExp('años (\\d{4})');
+    value = value.replace(/–|-|—/g, '-');
+    value = value.replace(/\[\[|\]\]/g, '');
+    var digits = {
+        '०': 0,
+        '१': 1,
+        '२': 2,
+        '३': 3,
+        '४': 4,
+        '५': 5,
+        '६': 6,
+        '७': 7,
+        '८': 8,
+        '९': 9
+    };
+    var roman = {
+        1: 'I',
+        2: 'II',
+        3: 'III',
+        4: 'IV',
+        5: 'V',
+        6: 'VI',
+        7: 'VII',
+        8: 'VIII',
+        9: 'IX',
+        10: 'X',
+        11: 'XI',
+        12: 'XII'
+    };
+    var r;
+    $.each(digits, function(k, v) {
+        r = new RegExp(k, 'g');
+        value = value.replace(r, v);
+    });
+    //Spanish decades
+    r = new RegExp('años (\\d{4})');
+    var res = value.match(r);
+    if (res !== null) {
+        return date;
+    }
+    //only year
+    r = new RegExp('(\\d{4})');
+    var res = value.match(r);
+    if (res !== null) {
+        date = res[1] + '-00-00';
+    }
+    $.each((monthnames[job.lang] || {}), function(name, num) {
+        // month and year
+        r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{4})', 'i');
         var res = value.match(r);
         if (res !== null) {
-            return date;
+            date = res[2] + '-' + num + '-00';
         }
-        //only year
-        r = new RegExp('(\\d{4})');
+        // day, month, year
+        r = new RegExp('(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?(' + name + ')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i');
         var res = value.match(r);
         if (res !== null) {
-            date = res[1] + '-00-00';
+            date = res[5] + '-' + num + '-' + res[1];
         }
-        $.each((monthnames[job.lang] || {}), function(name, num) {
-            // month and year
-            r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{4})', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[2] + '-' + num + '-00';
-            }
-            // day, month, year
-            r = new RegExp('(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?(' + name + ')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[5] + '-' + num + '-' + res[1];
-            }
-            // month, day, year
-            r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{1,2})t?h?\\,? (\\d{4})', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[3] + '-' + num + '-' + res[2];
-            }
-            // year, month, day
-            r = new RegExp('(\\d{4})(e?ko|\\.|,)? (' + name + ')(aren)? (\\d{1,2})(a|ean|an)?', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[1] + '-' + num + '-' + res[5];
-            }
-        });
-        for (var num = 1; num <= 12; num++) {
-            // day, month (number), year
-            r = new RegExp('(\\d{1,2})([. /]+| tháng )(0?' + num + '|' + roman[num] + ')([., /]+| năm )(\\d{4})', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[5] + '-' + num + '-' + res[1];
-            }
-            // year, month (number), day
-            r = new RegExp('(\\d{4})( - |/)(0?' + num + '|' + roman[num] + ')( - |/)(\\d{1,2})', 'i');
-            var res = value.match(r);
-            if (res !== null) {
-                date = res[1] + '-' + num + '-' + res[5];
-            }
-        }
-        // Japanese/Chinese/Korean
-        r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)');
+        // month, day, year
+        r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{1,2})t?h?\\,? (\\d{4})', 'i');
         var res = value.match(r);
         if (res !== null) {
-            date = res[1] + '-00-00';
+            date = res[3] + '-' + num + '-' + res[2];
         }
-        r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)');
+        // year, month, day
+        r = new RegExp('(\\d{4})(e?ko|\\.|,)? (' + name + ')(aren)? (\\d{1,2})(a|ean|an)?', 'i');
         var res = value.match(r);
         if (res !== null) {
-            date = res[1] + '-' + res[3] + '-00';
-        }
-        r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)');
-        var res = value.match(r);
-        if (res !== null) {
-            date = res[1] + '-' + res[3] + '-' + res[5];
+            date = res[1] + '-' + num + '-' + res[5];
         }
     });
+    for (var num = 1; num <= 12; num++) {
+        // day, month (number), year
+        r = new RegExp('(\\d{1,2})([. /]+| tháng )(0?' + num + '|' + roman[num] + ')([., /]+| năm )(\\d{4})', 'i');
+        var res = value.match(r);
+        if (res !== null) {
+            date = res[5] + '-' + num + '-' + res[1];
+        }
+        // year, month (number), day
+        r = new RegExp('(\\d{4})( - |/)(0?' + num + '|' + roman[num] + ')( - |/)(\\d{1,2})', 'i');
+        var res = value.match(r);
+        if (res !== null) {
+            date = res[1] + '-' + num + '-' + res[5];
+        }
+    }
+    // Japanese/Chinese/Korean
+    r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)');
+    var res = value.match(r);
+    if (res !== null) {
+        date = res[1] + '-00-00';
+    }
+    r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)');
+    var res = value.match(r);
+    if (res !== null) {
+        date = res[1] + '-' + res[3] + '-00';
+    }
+    r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)');
+    var res = value.match(r);
+    if (res !== null) {
+        date = res[1] + '-' + res[3] + '-' + res[5];
+    }
     return date;
 }
 

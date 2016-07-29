@@ -1,4 +1,4 @@
-{
+monthnames = {
     "gv": {
         "Mee ny Nollick": 12,
         "Jerrey Fouyir": 10,

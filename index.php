@@ -17,6 +17,7 @@
     <link href="../common.css" rel="stylesheet">
 
     <script src="//tools-static.wmflabs.org/static/jquery/1.11.0/jquery.min.js"></script>
+    <script src="monthnames.js"></script>
     <?php
 $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
 ?>
