@@ -229,25 +229,12 @@ function getDbname(siteid, project) {
     }
 }
 
-function getWpEditionId(dbname) {
-    var qid = 0;
-    $.ajax({
-        type: 'GET',
-        url: 'wpeditionids.json',
-        dataType: 'json',
-        async: false
-    }).done(function(data) {
-        qid = data[dbname];
-    });
-    return qid;
-}
-
 function setSource(qid, guid) {
     var sources = [{
         type: 'wikibase-entityid',
         q: qid,
         p: 'P143',
-        numericid: job.wbeditionid
+        numericid: wbeditionid[job.dbname]
     }];
     $.ajax({
         type: 'GET',
@@ -1044,7 +1031,6 @@ $(document).ready(function() {
                         job.siteid = getSiteid(job.siteid, job.project);
                         job.lang = getLanguage(job.siteid, job.project);
                         job.dbname = getDbname(job.siteid, job.project);
-                        job.wbeditionid = getWpEditionId(job.dbname);
                         if (job.set === undefined){
                             job.set = 0;
                         }

@@ -1,4 +1,4 @@
-{
+var wbeditionid = {
     "abwiki": 3568035,
     "acewiki": 3957795,
     "afwiki": 766705,

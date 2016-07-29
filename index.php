@@ -19,6 +19,7 @@
     <script src="//tools-static.wmflabs.org/static/jquery/1.11.0/jquery.min.js"></script>
     <script src="monthnames.js"></script>
     <script src="numerals.js"></script>
+    <script src="wpeditionids.js"></script>
     <?php
 $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
 ?>
