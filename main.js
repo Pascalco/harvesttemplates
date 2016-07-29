@@ -32,6 +32,15 @@ function escapeHTML (str) {
       .replace(/\'/g, '&#39;');
 }
 
+function toArabicNumerals(str) {
+    var r;
+    $.each(numerals, function(k, v) {
+        r = new RegExp(k, 'g');
+        str = str.replace(r, v);
+    });
+    return str;
+}
+
 function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
         $input = $('input[name=' + key + ']');
@@ -474,18 +483,7 @@ function parseDate(value) {
     var date = false;
     value = value.replace(/–|-|—/g, '-');
     value = value.replace(/\[\[|\]\]/g, '');
-    var digits = {
-        '०': 0,
-        '१': 1,
-        '२': 2,
-        '३': 3,
-        '४': 4,
-        '५': 5,
-        '६': 6,
-        '७': 7,
-        '८': 8,
-        '९': 9
-    };
+    value = toArabicNumerals(value);
     var roman = {
         1: 'I',
         2: 'II',
@@ -500,11 +498,6 @@ function parseDate(value) {
         11: 'XI',
         12: 'XII'
     };
-    var r;
-    $.each(digits, function(k, v) {
-        r = new RegExp(k, 'g');
-        value = value.replace(r, v);
-    });
     //Spanish decades
     r = new RegExp('años (\\d{4})');
     var res = value.match(r);
@@ -692,6 +685,7 @@ function handleValue(pageid, qid, value) {
         }
     } else if (job.datatype == 'quantity'){
         value = value.replace(/(\d)(&nbsp;|\s|')(\d)/g,'$1$3'); //remove thousands separator
+        value = toArabicNumerals(value);
         if (job.decimalmark == '.'){
             value = value.replace(',',''); //remove thousands separator
         } else if (job.decimalmark == ','){
