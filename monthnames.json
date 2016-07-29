@@ -3128,13 +3128,16 @@
     "fr": {
         "avril": 4,
         "février": 2,
+        "fevrier": 2,
         "novembre": 11,
         "juillet": 7,
         "août": 8,
+        "aout":8,
         "janvier": 1,
         "octobre": 10,
         "juin": 6,
         "décembre": 12,
+        "decembre": 12,
         "mars": 3,
         "mai": 5,
         "septembre": 9
