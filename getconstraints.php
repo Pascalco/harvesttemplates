@@ -30,7 +30,7 @@ function parsePQ($str){
 }
 
 function replaceQPtemplates($text){
-    return preg_replace('/{{(Q|P)\|(?:Q|P)?(\d+)}}/','$1$2',$text);
+    return preg_replace('/{{(P|Q)\|(?:P|Q)?(\d+)}}/','$1$2',$text);
 }
 
 function replaceQlinks($text){
@@ -101,10 +101,11 @@ $constraints = array(
 );
 
 foreach($constraints as $constraint => $mparas){
-    $pat = '/{{Constraint:'.$constraint.'\s*(?:\|([^}]+))?}}/';
+    $pat = '/{{[Cc]onstraint:' . str_replace( ' ', '[ _]', $constraint ) . '\s*(?:\|([^}]+))?}}/';
     if ( preg_match_all( $pat, $text, $matches, PREG_SET_ORDER ) ){
+        $newconstraint = array( 'type' => $constraint );
         if ( in_array( $constraint , array( 'Qualifier', 'Source' ) ) ) {
-            $con = array( array( 'type' => $constraint ) );
+            $con = array( $newconstraint );
             break;
         }
         foreach($matches as $match){
@@ -117,13 +118,12 @@ foreach($constraints as $constraint => $mparas){
                 }
             }
             if ($ok == 1){
-                $newconstraint = array('type'=>$constraint);
                 foreach($mparas as $mpara){
                     $value = $res[$mpara];
                     for ($i=count($templ);$i>=0;$i--){
                         $value = str_replace('$$$'.($i+1),$templ[$i],$value);
                     }
-                    if ($mpara == 'class' OR $mpara == 'values'){
+                    if ($mpara == 'class' || $mpara == 'values'){
                         $value = parseQ($value);
                     }
                     if ($mpara == 'list'){
