@@ -152,7 +152,7 @@ function addMissingConstraintData( ii ){
             for (var row in data.results.bindings) {
                 constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
             }
-            addMissingConstraintData( ii++ );
+            addMissingConstraintData( ++ii );
         }).fail(function(data) {
             reportStatus('WQS query expired');
         });
@@ -166,13 +166,13 @@ function addMissingConstraintData( ii ){
             for (var row in data.results.bindings) {
                 constraints[ii].values.push(data.results.bindings[row].value.value);
             }
-            addMissingConstraintData( ii++ );
+            addMissingConstraintData( ++ii );
         }).fail(function(data) {
             reportStatus('WQS query expired');
         });
     }
     else {
-        addMissingConstraintData( ii++ );
+        addMissingConstraintData( ++ii );
     }
 }
 
