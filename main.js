@@ -134,9 +134,10 @@ function stopJob() {
     $('input[name="pagelist"]').attr('disabled', false);
 }
 
-function addMissingConstraintData( ii, callback ){
-    if (ii == constraints.length){
-        callback();
+function addMissingConstraintData( ii ){
+    if (ii == constraints.length) {
+        reportStatus('loading...');
+        getPages();
         return 1;
     }
     if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
@@ -151,7 +152,7 @@ function addMissingConstraintData( ii, callback ){
             for (var row in data.results.bindings) {
                 constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
             }
-            addMissingConstraintData( ii+1, callback );
+            addMissingConstraintData( ii++ );
         }).fail(function(data) {
             reportStatus('WQS query expired');
         });
@@ -165,23 +166,23 @@ function addMissingConstraintData( ii, callback ){
             for (var row in data.results.bindings) {
                 constraints[ii].values.push(data.results.bindings[row].value.value);
             }
-            addMissingConstraintData( ii+1, callback );
+            addMissingConstraintData( ii++ );
         }).fail(function(data) {
             reportStatus('WQS query expired');
         });
     }
     else {
-        addMissingConstraintData( ii+1, callback );
+        addMissingConstraintData( ii++ );
     }
 }
 
 
-function createConstraints( callback ) {
+function createConstraints() {
     $.getJSON('getconstraints.php', {
         p: job.property
     }).done(function(data) {
         constraints = data;
-        addMissingConstraintData( 0, callback );
+        addMissingConstraintData( 0 );
     });
 }
 
@@ -1043,10 +1044,7 @@ $(document).ready(function() {
                             // TODO: monolingualtext, geocoordinate (math?)
                             if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
                                 reportStatus('loading..');
-                                createConstraints( function() {
-                                    reportStatus('loading...');
-                                    getPages();
-                                });
+                                createConstraints();
                             } else {
                                 reportStatus('datatype ' + job.datatype + ' is not yet supported');
                             }
