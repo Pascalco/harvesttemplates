@@ -6,7 +6,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
  */
-var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikivoyage', 'wikiversity'];
+var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikiversity', 'wikivoyage'];
 var namespaces = {0 : '', 1: 'Talk', 2: 'User', 3: 'User_talk', 4: 'Wikipedia', 5: 'Wikipedia_talk', 6: 'File', 7: 'File_talk', 8: 'MediaWiki', 9: 'MediaWiki_talk', 10: 'Template', 11: 'Template_talk', 12: 'Help', 13: 'Help_talk', 14: 'Category', 15: 'Category_talk', 100: 'Portal', 101: 'Portal_talk', 108: 'Book', 109: 'Book_talk', 118: 'Draft', 119: 'Draft_talk' };
 var run = 0;
 var constraints = [];
@@ -891,7 +891,7 @@ function loadUnits(claims){
 }
 
 function showAdditionalFields(){
-    $('#getpages').removeAttr('disabled');
+    $('#getpages').attr('disabled', false);
     reportStatus('');
     var val = $('input[name="property"]').val();
     if (val !== '') {
@@ -918,7 +918,7 @@ function showAdditionalFields(){
                     $('.quantityparameters').show();
                 } else {
                     reportStatus('P2237 on property page missing');
-                    $('#getpages').attr('disabled','disabled');
+                    $('#getpages').attr('disabled', true);
                 }
             }
             if (data.entities[p].labels['en'] !== undefined){
