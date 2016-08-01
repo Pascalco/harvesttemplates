@@ -141,6 +141,7 @@ function addMissingConstraintData( ii, callback ){
     }
     if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
         reportStatus('Constraint violation: ' + constraints[ii].type);
+        $('input[name="property"]').addClass('error');
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
@@ -300,6 +301,8 @@ function addValue(pageid, qid, value) {
     }
     if (!claim) {
         reportStatus('not supported datatype: ' + job.datatype);
+        $('input[name="property"]').addClass('error');
+        stopJob();
         return false;
     }
     if (job.demo == 1) {
@@ -902,6 +905,7 @@ function showAdditionalFields(){
             format: 'json'
         }, function(data) {
             if (data.entities[p].missing !== undefined){
+                $('input[name="property"]').addClass('error');
                 return 0;
             }
             var datatype = data.entities[p].datatype;
@@ -918,6 +922,7 @@ function showAdditionalFields(){
                     $('.quantityparameters').show();
                 } else {
                     reportStatus('P2237 on property page missing');
+                    $('input[name="property"]').addClass('error');
                     $('#getpages').attr('disabled','disabled');
                 }
             }
@@ -1049,6 +1054,7 @@ $(document).ready(function() {
                                 });
                             } else {
                                 reportStatus('datatype ' + job.datatype + ' is not yet supported');
+                                $('input[name="property"]').addClass('error');
                             }
                         });
                     }
