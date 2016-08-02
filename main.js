@@ -115,6 +115,11 @@ function reportStatus(status) {
     $('#status').html(status);
 }
 
+function stopLoading(status) {
+    reportStatus(status);
+    $('#getpages').attr('disabled', false);
+}
+
 function stopJob() {
     run = 0;
     if ($('.stop').attr('id') == 'addvalues') {
@@ -141,7 +146,7 @@ function addMissingConstraintData( ii ){
         return 1;
     }
     if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
-        reportStatus('Constraint violation: ' + constraints[ii].type);
+        stopLoading('Constraint violation: ' + constraints[ii].type);
         $('input[name="property"]').addClass('error');
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
@@ -155,7 +160,7 @@ function addMissingConstraintData( ii ){
             }
             addMissingConstraintData( ++ii );
         }).fail(function(data) {
-            reportStatus('WQS query expired');
+            stopLoading('WQS query expired');
         });
     }
     else if (constraints[ii].type == 'Unique value'){
@@ -169,7 +174,7 @@ function addMissingConstraintData( ii ){
             }
             addMissingConstraintData( ++ii );
         }).fail(function(data) {
-            reportStatus('WQS query expired');
+            stopLoading('WQS query expired');
         });
     }
     else {
@@ -301,7 +306,7 @@ function addValue(pageid, qid, value) {
             break;
     }
     if (!claim) {
-        reportStatus('not supported datatype: ' + job.datatype);
+        stopLoading('not supported datatype: ' + job.datatype);
         $('input[name="property"]').addClass('error');
         stopJob();
         return false;
@@ -817,7 +822,7 @@ function createCheckboxlist(pageids) {
     $('#addvalues').show();
     $('#demo').show();
     $('.rightbox').show();
-    reportStatus(pageids.length == 1 ? 'Found one page' : 'Found ' + pageids.length + ' pages');
+    stopLoading(pageids.length == 1 ? 'Found one page' : 'Found ' + pageids.length + ' pages');
 }
 
 function getPages() {
@@ -856,13 +861,13 @@ function getPages() {
             if (pageids.length > 0) {
                 createCheckboxlist(pageids);
             } else {
-                reportStatus('nothing to do');
+                stopLoading('nothing to do');
             }
         });
     })
     .fail(function(jqxhr, textStatus, error) {
         var err = textStatus + ', ' + error;
-        reportStatus('Request Failed: ' + err);
+        stopLoading('Request Failed: ' + err);
     });
 }
 
@@ -984,6 +989,7 @@ $(document).ready(function() {
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
         if ($(this).attr('id') == 'getpages') {
+            $(this).attr('disabled', true);
             $.ajax({
                 type: 'GET',
                 url: '../oauth.php',
@@ -993,7 +999,7 @@ $(document).ready(function() {
             })
             .done(function(data) {
                 if ('error' in data) {
-                    reportStatus('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
+                    stopLoading('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
                 } else {
                     if (data.query.userinfo.groups.indexOf('bot') > -1){
                         bot = 1;
@@ -1051,10 +1057,12 @@ $(document).ready(function() {
                                 reportStatus('loading..');
                                 createConstraints();
                             } else {
-                                reportStatus('datatype ' + job.datatype + ' is not yet supported');
+                                stopLoading('datatype ' + job.datatype + ' is not yet supported');
                                 $('input[name="property"]').addClass('error');
                             }
                         });
+                    } else {
+                        stopLoading('');
                     }
                 }
             });
