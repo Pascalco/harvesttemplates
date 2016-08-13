@@ -622,7 +622,7 @@ function handleValue(pageid, qid, value) {
         if (res !== null) {
             value = res[1];
         }
-        checkConstraints(pageid, qid, value, 0);
+        checkConstraints(pageid, qid, job.prefix + value, 0);
     } else if (job.datatype == 'wikibase-item') {
         var res = value.match(/^\[\[([^\|\]]+)/);
         if (res !== null) {
@@ -914,23 +914,28 @@ function showAdditionalFields(){
                 $('input[name="property"]').addClass('error');
                 return 0;
             }
-            var datatype = data.entities[p].datatype;
-            if (datatype == 'wikibase-item') {
-                $('#wikisyntax').show();
-                $('#prefix').show();
-            } else if (datatype == 'string' || datatype == 'external-id') {
-                $('#prefix').show();
-            } else if (datatype == 'time') {
-                $('.timeparameters').show();
-            } else if (datatype == 'quantity') {
-                if (data.entities[p].claims.P2237 !== undefined){
-                    loadUnits(data.entities[p].claims.P2237);
-                    $('.quantityparameters').show();
-                } else {
-                    reportStatus('P2237 on property page missing');
-                    $('#getpages').attr('disabled', true);
-                    $('input[name="property"]').addClass('error');
-                }
+            switch (data.entities[p].datatype) {
+                case 'wikibase-item':
+                    $('#wikisyntax').show();
+                    // no break here
+                case 'external-id':
+                case 'string':
+                case 'url':
+                    $('#prefix').show();
+                    break;
+                case 'time':
+                    $('.timeparameters').show();
+                    break;
+                case 'quantity':
+                    if (data.entities[p].claims.P2237 !== undefined){
+                        loadUnits(data.entities[p].claims.P2237);
+                        $('.quantityparameters').show();
+                    } else {
+                        reportStatus('P2237 on property page missing');
+                        $('#getpages').attr('disabled', true);
+                        $('input[name="property"]').addClass('error');
+                    }
+                    break;
             }
             if (data.entities[p].labels['en'] !== undefined){
                 $('#plabel').text(data.entities[p].labels['en'].value);
