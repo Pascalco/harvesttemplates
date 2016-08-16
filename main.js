@@ -711,7 +711,7 @@ function parseTemplate(pageid, qid, text, parameter) {
         .replace(/<ref([^>]+)>/g, '') //remove reference tags
         .replace(/\s\s+/g, ' ') //remove multiple spaces
         .replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
-    var txt = text.split('{{' + preq_quote(job.template) + '|');
+    var txt = text.split('{{' + preg_quote(job.template) + '|');
     if (txt.length == 1) {
         return [false,'Template not found'];
     }
