@@ -703,14 +703,15 @@ function handleValue(pageid, qid, value) {
 
 function parseTemplate(pageid, qid, text, parameter) {
     var result = '';
-    text = text.replace(/(\n|\r)/gm, ''); //remove linebreaks
-    text = text.replace(/<!--.*?-->/g, ''); //remove comments
-    text = text.replace(/<ref([^>]+)\/>/g, ''); //remove self-closing reference tags
-    text = text.replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
-    text = text.replace(/<ref([^>]+)>/g, ''); //remove reference tags
-    text = text.replace(/\s\s+/g, ' '); //remove multiple spaces
-    text = text.replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
-    var txt = text.split('{{' + job.template + '|');
+    text = text
+        .replace(/(\n|\r)/gm, ''); //remove linebreaks
+        .replace(/<!--.*?-->/g, ''); //remove comments
+        .replace(/<ref([^>]+)\/>/g, ''); //remove self-closing reference tags
+        .replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
+        .replace(/<ref([^>]+)>/g, ''); //remove reference tags
+        .replace(/\s\s+/g, ' '); //remove multiple spaces
+        .replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
+    var txt = text.split('{{' + preq_quote(job.template) + '|');
     if (txt.length == 1) {
         return [false,'Template not found'];
     }
@@ -768,44 +769,46 @@ function proceedOnePage() {
     i++;
     if (el.prop('checked')) {
         setTimeout(function() {
+            var id = el.attr('id');
             $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
                 action: 'query',
                 prop: 'revisions',
-                pageids: el.attr('id'),
+                pageids: id,
                 rvprop: 'content',
                 format: 'json'
             })
             .done(function(data2) {
-                if ('revisions' in data2.query.pages[el.attr('id')]){
+                var qid = el.data('qid');
+                if ('revisions' in data2.query.pages[id]){
                     if (job.parameter.length !== 0) {
-                        var value = false;
-                        $.each ( job.parameter, function( k, v ){
-                            value = parseTemplate(el.attr('id'), el.data('qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], v);
-                            return (value[0] == false);
-                        });
+                        var value = [false];
+                        $.each ( job.parameter, function( k, v ) {
+                            value = parseTemplate(id, qid, data2.query.pages[id].revisions[0]['*'], v);
+                            return !value[0];
+                        } );
                         if (value[0] == true){
-                            handleValue(el.attr('id'), el.data('qid'), value[1]);
+                            handleValue(id, qid, value[1]);
                         } else {
-                            report(el.attr('id'), 'error', value[1], el.data('qid'));
+                            report(id, 'error', value[1], qid);
                         }
                     } else {
                         var st = [],
                             values = [];
                         for (var kk = 1; kk <= 3; kk++) {
                             if (job['aparameter'+kk] !== undefined){
-                                var value = parseTemplate(el.attr('id'), el.data('qid'), data2.query.pages[el.attr('id')].revisions[0]['*'], job['aparameter'+kk]);
+                                var value = parseTemplate(id, qid, data2.query.pages[id].revisions[0]['*'], job['aparameter'+kk]);
                                 st.push(value[0]);
                                 values.push(value[1]);
                             }
                         }
                         if (st[0] !== false){
-                            handleValue(el.attr('id'), el.data('qid'), values);
+                            handleValue(id, qid, values);
                         } else {
-                            report(el.attr('id'), 'error', values[0], el.data('qid'));
+                            report(id, 'error', values[0], qid);
                         }
                     }
                 } else {
-                    report(el.attr('id'), 'error', 'page deleted', el.data('qid'));
+                    report(id, 'error', 'page deleted', qid);
                 }
                 proceedOnePage();
             });
@@ -1005,77 +1008,83 @@ $(document).ready(function() {
             .done(function(data) {
                 if ('error' in data) {
                     stopLoading('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
-                } else {
-                    if (data.query.userinfo.groups.indexOf('bot') > -1){
-                        bot = 1;
-                    }
-                    $('#result').html('');
-                    $('#addvalues').hide();
-                    $('#demo').hide();
-                    stopJob();
-                    i = 0;
+                    return;
+                }
+                if (data.query.userinfo.groups.indexOf('bot') > -1){
+                    bot = 1;
+                }
+                $('#result').html('');
+                $('#addvalues').hide();
+                $('#demo').hide();
+                stopJob();
+                i = 0;
 
-                    job = {'parameter' : []};
-                    var fields = $( 'form' ).serializeArray();
-                    $.each( fields, function( i, field ) {
-                        if (field.name != 'parameter'){
-                            job[field.name] = field.value.trim();
-                        } else if (field.value !== ''){
-                            job[field.name].push(field.value.trim());
-                        }
-                    });
-                    job.property = 'P'+job.property;
+                job = {'parameter' : []};
+                var fields = $( 'form' ).serializeArray();
+                $.each( fields, function( i, field ) {
+                    if (field.name != 'parameter'){
+                        job[field.name] = field.value.trim();
+                    } else if (field.value !== ''){
+                        job[field.name].push(field.value.trim());
+                    }
+                });
+                job.property = 'P' + job.property;
 
-                    if (job.siteid === '') {
-                        $('input[name="siteid"]').addClass('error');
-                    }
-                    if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
-                        $('input[name="project"]').addClass('error');
-                    }
-                    if (job.template === '') {
-                        $('input[name="template"]').addClass('error');
-                    }
-                    if (job.parameter.length === 0 && job.aparameter1 === '') {
-                        $('input[name="parameter"]').addClass('error');
-                    }
-                    if (job.property == 'P') {
+                if (job.siteid === '') {
+                    $('input[name="siteid"]').addClass('error');
+                }
+                if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
+                    $('input[name="project"]').addClass('error');
+                }
+                if (job.template === '') {
+                    $('input[name="template"]').addClass('error');
+                }
+                if (job.parameter.length === 0 && job.aparameter1 === '') {
+                    $('input[name="parameter"]').addClass('error');
+                }
+                if (job.property == 'P') {
+                    $('input[name="property"]').addClass('error');
+                }
+                if (job.namespace === '') {
+                    $('input[name="namespace"]').addClass('error');
+                }
+                if ($('.error').length > 0) {
+                    stopLoading('');
+                    return;
+                }
+
+                job.siteid = getSiteid(job.siteid, job.project);
+                job.lang = getLanguage(job.siteid, job.project);
+                job.dbname = getDbname(job.siteid, job.project);
+                if ( !wbeditionid[job.dbname] ) {
+                    stopLoading(job.siteid + '.' + job.project + '.org (' + job.dbname + ') doesn\'t have an item yet.<br>'
+                        + 'Please create it if it doesn\'t exist yet and ask for adding it.');
+                    $('input[name="siteid"], input[name="project"]').addClass('error');
+                    return;
+                }
+                if (job.set === undefined){
+                    job.set = 0;
+                }
+                $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
+                    action: 'wbgetentities',
+                    ids: job.property,
+                    format: 'json'
+                }, function(data) {
+                    job.datatype = data.entities[job.property].datatype;
+                    // TODO: monolingualtext, geocoordinate (math?)
+                    if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
+                        reportStatus('loading..');
+                        createConstraints();
+                    } else {
+                        stopLoading('datatype ' + job.datatype + ' is not yet supported');
                         $('input[name="property"]').addClass('error');
                     }
-                    if (job.namespace === '') {
-                        $('input[name="namespace"]').addClass('error');
-                    }
-                    if ($('.error').length === 0) {
-                        job.siteid = getSiteid(job.siteid, job.project);
-                        job.lang = getLanguage(job.siteid, job.project);
-                        job.dbname = getDbname(job.siteid, job.project);
-                        if (job.set === undefined){
-                            job.set = 0;
-                        }
-                        $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
-                            action: 'wbgetentities',
-                            ids: job.property,
-                            format: 'json'
-                        }, function(data) {
-                            job.datatype = data.entities[job.property].datatype;
-                            // TODO: monolingualtext, geocoordinate (math?)
-                            if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
-                                reportStatus('loading..');
-                                createConstraints();
-                            } else {
-                                stopLoading('datatype ' + job.datatype + ' is not yet supported');
-                                $('input[name="property"]').addClass('error');
-                            }
-                        });
-                    } else {
-                        stopLoading('');
-                    }
-                }
+                });
             });
         } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
             if (job.demo == 1) {
                 $("#result").find('div').each(function(index, value) {
-                    $(this).removeClass();
-                    $(this).find('.value').html('');
+                    $(this).removeClass().find('.value').html('');
                 });
             }
             if ($(this).val() == 'demo') {
