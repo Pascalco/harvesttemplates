@@ -704,12 +704,12 @@ function handleValue(pageid, qid, value) {
 function parseTemplate(pageid, qid, text, parameter) {
     var result = '';
     text = text
-        .replace(/(\n|\r)/gm, ''); //remove linebreaks
-        .replace(/<!--.*?-->/g, ''); //remove comments
-        .replace(/<ref([^>]+)\/>/g, ''); //remove self-closing reference tags
-        .replace(/<ref((?!<\/ref>).)*<\/ref>/g, ''); //remove references
-        .replace(/<ref([^>]+)>/g, ''); //remove reference tags
-        .replace(/\s\s+/g, ' '); //remove multiple spaces
+        .replace(/(\n|\r)/gm, '') //remove linebreaks
+        .replace(/<!--.*?-->/g, '') //remove comments
+        .replace(/<ref([^>]+)\/>/g, '') //remove self-closing reference tags
+        .replace(/<ref((?!<\/ref>).)*<\/ref>/g, '') //remove references
+        .replace(/<ref([^>]+)>/g, '') //remove reference tags
+        .replace(/\s\s+/g, ' ') //remove multiple spaces
         .replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
     var txt = text.split('{{' + preq_quote(job.template) + '|');
     if (txt.length == 1) {
