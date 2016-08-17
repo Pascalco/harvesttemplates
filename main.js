@@ -33,9 +33,8 @@ function escapeHTML (str) {
 }
 
 function toArabicNumerals(str) {
-    var r;
     $.each(numerals, function(k, v) {
-        r = new RegExp(k, 'g');
+        var r = new RegExp(k, 'g');
         str = str.replace(r, v);
     });
     return str;
@@ -43,7 +42,7 @@ function toArabicNumerals(str) {
 
 function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        $input = $('input[name=' + key + ']');
+        var $input = $('input[name=' + key + ']');
         if ($input !== undefined) {
             if (key == 'parameter' && $input.last().val() !== ''){
                 addAlias();
@@ -90,7 +89,7 @@ function toFile(format) {
     var uri = 'data:application/' + format + ';charset=UTF-8,' + encodeURIComponent(output);
     $(this)
         .attr({
-            'download': 'harvesttemplates_' + job.property + '_'+ job.dbname + '.' + format,
+            'download': 'harvesttemplates_' + job.property + '_' + job.dbname + '.' + format,
             'href': uri,
             'target': '_blank'
         });
@@ -343,12 +342,12 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     var co = constraints[ii];
     if (co.type == 'Format') {
-        var patt = new RegExp('^(' + co['pattern'] + ')$', co['modifier']);
-        if (patt.test(value) == false) {
+        var patt = new RegExp('^(' + co.pattern + ')$', co.modifier);
+        if (patt.test(value) === false) {
             report(pageid, 'error', 'Constraint violation: Format <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
-        checkConstraints(pageid, qid, value, ii+1);
+        checkConstraints(pageid, qid, value, ++ii);
         return true;
     }
     else if (co.type == 'Unique value') {
@@ -357,9 +356,9 @@ function checkConstraints(pageid, qid, value, ii) {
             return false;
         }
         if (job.demo != 1) {
-            constraints[ii]['values'].push(value);
+            constraints[ii].values.push(value);
         }
-        checkConstraints(pageid, qid, value, ii+1);
+        checkConstraints(pageid, qid, value, ++ii);
         return true;
     }
     else if (co.type == 'Type') {
@@ -377,7 +376,7 @@ function checkConstraints(pageid, qid, value, ii) {
                 if (data.entities[qid].claims[rel][m].mainsnak.snaktype == 'value') {
                     var numericid = data.entities[qid].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
                     if (co.values.indexOf(numericid) != -1) {
-                        checkConstraints(pageid, qid, value, ii+1);
+                        checkConstraints(pageid, qid, value, ++ii);
                         return true;
                     }
                 }
@@ -401,7 +400,7 @@ function checkConstraints(pageid, qid, value, ii) {
                 if (data.entities[value].claims[rel][m].mainsnak.snaktype == 'value') {
                     var numericid = data.entities[value].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
                     if (co.values.indexOf(numericid) != -1) {
-                        checkConstraints(pageid, qid, value, ii+1);
+                        checkConstraints(pageid, qid, value, ++ii);
                         return true;
                     }
                 }
@@ -415,7 +414,7 @@ function checkConstraints(pageid, qid, value, ii) {
             report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) +'</i>', qid);
             return false;
         }
-        checkConstraints(pageid, qid, value, ii+1);
+        checkConstraints(pageid, qid, value, ++ii);
         return true;
     }
     else if (co.type == 'Commons link'){
@@ -434,7 +433,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     return false;
                 }
             }
-            checkConstraints(pageid, qid, value, ii+1);
+            checkConstraints(pageid, qid, value, ++ii);
             return true;
         });
     }
@@ -450,6 +449,13 @@ function checkConstraints(pageid, qid, value, ii) {
                         report(pageid, 'error', 'Constraint violation: Conflics with', qid);
                         return false;
                     }
+                    if (pp == job.property) {
+                        if ($.inArray(value, co.list[pp]) !== -1) {
+                            report(pageid, 'error', 'Constraint violation: Conflics with', qid);
+                            return false;
+                        }
+                        return;
+                    }
                     for (var m in data.entities[qid].claims[pp]) {
                         if (data.entities[qid].claims[pp][m].mainsnak.snaktype == 'value') {
                             var numericid = data.entities[qid].claims[pp][m].mainsnak.datavalue.value['numeric-id'];
@@ -461,7 +467,7 @@ function checkConstraints(pageid, qid, value, ii) {
                     }
                 }
             }
-            checkConstraints(pageid, qid, value, ii+1);
+            checkConstraints(pageid, qid, value, ++ii);
             return true;
         });
     }
@@ -470,15 +476,16 @@ function checkConstraints(pageid, qid, value, ii) {
             report(pageid, 'error', 'Constraint violation: Range <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
-        checkConstraints(pageid, qid, value, ii+1);
+        checkConstraints(pageid, qid, value, ++ii);
         return true;
     }
 }
 
 function parseDate(value) {
     var date = false;
-    value = value.replace(/–|-|—/g, '-');
-    value = value.replace(/\[\[|\]\]/g, '');
+    value = value
+        .replace(/–|-|—/g, '-')
+        .replace(/\[\[|\]\]/g, '');
     value = toArabicNumerals(value);
     var roman = {
         1: 'I',
@@ -495,39 +502,39 @@ function parseDate(value) {
         12: 'XII'
     };
     //Spanish decades
-    r = new RegExp('años (\\d{4})');
+    var r = new RegExp('años (\\d{4})');
     var res = value.match(r);
     if (res !== null) {
         return date;
     }
     //only year
     r = new RegExp('(\\d{4})');
-    var res = value.match(r);
+    res = value.match(r);
     if (res !== null) {
         date = res[1] + '-00-00';
     }
     $.each((monthnames[job.lang] || {}), function(name, num) {
         // month and year
         r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{4})', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[2] + '-' + num + '-00';
         }
         // day, month, year
         r = new RegExp('(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?(' + name + ')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[5] + '-' + num + '-' + res[1];
         }
         // month, day, year
         r = new RegExp('(' + name + '|' + name.substr(0, 3) + ') (\\d{1,2})t?h?\\,? (\\d{4})', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[3] + '-' + num + '-' + res[2];
         }
         // year, month, day
         r = new RegExp('(\\d{4})(e?ko|\\.|,)? (' + name + ')(aren)? (\\d{1,2})(a|ean|an)?', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[1] + '-' + num + '-' + res[5];
         }
@@ -535,30 +542,30 @@ function parseDate(value) {
     for (var num = 1; num <= 12; num++) {
         // day, month (number), year
         r = new RegExp('(\\d{1,2})([. /]+| tháng )(0?' + num + '|' + roman[num] + ')([., /]+| năm )(\\d{4})', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[5] + '-' + num + '-' + res[1];
         }
         // year, month (number), day
         r = new RegExp('(\\d{4})( - |/)(0?' + num + '|' + roman[num] + ')( - |/)(\\d{1,2})', 'i');
-        var res = value.match(r);
+        res = value.match(r);
         if (res !== null) {
             date = res[1] + '-' + num + '-' + res[5];
         }
     }
     // Japanese/Chinese/Korean
     r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년)');
-    var res = value.match(r);
+    res = value.match(r);
     if (res !== null) {
         date = res[1] + '-00-00';
     }
     r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월)');
-    var res = value.match(r);
+    res = value.match(r);
     if (res !== null) {
         date = res[1] + '-' + res[3] + '-00';
     }
     r = new RegExp('(\\d{4})(年|年\）|年[〈（\(][^）〉\)]+[〉|）|\)]|년 )(\\d{1,2})(月|월 )(\\d{1,2})(日|일)');
-    var res = value.match(r);
+    res = value.match(r);
     if (res !== null) {
         date = res[1] + '-' + res[3] + '-' + res[5];
     }
@@ -592,7 +599,7 @@ function checkForInterwiki(pageid, qid, res, url) {
                     }
                 }
                 report(pageid, 'error', 'no target page found', qid);
-            })
+            });
         } else {
             for (var m in data.query.pages) {
                 if (m != '-1') {
@@ -680,7 +687,7 @@ function handleValue(pageid, qid, value) {
             report(pageid, 'error', 'could not find a date', qid);
         }
     } else if (job.datatype == 'quantity'){
-        value = value.replace(/(\d)(&nbsp;|\s|')(\d)/g,'$1$3'); //remove thousands separator
+        value = value.replace(/(\d)(&nbsp;|\s|')(\d)/g, '$1$3'); //remove thousands separator
         value = toArabicNumerals(value);
         if (job.decimalmark == '.'){
             value = value.replace(',',''); //remove thousands separator
@@ -786,7 +793,7 @@ function proceedOnePage() {
                             value = parseTemplate(id, qid, data2.query.pages[id].revisions[0]['*'], v);
                             return !value[0];
                         } );
-                        if (value[0] == true){
+                        if (value[0] === true){
                             handleValue(id, qid, value[1]);
                         } else {
                             report(id, 'error', value[1], qid);
@@ -934,14 +941,14 @@ function showAdditionalFields(){
                         loadUnits(data.entities[p].claims.P2237);
                         $('.quantityparameters').show();
                     } else {
-                        reportStatus('P2237 on property page missing');
+                        reportStatus('P2237 (units used for this property) on property page missing');
                         $('#getpages').attr('disabled', true);
                         $('input[name="property"]').addClass('error');
                     }
                     break;
             }
-            if (data.entities[p].labels['en'] !== undefined){
-                $('#plabel').text(data.entities[p].labels['en'].value);
+            if (data.entities[p].labels.en !== undefined){
+                $('#plabel').text(data.entities[p].labels.en.value);
             }
         });
     }
@@ -1027,7 +1034,7 @@ $(document).ready(function() {
                     } else if (field.value !== ''){
                         job[field.name].push(field.value.trim());
                     }
-                });
+                } );
                 job.property = 'P' + job.property;
 
                 if (job.siteid === '') {
@@ -1057,8 +1064,8 @@ $(document).ready(function() {
                 job.lang = getLanguage(job.siteid, job.project);
                 job.dbname = getDbname(job.siteid, job.project);
                 if ( !wbeditionid[job.dbname] ) {
-                    stopLoading(job.siteid + '.' + job.project + '.org (' + job.dbname + ') doesn\'t have an item yet.<br>'
-                        + 'Please create it if it doesn\'t exist yet and ask for adding it.');
+                    stopLoading(job.siteid + '.' + job.project + '.org (' + job.dbname + ') doesn\'t have an item yet.<br>' +
+                        'Please create it if it doesn\'t exist yet and ask for adding it.');
                     $('input[name="siteid"], input[name="project"]').addClass('error');
                     return;
                 }
