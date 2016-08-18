@@ -675,9 +675,7 @@ function handleValue(pageid, qid, value) {
         }
         checkForInterwiki(pageid, qid, res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
-        for (var i in fileprefixes) {
-            value = value.replace(new RegExp('^' + fileprefixes[i] + ':\\s*', 'i'), '');
-        }
+        value = value.replace(new RegExp('^(' + fileprefixes.join('|') + '):\\s*', 'i'), '');
         value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
