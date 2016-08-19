@@ -692,6 +692,10 @@ function handleValue(pageid, qid, value) {
         }
         checkForInterwiki(pageid, qid, res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
+        var res = value.match(/\[\[([^\|\]]+)/);
+        if (res !== null) {
+            value = res[1];
+        }
         value = value.replace(new RegExp('^(' + fileprefixes.join('|') + '):\\s*', 'i'), '');
         value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
         checkConstraints(pageid, qid, value, 0);
