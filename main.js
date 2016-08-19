@@ -220,13 +220,11 @@ function loadSiteinfo() {
         format: 'json'
     }).done(function(data) {
         namespaces = {};
-        fileprefixes = ['File'];
-        templateprefixes = ['Template'];
         for (var ns in data.query.namespaces) {
             namespaces[ns] = data.query.namespaces[ns]['*'];
         }
-        fileprefixes.push(namespaces[6]);
-        templateprefixes.push(namespaces[10]);
+        fileprefixes = ['File', namespaces[6]];
+        templateprefixes = ['Template', namespaces[10]];
         for (var i in data.query.namespacealiases) {
             if (data.query.namespacealiases[i].id == 6) {
                 fileprefixes.push(data.query.namespacealiases[i]['*']);
