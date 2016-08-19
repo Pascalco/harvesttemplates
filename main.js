@@ -227,7 +227,7 @@ function getDbname(siteid, project) {
     } else if (siteid == 'www' && project == 'mediawiki') {
         return 'mediawikiwiki';
     }
-    siteid = siteid.replace('-','_');
+    siteid = siteid.replace(/-/g, '_');
     if (project == 'wikipedia') {
         return siteid + 'wiki';
     } else {
@@ -689,11 +689,11 @@ function handleValue(pageid, qid, value) {
     } else if (job.datatype == 'quantity'){
         value = value.replace(/(\d)(&nbsp;|\s|')(\d)/g, '$1$3'); //remove thousands separator
         value = toArabicNumerals(value);
-        if (job.decimalmark == '.'){
-            value = value.replace(',',''); //remove thousands separator
-        } else if (job.decimalmark == ','){
-            value = value.replace('.',''); //remove thousands separator
-            value = value.replace(',','.'); //replace decimal mark , by .
+        if (job.decimalmark == '.') {
+            value = value.replace(/,/g, ''); //remove thousands separators
+        } else if (job.decimalmark == ',') {
+            value = value.replace(/\./g, ''); //remove thousands separators
+            value = value.replace(',', '.'); //replace decimal mark , by .
         }
         var patt = /^[0-9.]+$/;
         if (patt.test(value)){
