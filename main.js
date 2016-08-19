@@ -151,7 +151,7 @@ function addMissingConstraintData( ii ){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'SELECT ?value WHERE { VALUES ?cl {' + cl + '} . ?value wdt:P279* ?cl }',
+            query: 'SELECT ?value WHERE { VALUES ?cl { ' + cl + ' } . ?value wdt:P279* ?cl }',
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
@@ -161,8 +161,7 @@ function addMissingConstraintData( ii ){
         }).fail(function(data) {
             stopLoading('WQS query expired');
         });
-    }
-    else if (constraints[ii].type == 'Unique value'){
+    } else if (constraints[ii].type == 'Unique value') {
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
             query: 'SELECT ?value WHERE { ?item wdt:' + job.property + ' ?value } GROUP BY ?value',
@@ -175,8 +174,30 @@ function addMissingConstraintData( ii ){
         }).fail(function(data) {
             stopLoading('WQS query expired');
         });
-    }
-    else {
+    } else if (constraints[ii].type == 'Commons link') {
+        constraints[ii].namespace = constraints[ii].namespace.capitalizeFirstLetter();
+        $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
+            action: 'query',
+            meta: 'siteinfo',
+            siprop: 'namespaces',
+            format: 'json'
+        }).done(function(data) {
+            for (var ns in data.query.namespaces) {
+                if (
+                    data.query.namespaces[ns]['*'] === constraints[ii].namespace ||
+                    (data.query.namespaces[ns].canonical !== undefined && data.query.namespaces[ns].canonical === constraints[ii].namespace)
+                ) {
+                    constraints[ii].namespaceid = data.query.namespaces[ns].id;
+                    break;
+                }
+            }
+            if (constraints[ii].namespaceid === undefined) {
+                stopLoading('Undefined namespace "' + constraints[ii].namespace + '"');
+                return;
+            }
+            addMissingConstraintData( ++ii );
+        });
+    } else {
         addMissingConstraintData( ++ii );
     }
 }
@@ -445,8 +466,6 @@ function checkConstraints(pageid, qid, value, ii) {
     else if (co.type == 'Commons link'){
         $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
             action: 'query',
-            meta: 'siteinfo',
-            siprop: 'namespaces', // fixme: only once for whole job
             titles: co.namespace + ':' + value,
             format: 'json'
         }).done(function(data) {
@@ -455,7 +474,7 @@ function checkConstraints(pageid, qid, value, ii) {
                 return false;
             }
             for (var m in data.query.pages){
-                if (data.query.namespaces[data.query.pages[m].ns]['*'] != co.namespace){
+                if (data.query.pages[m].ns !== co.namespaceid) {
                     report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
                     return false;
                 }
