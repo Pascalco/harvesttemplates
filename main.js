@@ -498,7 +498,7 @@ function checkConstraints(pageid, qid, value, ii) {
                             report(pageid, 'error', 'Constraint violation: Conflics with', qid);
                             return false;
                         }
-                        return;
+                        continue;
                     }
                     for (var m in data.entities[qid].claims[pp]) {
                         if (data.entities[qid].claims[pp][m].mainsnak.snaktype == 'value') {
