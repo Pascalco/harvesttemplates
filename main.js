@@ -872,7 +872,7 @@ function proceedOnePage() {
 
 function createCheckboxlist(pageids) {
     for (var j in pageids) {
-        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/' + encodeURIComponent(namespaces[job.namespace] + ':' + pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
+        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/' + encodeURIComponent(namespaces[job.namespace]) + ':' + encodeURIComponent(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
     }
     $('#addvalues').show();
     $('#demo').show();
