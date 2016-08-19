@@ -7,7 +7,7 @@
  * CC0 Public Domain Dedication.
  */
 var allProjects = ['commons', 'mediawiki', 'wikibooks', 'wikidata', 'wikimedia', 'wikinews', 'wikipedia', 'wikiquote', 'wikisource', 'wikiversity', 'wikivoyage'];
-var namespaces = {0 : '', 1: 'Talk', 2: 'User', 3: 'User_talk', 4: 'Wikipedia', 5: 'Wikipedia_talk', 6: 'File', 7: 'File_talk', 8: 'MediaWiki', 9: 'MediaWiki_talk', 10: 'Template', 11: 'Template_talk', 12: 'Help', 13: 'Help_talk', 14: 'Category', 15: 'Category_talk', 100: 'Portal', 101: 'Portal_talk', 108: 'Book', 109: 'Book_talk', 118: 'Draft', 119: 'Draft_talk' };
+var namespaces, fileprefixes, templateprefixes;
 var run = 0;
 var constraints = [];
 var delay = 500;
@@ -151,7 +151,7 @@ function addMissingConstraintData( ii ){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'SELECT ?value WHERE { VALUES ?cl {' + cl + '} . ?value wdt:P279* ?cl }',
+            query: 'SELECT ?value WHERE { VALUES ?cl { ' + cl + ' } . ?value wdt:P279* ?cl }',
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
@@ -161,8 +161,7 @@ function addMissingConstraintData( ii ){
         }).fail(function(data) {
             stopLoading('WQS query expired');
         });
-    }
-    else if (constraints[ii].type == 'Unique value'){
+    } else if (constraints[ii].type == 'Unique value') {
         constraints[ii].values = [];
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
             query: 'SELECT ?value WHERE { ?item wdt:' + job.property + ' ?value } GROUP BY ?value',
@@ -175,8 +174,30 @@ function addMissingConstraintData( ii ){
         }).fail(function(data) {
             stopLoading('WQS query expired');
         });
-    }
-    else {
+    } else if (constraints[ii].type == 'Commons link') {
+        constraints[ii].namespace = constraints[ii].namespace.capitalizeFirstLetter();
+        $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
+            action: 'query',
+            meta: 'siteinfo',
+            siprop: 'namespaces',
+            format: 'json'
+        }).done(function(data) {
+            for (var ns in data.query.namespaces) {
+                if (
+                    data.query.namespaces[ns]['*'] === constraints[ii].namespace ||
+                    (data.query.namespaces[ns].canonical !== undefined && data.query.namespaces[ns].canonical === constraints[ii].namespace)
+                ) {
+                    constraints[ii].namespaceid = data.query.namespaces[ns].id;
+                    break;
+                }
+            }
+            if (constraints[ii].namespaceid === undefined) {
+                stopLoading('Undefined namespace "' + constraints[ii].namespace + '"');
+                return;
+            }
+            addMissingConstraintData( ++ii );
+        });
+    } else {
         addMissingConstraintData( ++ii );
     }
 }
@@ -191,6 +212,29 @@ function createConstraints() {
     });
 }
 
+function loadSiteinfo() {
+    $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
+        action: 'query',
+        meta: 'siteinfo',
+        siprop: 'namespaces|namespacealiases',
+        format: 'json'
+    }).done(function(data) {
+        namespaces = {};
+        for (var ns in data.query.namespaces) {
+            namespaces[ns] = data.query.namespaces[ns]['*'];
+        }
+        fileprefixes = ['File', namespaces[6]];
+        templateprefixes = ['Template', namespaces[10]];
+        for (var i in data.query.namespacealiases) {
+            if (data.query.namespacealiases[i].id == 6) {
+                fileprefixes.push(data.query.namespacealiases[i]['*']);
+            } else if (data.query.namespacealiases[i].id == 10) {
+                templateprefixes.push(data.query.namespacealiases[i]['*']);
+            }
+        }
+        createConstraints();
+    });
+}
 
 function getSiteid(siteid, project) {
     if (project == 'mediawiki' || project == 'wikidata') {
@@ -428,7 +472,7 @@ function checkConstraints(pageid, qid, value, ii) {
                 return false;
             }
             for (var m in data.query.pages){
-                if (namespaces[data.query.pages[m].ns] != co.namespace){
+                if (data.query.pages[m].ns !== co.namespaceid) {
                     report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
                     return false;
                 }
@@ -648,7 +692,12 @@ function handleValue(pageid, qid, value) {
         }
         checkForInterwiki(pageid, qid, res, 'https://' + job.siteid + '.' + job.project + '.org');
     } else if (job.datatype == 'commonsMedia') {
-        value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' '));
+        var res = value.match(/\[\[([^\|\]]+)/);
+        if (res !== null) {
+            value = res[1];
+        }
+        value = value.replace(new RegExp('^(' + fileprefixes.join('|') + '):\\s*', 'i'), '');
+        value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
         if (typeof value !== 'string') {
@@ -717,7 +766,7 @@ function parseTemplate(pageid, qid, text, parameter) {
         .replace(/<ref((?!<\/ref>).)*<\/ref>/g, '') //remove references
         .replace(/<ref([^>]+)>/g, '') //remove reference tags
         .replace(/\s\s+/g, ' ') //remove multiple spaces
-        .replace(new RegExp('{{\\s*' + job.templates + '\\s*', 'i'), '{{' + job.template);
+        .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'i'), '{{' + job.template);
     var txt = text.split('{{' + preg_quote(job.template) + '|');
     if (txt.length == 1) {
         return [false,'Template not found'];
@@ -827,7 +876,7 @@ function proceedOnePage() {
 
 function createCheckboxlist(pageids) {
     for (var j in pageids) {
-        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/'+namespaces[job.namespace] + ':' + encodeURIComponent(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
+        $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/' + encodeURIComponent(namespaces[job.namespace]) + ':' + encodeURIComponent(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
     }
     $('#addvalues').show();
     $('#demo').show();
@@ -1081,7 +1130,7 @@ $(document).ready(function() {
                     // TODO: monolingualtext, geocoordinate (math?)
                     if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
                         reportStatus('loading..');
-                        createConstraints();
+                        loadSiteinfo();
                     } else {
                         stopLoading('datatype ' + job.datatype + ' is not yet supported');
                         $('input[name="property"]').addClass('error');
