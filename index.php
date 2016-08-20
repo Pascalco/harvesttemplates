@@ -21,10 +21,10 @@
     <script src="numerals.js"></script>
     <script src="wpeditionids.js"></script>
     <?php
-$commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
-?>
-        <script src="main.js?version=<?php echo $commit; ?>"></script>
-        <script src="../common.js"></script>
+        $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
+    ?>
+    <script src="main.js?version=<?php echo $commit; ?>"></script>
+    <script src="../common.js"></script>
 
 </head>
 
@@ -45,8 +45,8 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <li><i>Parameter:</i> parameter name in the template. Use numbers for nameless parameters</li>
                 <li><i>Category:</i> non-mandatory option to filter pages on wiki</li>
                 <li><i>Already set:</i> deactivate this option if you encounter performance issues</li>
-                <li><i>Offset:</i> skip a specific number of results. A negative number will start that far from the end
-                <li><i>Limit:</i> limit the number of pages getting loaded
+                <li><i>Offset:</i> skip a specific number of results. A negative number will start that far from the end</li>
+                <li><i>Limit:</i> limit the number of pages getting loaded</li>
             </ul>
             By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata. Alternatively, with <i>demo</i> only parsing is done without any edit action.<br />
             <br /><b><i>News</i></b>
@@ -162,7 +162,7 @@ $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' )
                 <div class="div-table-row">
                     <div class="div-table-col1">Limit</div>
                     <div class="div-table-col2">
-                        <input type="number" name="limit" value="10000">
+                        <input type="number" name="limit" value="10000" min="1">
                     </div>
                 </div>
                 <div class="div-table-row">
