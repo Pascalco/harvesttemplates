@@ -1106,9 +1106,6 @@ $(document).ready(function() {
                 if (job.namespace === '') {
                     $('input[name="namespace"]').addClass('error');
                 }
-                if (job.offset === '') {
-                    $('input[name="offset"]').addClass('error');
-                }
                 if (job.limit === '') {
                     $('input[name="limit"]').addClass('error');
                 }
@@ -1131,6 +1128,9 @@ $(document).ready(function() {
                 }
                 if (job.set === undefined){
                     job.set = 0;
+                }
+                if (job.offset === '') {
+                    job.offset = 0;
                 }
                 $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
                     action: 'wbgetentities',
