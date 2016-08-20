@@ -23,13 +23,13 @@ function preg_quote( str ){
     return (str+'').replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
 }
 
-function escapeHTML (str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\"/g, '&quot;')
-      .replace(/\'/g, '&#39;');
+function escapeHTML( str ) {
+    return (str+'')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/\'/g, '&#39;');
 }
 
 function toArabicNumerals(str) {
@@ -41,22 +41,24 @@ function toArabicNumerals(str) {
 }
 
 function prefillForm() {
-    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        var $input = $('input[name=' + key + ']');
-        if ($input !== undefined) {
-            if (key == 'parameter' && $input.last().val() !== ''){
-                addAlias();
-                $input = $('input[name=' + key + ']'); // reload as we have one more field
-            }
-            if ($input.attr('type') == 'checkbox') {
-                if (value == '1' || value == key){
-                    $input.prop('checked', true);
-                } else {
-                    $input.prop('checked', false);
+    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/g, function(m, key, value) {
+        if (value !== '') {
+            var $input = $('input[name=' + key + ']');
+            if ($input.length > 0) {
+                if (key == 'parameter' && $input.last().val() !== ''){
+                    addAlias();
+                    $input = $($input.selector); // reload as we have one more field
                 }
-            } else {
-                $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
-            }
+                if ($input.attr('type') == 'checkbox') {
+                    if (value == '1' || value == key){
+                        $input.prop('checked', true);
+                    } else {
+                        $input.prop('checked', false);
+                    }
+                } else {
+                    $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
+                }
+            } 
         }
     });
 }
@@ -958,49 +960,49 @@ function loadUnits(claims){
     }
 }
 
-function showAdditionalFields(){
-    $('#getpages').attr('disabled', false);
+function showAdditionalFields() {
     reportStatus('');
     var val = $('input[name="property"]').val();
-    if (val !== '') {
-        var p = 'P' + val;
-        $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
-            action: 'wbgetentities',
-            ids: p,
-            format: 'json'
-        }, function(data) {
-            if (data.entities[p].missing !== undefined){
-                $('input[name="property"]').addClass('error');
-                return 0;
-            }
-            switch (data.entities[p].datatype) {
-                case 'wikibase-item':
-                    $('#wikisyntax').show();
-                    // no break here
-                case 'external-id':
-                case 'string':
-                case 'url':
-                    $('#prefix').show();
-                    break;
-                case 'time':
-                    $('.timeparameters').show();
-                    break;
-                case 'quantity':
-                    if (data.entities[p].claims.P2237 !== undefined){
-                        loadUnits(data.entities[p].claims.P2237);
-                        $('.quantityparameters').show();
-                    } else {
-                        reportStatus('P2237 (units used for this property) on property page missing');
-                        $('#getpages').attr('disabled', true);
-                        $('input[name="property"]').addClass('error');
-                    }
-                    break;
-            }
-            if (data.entities[p].labels.en !== undefined){
-                $('#plabel').text(data.entities[p].labels.en.value);
-            }
-        });
+    if (val === '') {
+        $('input[name="property"]').addClass('error');
+        return;
     }
+    var p = 'P' + val;
+    $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
+        action: 'wbgetentities',
+        ids: p,
+        format: 'json'
+    }, function(data) {
+        if (data.entities[p].missing !== undefined){
+            $('input[name="property"]').addClass('error');
+            return;
+        }
+        switch (data.entities[p].datatype) {
+            case 'wikibase-item':
+                $('#wikisyntax').show();
+                // no break here
+            case 'external-id':
+            case 'string':
+            case 'url':
+                $('#prefix').show();
+                break;
+            case 'time':
+                $('.timeparameters').show();
+                break;
+            case 'quantity':
+                if (data.entities[p].claims.P2237 !== undefined){
+                    loadUnits(data.entities[p].claims.P2237);
+                    $('.quantityparameters').show();
+                } else {
+                    reportStatus('P2237 (units used for this property) on property page missing');
+                    $('input[name="property"]').addClass('error');
+                }
+                break;
+        }
+        if (data.entities[p].labels.en !== undefined){
+            $('#plabel').text(data.entities[p].labels.en.value);
+        }
+    });
 }
 
 function hideAdditionalFields(){
@@ -1104,6 +1106,15 @@ $(document).ready(function() {
                 if (job.namespace === '') {
                     $('input[name="namespace"]').addClass('error');
                 }
+                if (job.offset === '') {
+                    $('input[name="offset"]').addClass('error');
+                }
+                if (job.limit === '') {
+                    $('input[name="limit"]').addClass('error');
+                }
+                if (job.category !== '' && job.depth === '') {
+                    $('input[name="depth"]').addClass('error');
+                }
                 if ($('.error').length > 0) {
                     stopLoading('');
                     return;
@@ -1128,13 +1139,25 @@ $(document).ready(function() {
                 }, function(data) {
                     job.datatype = data.entities[job.property].datatype;
                     // TODO: monolingualtext, geocoordinate (math?)
-                    if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) != -1) {
-                        reportStatus('loading..');
-                        loadSiteinfo();
-                    } else {
-                        stopLoading('datatype ' + job.datatype + ' is not yet supported');
+                    if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) === -1) {
                         $('input[name="property"]').addClass('error');
+                        stopLoading('datatype ' + job.datatype + ' is not yet supported');
+                        return;
                     }
+                    if (data.entities[job.property].claims !== undefined && data.entities[job.property].claims.P31 !== undefined) {
+                        for (var i in data.entities[job.property].claims.P31) {
+                            if (
+                                data.entities[job.property].claims.P31[i].mainsnak.snaktype == 'value' &&
+                                data.entities[job.property].claims.P31[i].mainsnak.datavalue.value['numeric-id'] === 18644427
+                            ) {
+                                $('input[name="property"]').addClass('error');
+                                stopLoading('this property is deprecated');
+                                return;
+                            }
+                        }
+                    }
+                    reportStatus('loading..');
+                    loadSiteinfo();
                 });
             });
         } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
