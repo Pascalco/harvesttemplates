@@ -759,7 +759,7 @@ function handleValue(pageid, qid, value) {
     }
 }
 
-function parseTemplate(pageid, qid, text, parameter) {
+function parseTemplate(text, parameter) {
     var result = '';
     text = text
         .replace(/(\n|\r)/gm, '') //remove linebreaks
@@ -837,11 +837,11 @@ function proceedOnePage() {
             })
             .done(function(data2) {
                 var qid = el.data('qid');
-                if ('revisions' in data2.query.pages[id]){
+                if ('revisions' in data2.query.pages[id]) {
                     if (job.parameter.length !== 0) {
                         var value = [false];
                         $.each ( job.parameter, function( k, v ) {
-                            value = parseTemplate(id, qid, data2.query.pages[id].revisions[0]['*'], v);
+                            value = parseTemplate(data2.query.pages[id].revisions[0]['*'], v);
                             return !value[0];
                         } );
                         if (value[0] === true){
@@ -854,7 +854,7 @@ function proceedOnePage() {
                             values = [];
                         for (var kk = 1; kk <= 3; kk++) {
                             if (job['aparameter'+kk] !== undefined){
-                                var value = parseTemplate(id, qid, data2.query.pages[id].revisions[0]['*'], job['aparameter'+kk]);
+                                var value = parseTemplate(data2.query.pages[id].revisions[0]['*'], job['aparameter'+kk]);
                                 st.push(value[0]);
                                 values.push(value[1]);
                             }
