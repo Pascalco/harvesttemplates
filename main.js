@@ -772,7 +772,7 @@ function parseTemplate(text) {
     if (txt.length == 1) {
         return false;
     }
-    text = '|' + txt[1];
+    text = txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
     while (true) {
         if (patt.test(text)) {
@@ -793,12 +793,11 @@ function parseTemplate(text) {
             if (value !== '') {
                 result[param] = value;
             }
-            if (!isNaN(param)) {
-                unnamed++; // parameter was found, so increment anyway
-            }
         } else {
-            result[unnamed] = param;
-            unnamed++;
+            if (param !== '') {
+                result[unnamed] = param;
+                unnamed++;
+            }
         }
     });
     return result;
