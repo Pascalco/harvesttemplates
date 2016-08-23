@@ -835,6 +835,7 @@ function proceedOnePage() {
                     var params = parseTemplate(data2.query.pages[id].revisions[0]['*']);
                     if (params === false) {
                         report(id, 'error', 'Template not found', qid);
+                        proceedOnePage();
                         return;
                     }
                     if (job.parameter.length !== 0) {
