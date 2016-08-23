@@ -775,12 +775,8 @@ function parseTemplate(text, parameter) {
     }
     text = '|' + txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
-    while (true) {
-        if (patt.test(text)) {
-            text = text.replace(patt, ''); //remove all other templates
-        } else {
-            break;
-        }
+    while (patt.test(text)) {
+        text = text.replace(patt, ''); //remove all other templates
     }
     txt = text.split('}}');
     text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
