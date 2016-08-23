@@ -759,8 +759,7 @@ function handleValue(pageid, qid, value) {
     }
 }
 
-function parseTemplate(text, parameter) {
-    var result = '';
+function parseTemplate(text) {
     text = text
         .replace(/(\n|\r)/gm, '') //remove linebreaks
         .replace(/<!--.*?-->/g, '') //remove comments
@@ -771,40 +770,39 @@ function parseTemplate(text, parameter) {
         .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'i'), '{{' + job.template);
     var txt = text.split('{{' + preg_quote(job.template) + '|');
     if (txt.length == 1) {
-        return [false,'Template not found'];
+        return false;
     }
-    text = '|' + txt[1];
+    text = txt[1];
     var patt = new RegExp('{{((?!}}|{{).)*}}');
     while (patt.test(text)) {
         text = text.replace(patt, ''); //remove all other templates
     }
     txt = text.split('}}');
     text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
-    var parts = text.split('|');
-    var unnamed = [];
-    $.each(parts, function(i, m) {
-        if (m.indexOf('=') != '-1') {
-            var sp = m.split('=');
-            if (sp[0].toLowerCase().trim() == parameter.toLowerCase()) {
-                result = sp.slice(1).join('=').trim();
+    var result = {};
+    var unnamed = 0;
+    $.each(text.split('|'), function(i, m) {
+        var sp = m.split('='); // param = value
+        var param = sp[0].trim(); 
+        if (sp.length > 1) {
+            var value = sp.slice(1).join('=').trim();
+            if (value === '') {
+                if (param in result) {
+                    delete result[param];
+                }
+            } else {
+                result[param] = value;
             }
         } else {
-            unnamed.push(m.trim());
+            unnamed++;
+            if (param !== '') {
+                result[unnamed] = param;
+            } else if (unnamed in result) {
+                delete result[unnamed];
+            }
         }
     });
-    if (result === '' && !isNaN(parameter)) {
-        if (unnamed.length > parameter) {
-            result = unnamed[parameter];
-        }
-    }
-    if (result !== '') {
-        if (job.demo != 1 && bot == 0) {
-            delay = 5000;
-        }
-        return [true, result];
-    } else {
-        return [false, 'no value'];
-    }
+    return result;
 }
 
 function proceedOnePage() {
@@ -834,31 +832,42 @@ function proceedOnePage() {
             .done(function(data2) {
                 var qid = el.data('qid');
                 if ('revisions' in data2.query.pages[id]) {
+                    var params = parseTemplate(data2.query.pages[id].revisions[0]['*']);
+                    if (params === false) {
+                        report(id, 'error', 'Template not found', qid);
+                        return;
+                    }
                     if (job.parameter.length !== 0) {
-                        var value = [false];
-                        $.each ( job.parameter, function( k, v ) {
-                            value = parseTemplate(data2.query.pages[id].revisions[0]['*'], v);
-                            return !value[0];
-                        } );
-                        if (value[0] === true){
-                            handleValue(id, qid, value[1]);
+                        var value = false;
+                        for (var param in job.parameter) {
+                            if (param in params) {
+                                value = params[param];
+                                break;
+                            }
+                        }
+                        if (value !== false) {
+                            if (job.demo != 1 && bot === 0) {
+                                delay = 5000;
+                            }
+                            handleValue(id, qid, value);
                         } else {
-                            report(id, 'error', value[1], qid);
+                            report(id, 'error', 'no value', qid);
                         }
                     } else {
                         var st = [],
                             values = [];
                         for (var kk = 1; kk <= 3; kk++) {
-                            if (job['aparameter'+kk] !== undefined){
-                                var value = parseTemplate(data2.query.pages[id].revisions[0]['*'], job['aparameter'+kk]);
-                                st.push(value[0]);
-                                values.push(value[1]);
-                            }
+                            var value = params[job['aparameter'+kk]];
+                            st.push(value !== undefined);
+                            values.push(value);
                         }
-                        if (st[0] !== false){
+                        if (st[0] !== false) {
+                            if (job.demo != 1 && bot === 0) {
+                                delay = 5000;
+                            }
                             handleValue(id, qid, values);
                         } else {
-                            report(id, 'error', values[0], qid);
+                            report(id, 'error', 'no value', qid);
                         }
                     }
                 } else {
