@@ -784,19 +784,25 @@ function parseTemplate(text) {
     txt = text.split('}}');
     text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
     var result = {};
-    var unnamed = 1;
+    var unnamed = 0;
     $.each(text.split('|'), function(i, m) {
         var sp = m.split('='); // param = value
         var param = sp[0].trim(); 
         if (sp.length > 1) {
             var value = sp.slice(1).join('=').trim();
-            if (value !== '') {
+            if (value === '') {
+                if (param in result) {
+                    delete result[param];
+                }
+            } else {
                 result[param] = value;
             }
         } else {
+            unnamed++;
             if (param !== '') {
                 result[unnamed] = param;
-                unnamed++;
+            } else if (unnamed in result) {
+                delete result[unnamed];
             }
         }
     });
