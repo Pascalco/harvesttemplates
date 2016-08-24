@@ -703,10 +703,10 @@ function handleValue(pageid, qid, value) {
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
         if (typeof value !== 'string') {
-            if (value[1] === '' || value[1] == 'no value' || value[1] === undefined){
+            if (value[1] === undefined) {
                 value[1] = '00';
             }
-            if (value[2] === '' || value[2] == 'no value' || value[2] === undefined){
+            if (value[2] === undefined) {
                 value[2] = '00';
             }
             value = value[2] + ' ' + value[1] + ' ' + value[0];
@@ -716,9 +716,6 @@ function handleValue(pageid, qid, value) {
         if (newvalue !== false) {
             newvalue = newvalue.replace(/-(\d)-/, '-0\$1-');
             newvalue = newvalue.replace(/-(\d)$/, '-0\$1');
-            if (isNaN(parseInt(job.limityear))) {
-                job.limityear = 1926;
-            }
             if (newvalue.substring(5, 10) == '00-00') {
                 checkConstraints(pageid, qid, newvalue, 0);
             } else if (job.rel == '=>') {
@@ -834,7 +831,7 @@ function proceedOnePage() {
                 if ('revisions' in data2.query.pages[id]) {
                     var params = parseTemplate(data2.query.pages[id].revisions[0]['*']);
                     if (params === false) {
-                        report(id, 'error', 'Template not found', qid);
+                        report(id, 'error', 'template not found', qid);
                         proceedOnePage();
                         return;
                     }
@@ -1137,6 +1134,9 @@ $(document).ready(function() {
                 }
                 if (job.offset === '') {
                     job.offset = 0;
+                }
+                if (isNaN(parseInt(job.limityear))) {
+                    job.limityear = 1926;
                 }
                 $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
                     action: 'wbgetentities',
