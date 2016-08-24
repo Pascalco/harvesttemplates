@@ -840,9 +840,9 @@ function proceedOnePage() {
                     }
                     if (job.parameter.length !== 0) {
                         var value = false;
-                        for (var param in job.parameter) {
-                            if (param in params) {
-                                value = params[param];
+                        for (var pp in job.parameter) {
+                            if (job.parameter[pp] in params) {
+                                value = params[job.parameter[pp]];
                                 break;
                             }
                         }
