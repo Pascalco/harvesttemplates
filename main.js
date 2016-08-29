@@ -457,7 +457,7 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     else if (co.type == 'One of'){
         if (co.values.indexOf(value) == -1) {
-            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) +'</i>', qid);
+            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ++ii);
@@ -622,6 +622,7 @@ function checkForInterwiki(pageid, qid, res, url) {
     $.getJSON(url + '/w/api.php?callback=?', {
         action: 'query',
         prop: 'pageprops',
+        ppprop: 'wikibase_item',
         titles: res,
         redirects: 1,
         format: 'json'
