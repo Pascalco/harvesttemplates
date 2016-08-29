@@ -651,12 +651,8 @@ function checkForInterwiki(pageid, qid, res, url) {
             for (var m in data.query.pages) {
                 if (m != '-1') {
                     if ('pageprops' in data.query.pages[m]) {
-                        if ('wikibase_item' in data.query.pages[m].pageprops) {
-                            var newvalue = data.query.pages[m].pageprops.wikibase_item;
-                            checkConstraints(pageid, qid, newvalue, 0);
-                        } else {
-                            report(pageid, 'error', 'target has no Wikidata item', qid);
-                        }
+                        var newvalue = data.query.pages[m].pageprops.wikibase_item;
+                        checkConstraints(pageid, qid, newvalue, 0);
                     } else {
                         report(pageid, 'error', 'target has no Wikidata item', qid);
                     }
