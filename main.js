@@ -218,9 +218,17 @@ function loadSiteinfo() {
     $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
         action: 'query',
         meta: 'siteinfo',
-        siprop: 'namespaces|namespacealiases',
+        siprop: 'general|namespaces|namespacealiases',
         format: 'json'
     }).done(function(data) {
+        job.lang = data.query.general.lang;
+        job.dbname = data.query.general.wikiid;
+        if ( !wbeditionid[job.dbname] ) {
+            $('input[name="siteid"], input[name="project"]').addClass('error');
+            stopLoading(job.siteid + '.' + job.project + '.org (' + job.dbname + ') doesn\'t have an item yet.<br>' +
+                'Please create it if it doesn\'t exist yet and ask for adding it.');
+            return;
+        }
         namespaces = {};
         for (var ns in data.query.namespaces) {
             namespaces[ns] = data.query.namespaces[ns]['*'];
@@ -243,41 +251,6 @@ function getSiteid(siteid, project) {
         return 'www';
     } else {
         return siteid.toLowerCase();
-    }
-}
-
-function getLanguage(siteid, project) {
-    if (project == 'mediawiki' || project == 'wikidata' || project == 'wikimedia') {
-        return 'en';
-    }
-    var langExceptions = {
-        als: 'gsw',
-        no: 'nb',
-        simple: 'en'
-    };
-    if (siteid in langExceptions) {
-        return langExceptions[siteid];
-    }
-    return siteid.toLowerCase();
-}
-
-function getDbname(siteid, project) {
-    if (siteid == 'commons' && project == 'wikimedia') {
-        return 'commonswiki';
-    } else if (siteid == 'species' && project == 'wikimedia') {
-        return 'specieswiki';
-    } else if (siteid == 'meta' && project == 'wikimedia') {
-        return 'metawiki';
-    } else if (siteid == 'www' && project == 'wikidata') {
-        return 'wikidatawiki';
-    } else if (siteid == 'www' && project == 'mediawiki') {
-        return 'mediawikiwiki';
-    }
-    siteid = siteid.replace(/-/g, '_');
-    if (project == 'wikipedia') {
-        return siteid + 'wiki';
-    } else {
-        return siteid + project;
     }
 }
 
@@ -1121,14 +1094,6 @@ $(document).ready(function() {
                 }
 
                 job.siteid = getSiteid(job.siteid, job.project);
-                job.lang = getLanguage(job.siteid, job.project);
-                job.dbname = getDbname(job.siteid, job.project);
-                if ( !wbeditionid[job.dbname] ) {
-                    stopLoading(job.siteid + '.' + job.project + '.org (' + job.dbname + ') doesn\'t have an item yet.<br>' +
-                        'Please create it if it doesn\'t exist yet and ask for adding it.');
-                    $('input[name="siteid"], input[name="project"]').addClass('error');
-                    return;
-                }
                 if (job.set === undefined){
                     job.set = 0;
                 }
