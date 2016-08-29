@@ -430,7 +430,7 @@ function checkConstraints(pageid, qid, value, ii) {
     }
     else if (co.type == 'One of'){
         if (co.values.indexOf(value) == -1) {
-            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) +'</i>', qid);
+            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
         checkConstraints(pageid, qid, value, ++ii);
@@ -595,6 +595,7 @@ function checkForInterwiki(pageid, qid, res, url) {
     $.getJSON(url + '/w/api.php?callback=?', {
         action: 'query',
         prop: 'pageprops',
+        ppprop: 'wikibase_item',
         titles: res,
         redirects: 1,
         format: 'json'
@@ -623,12 +624,8 @@ function checkForInterwiki(pageid, qid, res, url) {
             for (var m in data.query.pages) {
                 if (m != '-1') {
                     if ('pageprops' in data.query.pages[m]) {
-                        if ('wikibase_item' in data.query.pages[m].pageprops) {
-                            var newvalue = data.query.pages[m].pageprops.wikibase_item;
-                            checkConstraints(pageid, qid, newvalue, 0);
-                        } else {
-                            report(pageid, 'error', 'target has no Wikidata item', qid);
-                        }
+                        var newvalue = data.query.pages[m].pageprops.wikibase_item;
+                        checkConstraints(pageid, qid, newvalue, 0);
                     } else {
                         report(pageid, 'error', 'target has no Wikidata item', qid);
                     }
