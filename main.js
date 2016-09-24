@@ -355,7 +355,15 @@ function addValue(pageid, qid, value) {
 
 
 function checkConstraints(pageid, qid, value, ii) {
-    if (ii == constraints.length){
+    if (ii == constraints.length) {
+        if (job.demo != 1) {
+            for (var i = 0; i++; i < ii) {
+                if (constraints[i].type == 'Unique value') {
+                    constraints[i].values.push(value);
+                    break;
+                }
+            }
+        }
         addValue(pageid, qid, value);
         return true;
     }
@@ -373,9 +381,6 @@ function checkConstraints(pageid, qid, value, ii) {
         if (co.values.indexOf(value) != -1) {
             report(pageid, 'error', 'Constraint violation: Unique value <i>' + escapeHTML(value) + '</i>', qid);
             return false;
-        }
-        if (job.demo != 1) {
-            constraints[ii].values.push(value);
         }
         checkConstraints(pageid, qid, value, ++ii);
         return true;
@@ -641,7 +646,7 @@ function handleValue(pageid, qid, value) {
     if (job.datatype == 'string' || job.datatype == 'external-id') {
         checkConstraints(pageid, qid, job.prefix + value, 0);
     } else if (job.datatype == 'url') {
-        var res = value.match(/\[([^\s]+)(\s(.*))?\]/);
+        var res = value.match(/\[([^\s\]]+)(\s(.*))?\]/);
         if (res !== null) {
             value = res[1];
         }
@@ -745,7 +750,7 @@ function parseTemplate(text) {
         text = text.replace(patt, ''); //remove all other templates
     }
     txt = text.split('}}');
-    text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, '\]\]'); //simplify links
+    text = txt[0].replace(/\|((?!\]\]|\||\[\[).)*\]\]/g, ']]'); //simplify links
     var result = {};
     var unnamed = 0;
     $.each(text.split('|'), function(i, m) {
@@ -921,7 +926,7 @@ function loadUnits(claims){
             props: 'labels',
             languages: 'en',
             format: 'json'
-        }, function(data) {
+        }).done(function(data) {
             for (var q in data.entities){
                 if (data.entities[q].labels.en !== undefined){
                     $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
@@ -945,7 +950,7 @@ function showAdditionalFields() {
         action: 'wbgetentities',
         ids: p,
         format: 'json'
-    }, function(data) {
+    }).done(function(data) {
         if (data.entities[p].missing !== undefined){
             $('input[name="property"]').addClass('error');
             return;
@@ -1104,7 +1109,7 @@ $(document).ready(function() {
                     action: 'wbgetentities',
                     ids: job.property,
                     format: 'json'
-                }, function(data) {
+                }).done(function(data) {
                     job.datatype = data.entities[job.property].datatype;
                     // TODO: monolingualtext, geocoordinate (math?)
                     if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) === -1) {
