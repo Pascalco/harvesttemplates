@@ -470,12 +470,12 @@ function checkConstraints(pageid, qid, value, ii) {
             for (var pp in co.list){
                 if (data.entities[qid].claims[pp] !== undefined) {
                     if (co.list[pp].length === 0){
-                        report(pageid, 'error', 'Constraint violation: Conflics with', qid);
+                        report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
                         return false;
                     }
                     if (pp == job.property) {
                         if ($.inArray(value, co.list[pp]) !== -1) {
-                            report(pageid, 'error', 'Constraint violation: Conflics with', qid);
+                            report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
                             return false;
                         }
                         continue;
@@ -484,7 +484,7 @@ function checkConstraints(pageid, qid, value, ii) {
                         if (data.entities[qid].claims[pp][m].mainsnak.snaktype == 'value') {
                             var numericid = data.entities[qid].claims[pp][m].mainsnak.datavalue.value['numeric-id'];
                             if (co.list[pp].indexOf(numericid) != -1) {
-                                report(pageid, 'error', 'Constraint violation: Conflics with', qid);
+                                report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
                                 return false;
                             }
                         }
@@ -740,7 +740,7 @@ function parseTemplate(text) {
         .replace(/<ref([^>]+)>/g, '') //remove reference tags
         .replace(/\s\s+/g, ' ') //remove multiple spaces
         .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'i'), '{{' + job.template);
-    var txt = text.split('{{' + preg_quote(job.template) + '|');
+    var txt = text.split('{{' + job.template + '|');
     if (txt.length == 1) {
         return false;
     }
@@ -801,10 +801,10 @@ function proceedOnePage() {
                 rvprop: 'content',
                 format: 'json'
             })
-            .done(function(data2) {
+            .done(function(data) {
                 var qid = el.data('qid');
-                if ('revisions' in data2.query.pages[id]) {
-                    var params = parseTemplate(data2.query.pages[id].revisions[0]['*']);
+                if ('revisions' in data.query.pages[id]) {
+                    var params = parseTemplate(data.query.pages[id].revisions[0]['*']);
                     if (params === false) {
                         report(id, 'error', 'template not found', qid);
                         proceedOnePage();
