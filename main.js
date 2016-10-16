@@ -146,7 +146,7 @@ function addMissingConstraintData( ii ){
         getPages();
         return 1;
     }
-    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
+    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Qualifiers' || constraints[ii].type == 'Source') {
         stopLoading('Constraint violation: ' + constraints[ii].type);
         $('input[name="property"]').addClass('error');
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){

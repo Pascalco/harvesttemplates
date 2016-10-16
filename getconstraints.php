@@ -89,6 +89,7 @@ $con = array();
 
 $constraints = array(
     'Qualifier' => array(),
+    'Qualifiers' => array('required'),
     'Source' => array(),
     'Format' => array('pattern'),
     'Unique value'=> array(),
