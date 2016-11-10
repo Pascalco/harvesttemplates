@@ -122,20 +122,11 @@ foreach($constraints as $constraint => $mparas){
                     for ($i=count($templ);$i>=0;$i--){
                         $value = str_replace('$$$'.($i+1),$templ[$i],$value);
                     }
-                    if ($mpara == 'required' && $value !== 'true' ) {
-                        continue;
-                    }
                     if ($mpara == 'class' || $mpara == 'values'){
                         $value = parseQ($value);
                     }
-                    if ($mpara == 'list'){
-                        if ( $constraint == 'Conflicts with' ) {
-                            $value = parsePQ($value);
-                        } else {
-                            if ( $value === '' ) {
-                                continue;
-                            }
-                        }
+                    if ($mpara == 'list' && $constraint == 'Conflicts with' ) {
+                        $value = parsePQ($value);
                     }
                     if ($mpara == 'pattern'){
                         if (substr($value,0,4) == '(?i)'){
