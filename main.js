@@ -151,7 +151,7 @@ function addMissingConstraintData( ii ){
         $('input[name="property"]').addClass('error');
     } else if (constraints[ii].type == 'Qualifiers') {
         if (constraints[ii].required === 'true' && !!constraints[ii].list) {
-            stopLoading('Constraint violation: Madatory qualifiers');
+            stopLoading('Constraint violation: Mandatory qualifiers');
             $('input[name="property"]').addClass('error');
         }
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
