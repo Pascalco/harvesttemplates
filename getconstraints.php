@@ -64,7 +64,7 @@ $url = 'https://www.wikidata.org/w/api.php?';
 $data = array('action' => 'query', 'titles' => 'Property_talk:'.$_GET['p'], 'prop' => 'revisions', 'rvprop' => 'content', 'format' => 'json');
 foreach( $data as $k => $v ){
     $v2 = str_replace( ' ', '%20', $v );
-    $url.=$k.'='.$v2.'&';
+    $url .= "$k=$v2&";
 }
 $curl = curl_init();
 curl_setopt_array( $curl, array(
@@ -80,16 +80,14 @@ foreach( $query->query->pages as $k => $v ){
 
 $text = replaceQPtemplates($text);
 $text = replaceQlinks($text);
-$foo = replaceNowiki($text);
-$text = $foo[0];
-$templ = $foo[1];
+list( $text, $templ ) = replaceNowiki($text);
 $text = str_replace(array('|classes','| classes'),'|class',$text);
 
 $con = array();
 
 $constraints = array(
     'Qualifier' => array(),
-    'Qualifiers' => array('required'),
+    'Qualifiers' => array('list', 'required'),
     'Source' => array(),
     'Format' => array('pattern'),
     'Unique value'=> array(),
@@ -105,7 +103,7 @@ foreach($constraints as $constraint => $mparas){
     $pat = '/{{[Cc]onstraint:' . str_replace( ' ', '[ _]', $constraint ) . '\s*(?:\|([^}]+))?}}/';
     if ( preg_match_all( $pat, $text, $matches, PREG_SET_ORDER ) ){
         $newconstraint = array( 'type' => $constraint );
-        if ( in_array( $constraint , array( 'Qualifier', 'Source' ) ) ) {
+        if ( in_array( $constraint, array( 'Qualifier', 'Source' ) ) ) {
             $con = array( $newconstraint );
             break;
         }
@@ -127,7 +125,7 @@ foreach($constraints as $constraint => $mparas){
                     if ($mpara == 'class' || $mpara == 'values'){
                         $value = parseQ($value);
                     }
-                    if ($mpara == 'list'){
+                    if ($mpara == 'list' && $constraint == 'Conflicts with' ) {
                         $value = parsePQ($value);
                     }
                     if ($mpara == 'pattern'){
