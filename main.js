@@ -866,7 +866,7 @@ function createCheckboxlist(pageids) {
     }
     $('#addvalues').show();
     $('#demo').show();
-    $('.rightbox').show();
+    $('#downloadlinks').show();
     stopLoading(pageids.length == 1 ? 'Found one page' : 'Found ' + pageids.length + ' pages');
 }
 
@@ -1040,6 +1040,8 @@ $(document).ready(function() {
         e.preventDefault();
         if ($(this).attr('id') == 'getpages') {
             $(this).attr('disabled', true);
+            $('.permalink').show();
+            $('#downloadlinks').hide();
             $.ajax({
                 type: 'GET',
                 url: '../oauth.php',
