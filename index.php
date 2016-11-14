@@ -137,6 +137,7 @@
                             <option>.</option>
                             <option>,</option>
                         </select>
+                        <input type="checkbox" name="truncate" value="1">truncate the value on decimal mark</div>
                     </div>
                 </div>
                 <h3>Filter</h3>

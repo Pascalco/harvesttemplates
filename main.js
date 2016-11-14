@@ -723,6 +723,9 @@ function handleValue(pageid, qid, value) {
             value = value.replace(/\./g, ''); //remove thousands separators
             value = value.replace(',', '.'); //replace decimal mark , by .
         }
+        if (job.truncate && value.indexOf(".") != -1) {
+            value = value.substring(0, value.indexOf(".")); // truncate after "." if needed
+        }
         var patt = /^[0-9.]+$/;
         if (patt.test(value)){
             if (value.indexOf('.') > -1){
