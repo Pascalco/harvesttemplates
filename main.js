@@ -322,9 +322,7 @@ function addValue(pageid, qid, value) {
                 q: qid,
                 p: job.property,
                 amount: value,
-                unit: job.unit,
-                upper: value,
-                lower: value
+                unit: job.unit
             };
             break;
     }
