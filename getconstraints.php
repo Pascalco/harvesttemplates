@@ -119,7 +119,7 @@ foreach($constraints as $constraint => $mparas){
             if ($ok == 1){
                 foreach($mparas as $mpara){
                     $value = $res[$mpara];
-                    for ($i=count($templ);$i>=0;$i--){
+                    for ($i=count($templ)-1;$i>=0;$i--){
                         $value = str_replace('$$$'.($i+1),$templ[$i],$value);
                     }
                     if ($mpara == 'class' || $mpara == 'values'){
