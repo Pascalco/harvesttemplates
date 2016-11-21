@@ -530,8 +530,8 @@ function parseDate(value) {
         11: 'XI',
         12: 'XII'
     };
-    //Spanish decades
-    var r = new RegExp('años (\\d{4})');
+    //imprecise dstes
+    var r = new RegExp('\\b(años|vor|nach|ungefähr|ca\.?|around)\\b');
     var res = value.match(r);
     if (res !== null) {
         return date;
