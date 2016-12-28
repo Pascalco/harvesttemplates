@@ -14,6 +14,8 @@ var delay = 500;
 var job = false;
 var i = 0;
 var bot = 0;
+var cntSuccess = 0;
+var cntError = 0;
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -58,7 +60,7 @@ function prefillForm() {
                 } else {
                     $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
                 }
-            } 
+            }
         }
     });
 }
@@ -99,6 +101,7 @@ function toFile(format) {
 
 function report(pageid, status, value, qid) {
     if (status == 'success') {
+        cntSuccess += 1;
         if (job.datatype == 'wikibase-item') {
             value = '<a href="//www.wikidata.org/wiki/' + value + '" target="_blank">' + value + '</a>';
         } else {
@@ -107,6 +110,7 @@ function report(pageid, status, value, qid) {
         $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
     } else {
         delay = 500;
+        cntError += 1;
         $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '</span>');
     }
     $('#' + pageid).parent().addClass(status);
@@ -759,7 +763,7 @@ function parseTemplate(text) {
     var unnamed = 0;
     $.each(text.split('|'), function(i, m) {
         var sp = m.split('='); // param = value
-        var param = sp[0].trim(); 
+        var param = sp[0].trim();
         if (sp.length > 1) {
             var value = sp.slice(1).join('=').trim();
             if (value === '') {
@@ -788,7 +792,7 @@ function proceedOnePage() {
     }
     var $pagelist = $('input[name="pagelist"]');
     if (i == $pagelist.length) {
-        reportStatus('done');
+        reportStatus('done<br />' + cntSuccess + ' successful edits, ' + cntError + ' errors');
         stopJob();
         return true;
     }
@@ -1060,6 +1064,8 @@ $(document).ready(function() {
                 $('#demo').hide();
                 stopJob();
                 i = 0;
+                cntSuccess = 0;
+                cntError = 0;
 
                 job = {'parameter' : []};
                 var fields = $( 'form' ).serializeArray();
