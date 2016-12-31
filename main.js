@@ -637,7 +637,11 @@ function checkForInterwiki(pageid, qid, res, url) {
                 if (m != '-1') {
                     if ('pageprops' in data.query.pages[m]) {
                         var newvalue = data.query.pages[m].pageprops.wikibase_item;
-                        checkConstraints(pageid, qid, newvalue, 0);
+                        if (newvalue == qid) {
+                            report(pageid, 'error', 'target is same as the item', qid);
+                        } else {
+                            checkConstraints(pageid, qid, newvalue, 0);
+                        }
                     } else {
                         report(pageid, 'error', 'target has no Wikidata item', qid);
                     }
