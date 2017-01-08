@@ -532,14 +532,14 @@ function parseDate(value) {
         11: 'XI',
         12: 'XII'
     };
-    //imprecise dstes
+    //imprecise dates
     var r = new RegExp('\\b(años|vor|nach|ungefähr|ca\.?|around)\\b');
     var res = value.match(r);
     if (res !== null) {
         return date;
     }
     //only year
-    r = new RegExp('(\\d{4})');
+    r = new RegExp('\\b(\\d{4})\\b');
     res = value.match(r);
     if (res !== null) {
         date = res[1] + '-00-00';
