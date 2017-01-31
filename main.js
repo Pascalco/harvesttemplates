@@ -751,7 +751,7 @@ function parseTemplate(text) {
         .replace(/<ref([^>]+)>/g, '') //remove reference tags
         .replace(/\s\s+/g, ' ') //remove multiple spaces
         .replace(/'{2,}/, '') //remove some MediaWiki syntax
-        .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'i'), '{{' + job.template);
+        .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'gi'), '{{' + job.template);
     var txt = text.split('{{' + job.template + '|');
     if (txt.length == 1) {
         return false;
