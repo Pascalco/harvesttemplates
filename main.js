@@ -364,7 +364,7 @@ function addValue(pageid, qid, value) {
 function checkConstraints(pageid, qid, value, ii) {
     if (ii == constraints.length) {
         if (job.demo != 1) {
-            for (var i = 0; i++; i < ii) {
+            for (var i = 0; i < ii; i++) {
                 if (constraints[i].type == 'Unique value') {
                     constraints[i].values.push(value);
                     break;
