@@ -452,6 +452,7 @@ function checkConstraints(pageid, qid, value, ii) {
         $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
             action: 'query',
             titles: co.namespace + ':' + value,
+            redirects: 'true',
             format: 'json'
         }).done(function(data) {
             if ('-1' in data.query.pages) {
@@ -462,6 +463,8 @@ function checkConstraints(pageid, qid, value, ii) {
                 if (data.query.pages[m].ns !== co.namespaceid) {
                     report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
                     return false;
+                } else {
+                    value = data.query.pages[m].title.slice(co.namespace.length+1)
                 }
             }
             checkConstraints(pageid, qid, value, ++ii);
@@ -685,7 +688,6 @@ function handleValue(pageid, qid, value) {
             value = res[1];
         }
         value = value.replace(new RegExp('^(' + fileprefixes.join('|') + '):\\s*', 'i'), '');
-        value = decodeURIComponent(value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
         if (typeof value !== 'string') {
