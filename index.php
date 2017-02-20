@@ -148,6 +148,13 @@
                     </div>
                 </div>
                 <div class="div-table-row">
+                    <div class="div-table-col1">Manual list</div>
+                    <div class="div-table-col2">
+                        <textarea name="manuallist"></textarea>
+                    </div>
+                </div>
+
+                <div class="div-table-row">
                     <div class="div-table-col1">Already set</div>
                     <div class="div-table-col2">
                         <input type="checkbox" name="set" value="1" checked>don't load items with the property set

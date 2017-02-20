@@ -893,6 +893,10 @@ function getPages() {
     })
     .done(function(pageids) {
         reportStatus('loading....');
+        if (job.manuallist !== ''){
+            var ml = $.map(job.manuallist.split('\n'), $.trim);
+            pageids = pageids.filter(function(e) {return ml.indexOf(e[1]) > -1});
+        }
         $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
             action: 'query',
             prop: 'redirects',

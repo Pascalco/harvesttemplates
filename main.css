@@ -64,10 +64,10 @@ div#main {
     width: 300px;
     padding-top: 2px;
 }
-input {
+input, textarea{
     margin: 2px;
 }
-input[type="text"] {
+input[type="text"], textarea {
     background-color: #E0E0E0;
     border: 1px solid #AFAFAF;
     border-radius: 3px;
