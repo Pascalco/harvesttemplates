@@ -46,13 +46,9 @@ function toArabicNumerals(str) {
 
 function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/g, function(m, key, value) {
-        if (key == 'run') {
+        if (key == 'run' || key == 'load') {
             autoload = true;
-            autorun = true;
-            return;
-        }
-        if (key == 'load') {
-            autoload = true;
+            autorun = key == 'run';
             return;
         }
         if (value !== '') {
