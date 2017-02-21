@@ -16,6 +16,8 @@ var i = 0;
 var bot = 0;
 var cntSuccess = 0;
 var cntError = 0;
+var autoload = false;
+var autorun = false;
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -44,6 +46,15 @@ function toArabicNumerals(str) {
 
 function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/g, function(m, key, value) {
+        if (key == 'run') {
+            autoload = true;
+            autorun = true;
+            return;
+        }
+        if (key == 'load') {
+            autoload = true;
+            return;
+        }
         if (value !== '') {
             var $input = $('input[name=' + key + ']');
             if ($input.length > 0) {
@@ -127,6 +138,7 @@ function stopLoading(status) {
 
 function stopJob() {
     run = 0;
+    autorun = false;
     if ($('.stop').attr('id') == 'addvalues') {
         $('#addvalues')
             .val('add values')
@@ -141,6 +153,7 @@ function stopJob() {
         $('#addvalues').attr('disabled', false);
         i = 0;
     }
+    $('#getpages').attr('disabled', false);
     $('input[name="pagelist"]').attr('disabled', false);
 }
 
@@ -868,6 +881,13 @@ function proceedOnePage() {
     }
 }
 
+function runJob() {
+    $('#getpages').attr('disabled', true);
+    $('input[name="pagelist"]').attr('disabled', true);
+    run = 1;
+    proceedOnePage();
+}
+
 function createCheckboxlist(pageids) {
     for (var j in pageids) {
         $('#result').append('<div><input type="checkbox" name="pagelist" id="' + pageids[j][0] + '" data-qid="' + pageids[j][1] + '" checked><span><a href="//' + job.siteid + '.' + job.project + '.org/wiki/' + encodeURIComponent(namespaces[job.namespace]) + ':' + encodeURIComponent(pageids[j][2]) + '" target="_blank">' + escapeHTML(pageids[j][2].replace(/_/g, ' ')) + '</a></span></div>');
@@ -917,6 +937,9 @@ function getPages() {
             job.templates += ')';
             if (pageids.length > 0) {
                 createCheckboxlist(pageids);
+                if (autorun === true) {
+                    runJob();
+                }
             } else {
                 stopLoading('nothing to do');
             }
@@ -1014,6 +1037,112 @@ function addAlias(){
     $('.parameters').append('<input type="text" name="parameter" value="">');
 }
 
+function loadJob() {
+    $('#getpages').attr('disabled', true);
+    $('.permalink').show();
+    $('#downloadlinks').hide();
+    $.ajax({
+        type: 'GET',
+        url: '../oauth.php',
+        data: {
+            action: 'userinfo'
+        }
+    })
+    .done(function(data) {
+        if ('error' in data) {
+            stopLoading('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
+            return;
+        }
+        if (data.query.userinfo.groups.indexOf('bot') > -1){
+            bot = 1;
+        }
+        $('#result').html('');
+        $('#addvalues').hide();
+        $('#demo').hide();
+        i = 0;
+        cntSuccess = 0;
+        cntError = 0;
+
+        job = {'parameter' : []};
+        var fields = $( 'form' ).serializeArray();
+        $.each( fields, function( i, field ) {
+            if (field.name != 'parameter'){
+                job[field.name] = field.value.trim();
+            } else if (field.value !== ''){
+
+                job[field.name].push(field.value.trim());
+            }
+        } );
+        job.property = 'P' + job.property;
+
+        if (job.siteid === '') {
+            $('input[name="siteid"]').addClass('error');
+        }
+        if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
+            $('input[name="project"]').addClass('error');
+        }
+        if (job.template === '') {
+            $('input[name="template"]').addClass('error');
+        }
+        if (job.parameter.length === 0 && job.aparameter1 === '') {
+            $('input[name="parameter"]').addClass('error');
+        }
+        if (job.property == 'P') {
+            $('input[name="property"]').addClass('error');
+        }
+        if (job.namespace === '') {
+            $('input[name="namespace"]').addClass('error');
+        }
+        if (job.limit === '') {
+            $('input[name="limit"]').addClass('error');
+        }
+        if (job.category !== '' && job.depth === '') {
+            $('input[name="depth"]').addClass('error');
+        }
+        if ($('.error').length > 0) {
+            stopLoading('');
+            return;
+        }
+
+        job.siteid = getSiteid(job.siteid, job.project);
+        if (job.set === undefined){
+            job.set = 0;
+        }
+        if (job.offset === '') {
+            job.offset = 0;
+        }
+        if (isNaN(parseInt(job.limityear))) {
+            job.limityear = 1926;
+        }
+        $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
+            action: 'wbgetentities',
+            ids: job.property,
+            format: 'json'
+        }).done(function(data) {
+            job.datatype = data.entities[job.property].datatype;
+            // TODO: monolingualtext, geocoordinate (math?)
+            if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) === -1) {
+                $('input[name="property"]').addClass('error');
+                stopLoading('datatype ' + job.datatype + ' is not yet supported');
+                return;
+            }
+            if (data.entities[job.property].claims !== undefined && data.entities[job.property].claims.P31 !== undefined) {
+                for (var i in data.entities[job.property].claims.P31) {
+                    if (
+                        data.entities[job.property].claims.P31[i].mainsnak.snaktype == 'value' &&
+                        data.entities[job.property].claims.P31[i].mainsnak.datavalue.value['numeric-id'] === 18644427
+                    ) {
+                        $('input[name="property"]').addClass('error');
+                        stopLoading('this property is deprecated');
+                        return;
+                    }
+                }
+            }
+            reportStatus('loading..');
+            loadSiteinfo();
+        });
+    });
+}
 
 $(document).ready(function() {
 
@@ -1048,135 +1177,53 @@ $(document).ready(function() {
         e.preventDefault();
         addAlias();
     });
-    $('input[type="submit"]').click(function(e) {
+    $('#getpages').click(function(e) {
         e.preventDefault();
-        if ($(this).attr('id') == 'getpages') {
-            $(this).attr('disabled', true);
-            $('.permalink').show();
-            $('#downloadlinks').hide();
-            $.ajax({
-                type: 'GET',
-                url: '../oauth.php',
-                data: {
-                    action: 'userinfo'
-                }
-            })
-            .done(function(data) {
-                if ('error' in data) {
-                    stopLoading('You haven\'t authorized this application yet! Go <a href="../index.php?action=authorize" target="_parent">here</a> to do that.');
-                    return;
-                }
-                if (data.query.userinfo.groups.indexOf('bot') > -1){
-                    bot = 1;
-                }
-                $('#result').html('');
-                $('#addvalues').hide();
-                $('#demo').hide();
-                stopJob();
-                i = 0;
-                cntSuccess = 0;
-                cntError = 0;
-
-                job = {'parameter' : []};
-                var fields = $( 'form' ).serializeArray();
-                $.each( fields, function( i, field ) {
-                    if (field.name != 'parameter'){
-                        job[field.name] = field.value.trim();
-                    } else if (field.value !== ''){
-                        job[field.name].push(field.value.trim());
-                    }
-                } );
-                job.property = 'P' + job.property;
-
-                if (job.siteid === '') {
-                    $('input[name="siteid"]').addClass('error');
-                }
-                if (job.project === '' || $.inArray(job.project, allProjects) == -1) {
-                    $('input[name="project"]').addClass('error');
-                }
-                if (job.template === '') {
-                    $('input[name="template"]').addClass('error');
-                }
-                if (job.parameter.length === 0 && job.aparameter1 === '') {
-                    $('input[name="parameter"]').addClass('error');
-                }
-                if (job.property == 'P') {
-                    $('input[name="property"]').addClass('error');
-                }
-                if (job.namespace === '') {
-                    $('input[name="namespace"]').addClass('error');
-                }
-                if (job.limit === '') {
-                    $('input[name="limit"]').addClass('error');
-                }
-                if (job.category !== '' && job.depth === '') {
-                    $('input[name="depth"]').addClass('error');
-                }
-                if ($('.error').length > 0) {
-                    stopLoading('');
-                    return;
-                }
-
-                job.siteid = getSiteid(job.siteid, job.project);
-                if (job.set === undefined){
-                    job.set = 0;
-                }
-                if (job.offset === '') {
-                    job.offset = 0;
-                }
-                if (isNaN(parseInt(job.limityear))) {
-                    job.limityear = 1926;
-                }
-                $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
-                    action: 'wbgetentities',
-                    ids: job.property,
-                    format: 'json'
-                }).done(function(data) {
-                    job.datatype = data.entities[job.property].datatype;
-                    // TODO: monolingualtext, geocoordinate (math?)
-                    if ($.inArray(job.datatype, ['commonsMedia', 'external-id', 'quantity', 'string', 'time', 'url', 'wikibase-item']) === -1) {
-                        $('input[name="property"]').addClass('error');
-                        stopLoading('datatype ' + job.datatype + ' is not yet supported');
-                        return;
-                    }
-                    if (data.entities[job.property].claims !== undefined && data.entities[job.property].claims.P31 !== undefined) {
-                        for (var i in data.entities[job.property].claims.P31) {
-                            if (
-                                data.entities[job.property].claims.P31[i].mainsnak.snaktype == 'value' &&
-                                data.entities[job.property].claims.P31[i].mainsnak.datavalue.value['numeric-id'] === 18644427
-                            ) {
-                                $('input[name="property"]').addClass('error');
-                                stopLoading('this property is deprecated');
-                                return;
-                            }
-                        }
-                    }
-                    reportStatus('loading..');
-                    loadSiteinfo();
-                });
-            });
-        } else if ($(this).val() == 'demo' || $(this).val() == 'add values') {
-            if (job.demo == 1) {
-                $("#result").find('div').each(function(index, value) {
-                    $(this).removeClass().find('.value').html('');
-                });
-            }
-            if ($(this).val() == 'demo') {
-                job.demo = 1;
-                $('#addvalues').attr('disabled', true);
-            } else {
-                job.demo = 0;
-                $('#demo').attr('disabled', true);
-            }
-            run = 1;
-            $('input[name="pagelist"]').attr('disabled', true);
-            $(this)
-                .val('stop')
-                .removeClass('run')
-                .addClass('stop');
-            proceedOnePage();
-        } else {
-            stopJob();
-        }
+        autorun = false;
+        loadJob();
     });
+    $('#demo').click(function(e) {
+        e.preventDefault();
+        if ($(this).val() == 'stop') {
+            stopJob();
+            return;
+        }
+        if (job.demo == 1) {
+            $('#result').find('div').each(function(index, value) {
+                $(this).removeClass().find('.value').html('');
+            });
+        }
+        job.demo = 1;
+        $('#addvalues').attr('disabled', true);
+        $(this)
+            .val('stop')
+            .removeClass('run')
+            .addClass('stop');
+        runJob();
+    });
+    $('#addvalues').click(function(e) {
+        e.preventDefault();
+        if ($(this).val() == 'stop') {
+            stopJob();
+            return;
+        }
+        if (job.demo == 1) {
+            $('#result').find('div').each(function(index, value) {
+                $(this).removeClass().find('.value').html('');
+            });
+        }
+        job.demo = 0;
+        $('#demo').attr('disabled', true);
+        $(this)
+            .val('stop')
+            .removeClass('run')
+            .addClass('stop');
+        runJob();
+    });
+
+    if (autoload === true) {
+        autoload = false;
+        loadJob();
+    }
+
 });
