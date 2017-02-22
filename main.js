@@ -1173,9 +1173,7 @@ $(document).ready(function() {
         e.preventDefault();
         addAlias();
     });
-    $('#getpages').click(function(e) {
-        e.preventDefault();
-    });
+
     $('input[type="submit"]').click(function(e) {
         e.preventDefault();
         var $this = $(this);
