@@ -973,7 +973,7 @@ function loadUnits(claims){
             ids: ids.join('|'),
             props: 'labels',
             languages: 'en',
-            format: 'json' 
+            format: 'json'
         }).done(function(data) {
             for (var q in data.entities){
                 if (data.entities[q].labels.en !== undefined){
@@ -1001,7 +1001,7 @@ function showAdditionalFields() {
     }).done(function(data) {
         if (data.entities[p].missing !== undefined){
             $('input[name="property"]').addClass('error');
-            return; 
+            return;
         }
         switch (data.entities[p].datatype) {
             case 'wikibase-item':
@@ -1211,4 +1211,3 @@ $(document).ready(function() {
     }
 
 });
-  
