@@ -48,7 +48,7 @@ function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/g, function(m, key, value) {
         if (key == 'run' || key == 'load') {
             autoload = true;
-            autorun = key == 'run';
+            autorun = autorun || (key == 'run');
             return;
         }
         if (value !== '') {
