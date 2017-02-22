@@ -1175,13 +1175,17 @@ $(document).ready(function() {
     });
     $('#getpages').click(function(e) {
         e.preventDefault();
-        autorun = false;
-        loadJob();
     });
-    $('#demo').click(function(e) {
+    $('input[type="submit"]').click(function(e) {
         e.preventDefault();
-        if ($(this).val() == 'stop') {
+        var $this = $(this);
+        if ($this.val() == 'stop') {
             stopJob();
+            return;
+        }
+        if ($this.val() == 'get pages') {
+            autorun = false;
+            loadJob();
             return;
         }
         if (job.demo == 1) {
@@ -1189,28 +1193,14 @@ $(document).ready(function() {
                 $(this).removeClass().find('.value').html('');
             });
         }
-        job.demo = 1;
-        $('#addvalues').attr('disabled', true);
-        $(this)
-            .val('stop')
-            .removeClass('run')
-            .addClass('stop');
-        runJob();
-    });
-    $('#addvalues').click(function(e) {
-        e.preventDefault();
-        if ($(this).val() == 'stop') {
-            stopJob();
-            return;
+        if ($this.val() == 'demo') {
+            job.demo = 1;
+            $('#addvalues').attr('disabled', true);
+        } else {
+            job.demo = 0;
+            $('#demo').attr('disabled', true);
         }
-        if (job.demo == 1) {
-            $('#result').find('div').each(function(index, value) {
-                $(this).removeClass().find('.value').html('');
-            });
-        }
-        job.demo = 0;
-        $('#demo').attr('disabled', true);
-        $(this)
+        $this
             .val('stop')
             .removeClass('run')
             .addClass('stop');
