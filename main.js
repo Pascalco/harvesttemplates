@@ -761,14 +761,14 @@ function parseTemplate(text) {
         .replace(/<ref((?!<\/ref>).)*<\/ref>/g, '') //remove references
         .replace(/<ref([^>]+)>/g, '') //remove reference tags
         .replace(/\s\s+/g, ' ') //remove multiple spaces
-        .replace(/'{2,}/, '') //remove some MediaWiki syntax
+        .replace(/'{2,}/g, '') //remove some MediaWiki syntax
         .replace(new RegExp('{{\\s*(:?(' + templateprefixes.join('|') + '):\\s*)?' + job.templates + '\\s*', 'gi'), '{{' + job.template);
     var txt = text.split('{{' + job.template + '|');
     if (txt.length == 1) {
         return false;
     }
     text = txt[1];
-    var patt = new RegExp('{{((?!}}|{{).)*}}');
+    var patt = new RegExp('{{((?!}}|{{).)*}}', 'g');
     while (patt.test(text)) {
         text = text.replace(patt, ''); //remove all other templates
     }
