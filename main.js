@@ -877,7 +877,18 @@ function proceedOnePage() {
     }
 }
 
-function runJob() {
+function runJob($this) {
+    if ($this.val() == 'demo') {
+        job.demo = 1;
+        $('#addvalues').attr('disabled', true);
+    } else {
+        job.demo = 0;
+        $('#demo').attr('disabled', true);
+    }
+    $this
+        .val('stop')
+        .removeClass('run')
+        .addClass('stop');
     $('#getpages').attr('disabled', true);
     $('input[name="pagelist"]').attr('disabled', true);
     run = 1;
@@ -934,7 +945,7 @@ function getPages() {
             if (pageids.length > 0) {
                 createCheckboxlist(pageids);
                 if (autorun === true) {
-                    runJob();
+                    runJob($('#addvalues'));
                 }
             } else {
                 stopLoading('nothing to do');
@@ -1191,18 +1202,7 @@ $(document).ready(function() {
                 $(this).removeClass().find('.value').html('');
             });
         }
-        if ($this.val() == 'demo') {
-            job.demo = 1;
-            $('#addvalues').attr('disabled', true);
-        } else {
-            job.demo = 0;
-            $('#demo').attr('disabled', true);
-        }
-        $this
-            .val('stop')
-            .removeClass('run')
-            .addClass('stop');
-        runJob();
+        runJob($this);
     });
 
     if (autoload === true) {
