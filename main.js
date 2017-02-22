@@ -406,6 +406,7 @@ function checkConstraints(pageid, qid, value, ii) {
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
             action: 'wbgetentities',
             ids: qid,
+            props: 'claims',
             format: 'json'
         }).done(function(data) {
             if (data.entities[qid].claims[rel] === undefined) {
@@ -430,6 +431,7 @@ function checkConstraints(pageid, qid, value, ii) {
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
             action: 'wbgetentities',
             ids: value,
+            props: 'claims',
             format: 'json'
         }).done(function(data) {
             if (data.entities[value].claims[rel] === undefined) {
@@ -484,6 +486,7 @@ function checkConstraints(pageid, qid, value, ii) {
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
             action: 'wbgetentities',
             ids: qid,
+            props: 'claims',
             format: 'json'
         }).done(function(data) {
             for (var pp in co.list){
@@ -997,6 +1000,8 @@ function showAdditionalFields() {
     $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
         action: 'wbgetentities',
         ids: p,
+        props: 'claims|datatype|labels',
+        languages: 'en',
         format: 'json'
     }).done(function(data) {
         if (data.entities[p].missing !== undefined){
@@ -1124,6 +1129,7 @@ function loadJob() {
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?', {
             action: 'wbgetentities',
             ids: job.property,
+            props: 'claims|datatype',
             format: 'json'
         }).done(function(data) {
             job.datatype = data.entities[job.property].datatype;
