@@ -932,6 +932,7 @@ function getPages() {
             prop: 'redirects',
             titles: 'Template:' + job.template,
             rdnamespace: 10,
+            rdlimit: 500,
             format: 'json'
         })
         .done(function(data) {
