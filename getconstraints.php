@@ -78,6 +78,7 @@ foreach( $query->query->pages as $k => $v ){
     $text = $v->revisions[0]->{'*'};
 }
 
+$text = preg_replace('/<!--.*?-->/s', '', $text);
 $text = replaceQPtemplates($text);
 $text = replaceQlinks($text);
 list( $text, $templ ) = replaceNowiki($text);
