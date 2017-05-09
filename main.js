@@ -18,6 +18,7 @@ var cntSuccess = 0;
 var cntError = 0;
 var autoload = false;
 var autorun = false;
+var tempunit = false;
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -67,6 +68,13 @@ function prefillForm() {
                 } else {
                     $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
                 }
+                return;
+            }
+            var $select = $('select[name=' + key + '] option');
+            if ($select.length > 0){
+                $select.each(function() { this.selected = (this.value == value); });
+            } else if (key == 'unit'){
+                tempunit = value;
             }
         }
     });
@@ -985,6 +993,10 @@ function loadUnits(claims){
                 } else {
                     $('select[name="unit"]').append('<option value="'+q+'">'+q+'</option>');
                 }
+            }
+            if (tempunit !== false){
+                $('select[name=unit] option').each(function() { this.selected = (this.value == tempunit); });
+                tempunit = false;
             }
         });
     }
