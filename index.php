@@ -118,9 +118,8 @@
                             <option value="Q1985786">Julian</option>
                         </select> if year
                         <select name="rel" size="1">
-                            <option>=></option>
-                            <option>
-                                <=</option>
+                            <option value="geq">=></option>
+                            <option value="leq"><=</option>
                         </select>
                         <input type="number" name="limityear" style="width:60px" min="1" value="1926">
                     </div>

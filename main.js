@@ -718,7 +718,7 @@ function handleValue(pageid, qid, value) {
             newvalue = newvalue.replace(/-(\d)$/, '-0\$1');
             if (newvalue.substring(5, 10) == '00-00') {
                 checkConstraints(pageid, qid, newvalue, 0);
-            } else if (job.rel == '=>') {
+            } else if (job.rel == 'geq') {
                 if (parseInt(newvalue.substring(0, 4)) >= job.limityear) {
                     checkConstraints(pageid, qid, newvalue, 0);
                 } else {
