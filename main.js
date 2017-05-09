@@ -326,7 +326,7 @@ function addValue(pageid, qid, value) {
                 p: job.property,
                 date: '+' + value + 'T00:00:00Z',
                 precision: precision,
-                calendar: job.calendar
+                calendar: 'http://www.wikidata.org/entity/' + job.calendar
             };
             break;
         case 'quantity':
@@ -335,7 +335,7 @@ function addValue(pageid, qid, value) {
                 q: qid,
                 p: job.property,
                 amount: value,
-                unit: job.unit
+                unit: 'http://www.wikidata.org/entity/' + job.unit
             };
             break;
     }
@@ -981,9 +981,9 @@ function loadUnits(claims){
         }).done(function(data) {
             for (var q in data.entities){
                 if (data.entities[q].labels.en !== undefined){
-                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+data.entities[q].labels.en.value+'</option>');
+                    $('select[name="unit"]').append('<option value="'+q+'">'+data.entities[q].labels.en.value+'</option>');
                 } else {
-                    $('select[name="unit"]').append('<option value="http://www.wikidata.org/entity/'+q+'">'+q+'</option>');
+                    $('select[name="unit"]').append('<option value="'+q+'">'+q+'</option>');
                 }
             }
         });
@@ -1173,7 +1173,7 @@ $(document).ready(function() {
 
     $('.permalink').click(function(e) {
         var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
-        var params = $( 'form input:visible' ).serializeArray();
+        var params = $( 'form input:visible, form select:visible' ).serializeArray();
         $('form input[type=checkbox]:not(:checked)').each(function() {
             params.push({name: this.name, value: '0' });
         });

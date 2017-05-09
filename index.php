@@ -114,8 +114,8 @@
                     <div class="div-table-col1">Calendar</div>
                     <div class="div-table-col2">
                         <select name="calendar" size="1">
-                            <option value="http://www.wikidata.org/entity/Q1985727">Gregorian</option>
-                            <option value="http://www.wikidata.org/entity/Q1985786">Julian</option>
+                            <option value="Q1985727">Gregorian</option>
+                            <option value="Q1985786">Julian</option>
                         </select> if year
                         <select name="rel" size="1">
                             <option>=></option>
