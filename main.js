@@ -933,7 +933,8 @@ function getPages() {
         reportStatus('loading....');
         if (job.manuallist !== ''){
             var ml = $.map(job.manuallist.split('\n'), $.trim);
-            pageids = pageids.filter(function(e) {return ml.indexOf(e[1]) > -1});
+            pageids = pageids.filter(function(e) {return ml.indexOf(e[1]) > -1 || ml.indexOf(e[2].replace(/_/g, ' ')) > -1});
+
         }
         $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
             action: 'query',
