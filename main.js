@@ -1183,16 +1183,16 @@ $(document).ready(function() {
         showAdditionalFields();
     });
 
-    $('.permalink').click(function(e) {
+    $('.permalink').mouseover(function() {
         var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
         var params = $( 'form input:visible, form select:visible' ).serializeArray();
         $('form input[type=checkbox]:not(:checked)').each(function() {
-            params.push({name: this.name, value: '0' });
+            params.push({ name: this.name, value: '0' });
         });
         $.each( params, function( i, field ) {
             url += field.name+'='+field.value+'&';
         });
-        window.open(url);
+        $(this).attr('href', url);
     });
 
     $('.download').click(function(e) {
