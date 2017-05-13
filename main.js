@@ -1183,7 +1183,7 @@ $(document).ready(function() {
         showAdditionalFields();
     });
 
-    $('.permalink').mouseover(function() {
+    $('.permalink').mouseenter(function() {
         var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
         var params = $( 'form input:visible, form select:visible' ).serializeArray();
         $('form input[type=checkbox]:not(:checked)').each(function() {
