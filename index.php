@@ -193,7 +193,7 @@
                 </div>
             </div>
         </form>
-        <div class="rightbox"><a class="permalink" style="display:none;" href="#">Permalink</a><span id="downloadlinks" style="display:none;"> | download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></span></div>
+        <div class="rightbox"><a class="permalink" style="display:none;" href="#" target="_blank">Permalink</a><span id="downloadlinks" style="display:none;"> | download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></span></div>
         <div id="result"></div>
     </div>
 
