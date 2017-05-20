@@ -751,12 +751,12 @@ function handleValue(pageid, qid, value) {
             value = value.replace(/\./g, ''); //remove thousands separators
             value = value.replace(',', '.'); //replace decimal mark , by .
         }
-        var patt = /^(\+|\-)?[0-9.]+$/;
-        if (patt.test(value)){
-            if (value.indexOf('.') > -1){
+        var match = value.match(/^(\+|\-)?[0-9.]+/);
+        if (match){
+            if (match[0].indexOf('.') > -1){
                 report(pageid, 'error', 'floating point numbers are not supported', qid);
             } else {
-                checkConstraints(pageid, qid, value, 0);
+                checkConstraints(pageid, qid, match[0], 0);
             }
         } else {
             report(pageid, 'error', 'unclear value', qid);
