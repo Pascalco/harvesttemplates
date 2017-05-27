@@ -926,40 +926,39 @@ function getPages() {
         limit: job.limit
     })
     .done(function(pageids) {
-        reportStatus('loading....');
-        if (job.manuallist !== ''){
+        if (job.manuallist !== '') {
             var ml = $.map(job.manuallist.split('\n'), $.trim);
             pageids = pageids.filter(function(e) {return ml.indexOf(e[1]) > -1 || ml.indexOf(e[2].replace(/_/g, ' ')) > -1});
-
         }
-        $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
-            action: 'query',
-            prop: 'redirects',
-            titles: 'Template:' + job.template,
-            rdnamespace: 10,
-            rdlimit: 500,
-            format: 'json'
-        })
-        .done(function(data) {
-            job.templates = '(' + preg_quote(job.template) + '|' + preg_quote(job.template).replace(/ /g, '_');
-            for (var m in data.query.pages) {
-                if ('redirects' in data.query.pages[m]) {
-                    for (var red in data.query.pages[m].redirects) {
-                        var title = data.query.pages[m].redirects[red].title.split(':', 2);
-                        job.templates += '|' + preg_quote(title[1]) + '|' + preg_quote(title[1]).replace(/ /g, '_');
+        if (pageids.length > 0) {
+            reportStatus('loading....');
+            $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
+                action: 'query',
+                prop: 'redirects',
+                titles: 'Template:' + job.template,
+                rdnamespace: 10,
+                rdlimit: 500,
+                format: 'json'
+            })
+            .done(function(data) {
+                job.templates = '(' + preg_quote(job.template) + '|' + preg_quote(job.template).replace(/ /g, '_');
+                for (var m in data.query.pages) {
+                    if ('redirects' in data.query.pages[m]) {
+                        for (var red in data.query.pages[m].redirects) {
+                            var title = data.query.pages[m].redirects[red].title.split(':', 2);
+                            job.templates += '|' + preg_quote(title[1]) + '|' + preg_quote(title[1]).replace(/ /g, '_');
+                        }
                     }
                 }
-            }
-            job.templates += ')';
-            if (pageids.length > 0) {
+                job.templates += ')';
                 createCheckboxlist(pageids);
                 if (autorun === true) {
                     runJob($('#addvalues'));
                 }
-            } else {
-                stopLoading('nothing to do');
-            }
-        });
+            });
+        } else {
+            stopLoading('nothing to do');
+        }
     })
     .fail(function(jqxhr, textStatus, error) {
         var err = textStatus + ', ' + error;
