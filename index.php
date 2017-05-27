@@ -43,7 +43,8 @@
                 <li><i>Property:</i> destination property in Wikidata</li>
                 <li><i>Template:</i> source template</li>
                 <li><i>Parameter:</i> parameter name in the template. Use numbers for nameless parameters</li>
-                <li><i>Category:</i> non-mandatory option to filter pages on wiki</li>
+                <li><i>Category:</i> non-mandatory option to filter pages on wiki by category</li>
+                <li><i>Manual list:</i> non-mandatory option to filter pages on wiki by page name or item id</li>
                 <li><i>Already set:</i> deactivate this option if you encounter performance issues</li>
                 <li><i>Offset:</i> skip a specific number of results. A negative number will start that far from the end</li>
                 <li><i>Limit:</i> limit the number of pages getting loaded</li>
@@ -51,9 +52,9 @@
             By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata. Alternatively, with <i>demo</i> only parsing is done without any edit action.<br />
             <br /><b><i>News</i></b>
             <ul>
-                <li>Partial support for quantity datatype</li>
-                <li>Handling interproject prefixes (e.g. "w:" for Wikipedia)</li>
-                <li>Offset and limit parameters</li>
+                <li>Full support for quantity datatype</li>
+                <li>Manual list</li>
+                <li>Autoload (&amp;load=) and autorun (&amp;run=)</li>
             </ul>
         </div>
 
