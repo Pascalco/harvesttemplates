@@ -753,11 +753,7 @@ function handleValue(pageid, qid, value) {
         }
         var patt = /^(\+|\-)?[0-9.]+$/;
         if (patt.test(value)){
-            if (value.indexOf('.') > -1){
-                report(pageid, 'error', 'floating point numbers are not supported', qid);
-            } else {
-                checkConstraints(pageid, qid, value, 0);
-            }
+            checkConstraints(pageid, qid, value, 0);
         } else {
             report(pageid, 'error', 'unclear value', qid);
         }
