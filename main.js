@@ -343,7 +343,7 @@ function addValue(pageid, qid, value) {
                 q: qid,
                 p: job.property,
                 amount: value,
-                unit: 'http://www.wikidata.org/entity/' + job.unit
+                unit: job.unit !== '1' ? 'http://www.wikidata.org/entity/' + job.unit : job.unit
             };
             break;
     }
