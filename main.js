@@ -196,7 +196,12 @@ function addMissingConstraintData( ii ){
             format: 'json'
         }).done(function(data) {
             for (var row in data.results.bindings) {
-                constraints[ii].values.push(data.results.bindings[row].value.value);
+                var value = data.results.bindings[row].value.value;
+                if (value.indexOf('http://commons.wikimedia.org/wiki/Special:FilePath/') === 0) {
+                    value = value.replace('http://commons.wikimedia.org/wiki/Special:FilePath/', '');
+                    value = decodeURIComponent(value);
+                }
+                constraints[ii].values.push(value);
             }
             addMissingConstraintData( ++ii );
         }).fail(function(data) {
@@ -708,6 +713,7 @@ function handleValue(pageid, qid, value) {
             value = res[1];
         }
         value = value.replace(new RegExp('^(' + fileprefixes.join('|') + '):\\s*', 'i'), '');
+        value = decodeURIComponent(value).replace(/_/g, ' ');
         checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'time') {
         if (typeof value !== 'string') {
