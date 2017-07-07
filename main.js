@@ -156,6 +156,8 @@ function stopJob() {
             .addClass('run');
         $('#addvalues').attr('disabled', false);
         i = 0;
+        cntSuccess = 0;
+        cntError = 0;
     }
     $('#getpages').attr('disabled', false);
     $('input[name="pagelist"]').attr('disabled', false);
