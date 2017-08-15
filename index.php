@@ -105,10 +105,16 @@
                     <div class="div-table-col2">
                         <input type="checkbox" name="wikisyntax" value="1">try to match target page even without wikisyntax</div>
                 </div>
-                <div class="div-table-row" id="prefix" style="display:none;">
-                    <div class="div-table-col1">Value prefix</div>
+                <div class="div-table-row" id="addprefix" style="display:none;">
+                    <div class="div-table-col1">add prefix</div>
                     <div class="div-table-col2">
-                        <input type="text" name="prefix" value="">
+                        <input type="text" name="addprefix" value="">
+                    </div>
+                </div>
+                <div class="div-table-row" id="removeprefix" style="display:none;">
+                    <div class="div-table-col1">remove prefix</div>
+                    <div class="div-table-col2">
+                        <input type="text" name="removeprefix" value="">
                     </div>
                 </div>
                 <div class="div-table-row timeparameters" style="display:none;">

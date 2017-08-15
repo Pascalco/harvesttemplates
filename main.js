@@ -684,21 +684,24 @@ function checkForInterwiki(pageid, qid, res, url) {
 }
 
 function handleValue(pageid, qid, value) {
+    if (['string', 'external-id', 'url', 'wikibase-item'].indexOf(job.datatype) > -1){
+        value = job.addprefix + value.replace(new RegExp('^' + job.removeprefix), '');
+    }
     if (job.datatype == 'string' || job.datatype == 'external-id') {
-        checkConstraints(pageid, qid, job.prefix + value, 0);
+        checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'url') {
         var res = value.match(/\[([^\s\]]+)(\s(.*))?\]/);
         if (res !== null) {
             value = res[1];
         }
-        checkConstraints(pageid, qid, job.prefix + value, 0);
+        checkConstraints(pageid, qid, value, 0);
     } else if (job.datatype == 'wikibase-item') {
         var res = value.match(/^\[\[([^\|\]]+)/);
         if (res !== null) {
             res = res[1];
         } else {
             if (job.wikisyntax) {
-                res = job.prefix + value;
+                res = value;
             } else {
                 report(pageid, 'error', 'no target page found', qid);
                 return 0;
@@ -1032,7 +1035,8 @@ function showAdditionalFields() {
             case 'external-id':
             case 'string':
             case 'url':
-                $('#prefix').show();
+                $('#addprefix').show();
+                $('#removeprefix').show();
                 break;
             case 'time':
                 $('.timeparameters').show();
@@ -1056,7 +1060,8 @@ function showAdditionalFields() {
 function hideAdditionalFields(){
     $('#plabel').text('');
     $('#wikisyntax').hide();
-    $('#prefix').hide();
+    $('#addprefix').hide();
+    $('#removeprefix').hide();
     $('.timeparameters').hide();
     $('.quantityparameters').hide();
     $('select[name="unit"]').html('');
