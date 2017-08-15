@@ -575,7 +575,7 @@ function parseDate(value) {
             date = res[2] + '-' + num + '-00';
         }
         // day, month, year
-        r = new RegExp('(\\d{1,2})( |\\. |º |er | - an? de | de | d\')?(' + name + ')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i');
+        r = new RegExp('(\\d{1,2})( |\\. |º |er | - an? de | de | d\'| ב)?(' + name + ')(,| del?|, इ.स.| พ.ศ.)? (\\d{4})', 'i');
         res = value.match(r);
         if (res !== null) {
             date = res[5] + '-' + num + '-' + res[1];
