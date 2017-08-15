@@ -10,58 +10,8 @@
 
 header('Content-Type: application/json');
 
-function parseQ($str){
-    $res = explode( ',', $str );
-    return array_map( 'trim', $res );
-}
-
-function parsePQ($str){
-    $res = array();
-    $fields = explode( ';', $str);
-    foreach($fields as $field){
-        $co = explode( ':', $field);
-        if (count($co) == 1){
-            $res[trim($co[0])] = array();
-        } else {
-            $res[trim($co[0])] = parseQ($co[1]);
-        }
-    }
-    return $res;
-}
-
-function replaceQPtemplates($text){
-    return preg_replace('/{{(P|Q)\|(?:P|Q)?(\d+)}}/','$1$2',$text);
-}
-
-function replaceQlinks($text){
-    return preg_replace('/\[\[(Q\d+)\]\]/','$1',$text);
-}
-
-function replaceNowiki($text){
-    $templ = array();
-    $fields = explode('<nowiki>',$text);
-    $newtext = $fields[0];
-    for($i=1;$i<count($fields);$i++){
-        $para = explode('</nowiki>',$fields[$i]);
-        array_push($templ,$para[0]);
-        $newtext .= '$$$'.$i;
-        $newtext .= isset($para[1]) ? $para[1] : '';
-    }
-    return array($newtext,$templ);
-}
-
-function parseTemplate($text){
-    $res = array();
-    $fields = explode('|',$text);
-    foreach($fields as $field){
-        $para = explode('=',$field);
-        $res[trim($para[0])] = trim($para[1]);
-    }
-    return $res;
-}
-
 $url = 'https://www.wikidata.org/w/api.php?';
-$data = array('action' => 'query', 'titles' => 'Property_talk:'.$_GET['p'], 'prop' => 'revisions', 'rvprop' => 'content', 'format' => 'json');
+$data = array('action' => 'wbgetentities', 'ids' => $_GET['p'], 'props' => 'claims', 'format' => 'json');
 foreach( $data as $k => $v ){
     $v2 = str_replace( ' ', '%20', $v );
     $url .= "$k=$v2&";
@@ -71,74 +21,136 @@ curl_setopt_array( $curl, array(
     CURLOPT_RETURNTRANSFER => 1,
     CURLOPT_URL => $url
 ));
-$query = json_decode( curl_exec( $curl ) );
+$data = json_decode( curl_exec( $curl ) );
 curl_close( $curl );
 
-foreach( $query->query->pages as $k => $v ){
-    $text = $v->revisions[0]->{'*'};
-}
-
-# $text = preg_replace('/<!--.*?-->/s', '', $text);
-$text = replaceQPtemplates($text);
-$text = replaceQlinks($text);
-list( $text, $templ ) = replaceNowiki($text);
-$text = str_replace(array('|classes','| classes'),'|class',$text);
 
 $con = array();
 
-$constraints = array(
-    'Qualifier' => array(),
-    'Qualifiers' => array('list', 'required'),
-    'Source' => array(),
-    'Format' => array('pattern'),
-    'Unique value'=> array(),
-    'Value type' => array('class','relation'),
-    'Type' => array('class','relation'),
-    'One of' => array('values'),
-    'Commons link' => array('namespace'),
-    'Conflicts with' => array('list'),
-    'Range' => array('min','max')
-);
-
-foreach($constraints as $constraint => $mparas){
-    $pat = '/{{[Cc]onstraint:' . str_replace( ' ', '[ _]', $constraint ) . '\s*(?:\|([^}]+))?}}/';
-    if ( preg_match_all( $pat, $text, $matches, PREG_SET_ORDER ) ){
-        $newconstraint = array( 'type' => $constraint );
-        if ( in_array( $constraint, array( 'Qualifier', 'Source' ) ) ) {
-            $con = array( $newconstraint );
-            break;
-        }
-        foreach($matches as $match){
-            $ok = 1;
-            $res = isset( $match[1] ) ? parseTemplate($match[1]) : array();
-            foreach($mparas as $mpara){
-                if (!array_key_exists($mpara,$res)){
-                    $ok = 0;
-                    break;
-                }
-            }
-            if ($ok == 1){
-                foreach($mparas as $mpara){
-                    $value = $res[$mpara];
-                    for ($i=count($templ)-1;$i>=0;$i--){
-                        $value = str_replace('$$$'.($i+1),$templ[$i],$value);
-                    }
-                    if ($mpara == 'class' || $mpara == 'values'){
-                        $value = parseQ($value);
-                    }
-                    if ($mpara == 'list' && $constraint == 'Conflicts with' ) {
-                        $value = parsePQ($value);
-                    }
-                    if ($mpara == 'pattern'){
+if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
+    foreach( $data->entities->$_GET['p']->claims->P2302 as $claim ){
+        $type = $claim->mainsnak->datavalue->value->id;
+        switch($type){
+            case 'Q21502404': # format
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P1793', $claim->qualifiers)){
+                        $value = $claim->qualifiers->P1793[0]->datavalue->value;
                         if (substr($value,0,4) == '(?i)'){
-                            $newconstraint['modifier'] = 'i';
-                            $value = substr($value,4);
+                            $con[] = array('type' => 'Format', 'modifier' => 'i', 'pattern' => substr($value, 4));
+                        } else {
+                            $con[] = array('type' => 'Format', 'pattern' => $value);
                         }
                     }
-                    $newconstraint[$mpara] = $value;
                 }
-                array_push($con, $newconstraint);
-            }
+                break;
+            case 'Q21510852': # commons link
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2307', $claim->qualifiers)){
+                        $con[] = array('type' => 'Commons link', 'namespace' => $claim->qualifiers->P2307[0]->datavalue->value);
+                    }
+                }
+                break;
+            case 'Q21502838': # conflicts with
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2305', $claim->qualifiers) and array_key_exists('P2306', $claim->qualifiers)){
+                        $list =  array();
+                        foreach( $claim->qualifiers->P2305 as $el ){
+                            $list[] = $el->datavalue->value->id;
+                        }
+                        $con[] = array('type' => 'Conflicts with', 'list' => array($claim->qualifiers->P2306[0]->datavalue->value->id => $list));
+                    }
+                }
+                break;
+            case 'Q21510859': # one-of
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2305', $claim->qualifiers)){
+                        $list =  array();
+                        foreach( $claim->qualifiers->P2305 as $el ){
+                            $list[] = $el->datavalue->value->id;
+                        }
+                        $con[] = array('type' => 'One of', 'values' => $list);
+                    }
+                }
+                break;
+            case 'Q21503250': # type
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2308', $claim->qualifiers) and array_key_exists('P2309', $claim->qualifiers)){
+                        $list =  array();
+                        foreach( $claim->qualifiers->P2308 as $el ){
+                            $list[] = $el->datavalue->value->id;
+                        }
+                        if ($claim->qualifiers->P2309[0]->datavalue->value->id == 'Q21503252'){
+                            $relation = 'P31';
+                        } else {
+                            $relation = 'P279';
+                        }
+                        $con[] = array('type' => 'Type', 'class' => $list, 'relation' => $relation);
+                    }
+                }
+                break;
+            case 'Q21510865': # value type
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2308', $claim->qualifiers) and array_key_exists('P2309', $claim->qualifiers)){
+                        $list =  array();
+                        foreach( $claim->qualifiers->P2308 as $el ){
+                            $list[] = $el->datavalue->value->id;
+                        }
+                        if ($claim->qualifiers->P2309[0]->datavalue->value->id == 'Q21503252'){
+                            $relation = 'P31';
+                        } else {
+                            $relation = 'P279';
+                        }
+                        $con[] = array('type' => 'Value type', 'class' => $list, 'relation' => $relation);
+                    }
+                }
+                break;
+            case 'Q21510860': # range
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P2310', $claim->qualifiers)){
+                        if ($claim->qualifiers->P2310[0]->snaktype == 'value'){
+                            $min = $claim->qualifiers->P2310[0]->datavalue->value->time;
+                        } else if ($claim->qualifiers->P2310[0]->snaktype == 'somevalue'){
+                            $min = date('Y-m-d').'T00:00:00Z';
+                        } else {
+                            $min = '';
+                        }
+                    } else if (array_key_exists('P2313', $claim->qualifiers)){
+                        if ($claim->qualifiers->P2313[0]->snaktype == 'value'){
+                            $min = $claim->qualifiers->P2313[0]->datavalue->value->amount;
+                        } else {
+                            $min = '';
+                        }
+                    }
+                    if (array_key_exists('P2311', $claim->qualifiers)){
+                        if ($claim->qualifiers->P2311[0]->snaktype == 'value'){
+                            $max = $claim->qualifiers->P2311[0]->datavalue->value->time;
+                        } else if ($claim->qualifiers->P2311[0]->snaktype == 'somevalue'){
+                            $max = date('Y-m-d').'T00:00:00Z';
+                        } else {
+                            $max = '';
+                        }
+                    } else if (array_key_exists('P2312', $claim->qualifiers)){
+                        if ($claim->qualifiers->P2312[0]->snaktype == 'value'){
+                            $max = $claim->qualifiers->P2312[0]->datavalue->value->amount;
+                        } else {
+                            $max = '';
+                        }
+                    }
+                    $con[] = array('type' => 'Range', 'min' => $min, 'max' => $max);
+                }
+                break;
+            case 'Q21502410': # unique value
+                $con[] = array('type' => 'Unique value');
+                break;
+            case 'Q21510856': # mandatory qualifier
+                $con = array(array('type' => 'Mandatory qualifier'));
+                break 2;
+            case 'Q21510863': # used as qualifier
+                $con = array(array('type'=> 'Qualifier'));
+                break 2;
+            case 'Q21528959': # used as reference
+                $con = array(array('type'=> 'Source'));
+                break 2;
         }
     }
 }

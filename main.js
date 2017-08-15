@@ -169,14 +169,9 @@ function addMissingConstraintData( ii ){
         getPages();
         return 1;
     }
-    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Source') {
+    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Mandatory qualifier' || constraints[ii].type == 'Source') {
         stopLoading('Constraint violation: ' + constraints[ii].type);
         $('input[name="property"]').addClass('error');
-    } else if (constraints[ii].type == 'Qualifiers') {
-        if (constraints[ii].required === 'true' && !!constraints[ii].list) {
-            stopLoading('Constraint violation: Mandatory qualifiers');
-            $('input[name="property"]').addClass('error');
-        }
     } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
         var cl = 'wd:' + constraints[ii].class.join(' wd:');
         constraints[ii].values = [];
@@ -417,52 +412,50 @@ function checkConstraints(pageid, qid, value, ii) {
         return true;
     }
     else if (co.type == 'Type') {
-        var rel = co.relation == 'instance' ? 'P31' : 'P279';
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
             action: 'wbgetentities',
             ids: qid,
             props: 'claims',
             format: 'json'
         }).done(function(data) {
-            if (data.entities[qid].claims[rel] === undefined) {
+            if (data.entities[qid].claims[co.relation] === undefined) {
                 report(pageid, 'error', 'Constraint violation: Type <i>undefined</i>', qid);
                 return false;
             }
-            for (var m in data.entities[qid].claims[rel]) {
-                if (data.entities[qid].claims[rel][m].mainsnak.snaktype == 'value') {
-                    var numericid = data.entities[qid].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
+            for (var m in data.entities[qid].claims[co.relation]) {
+                if (data.entities[qid].claims[co.relation][m].mainsnak.snaktype == 'value') {
+                    var numericid = data.entities[qid].claims[co.relation][m].mainsnak.datavalue.value['numeric-id'];
                     if (co.values.indexOf(numericid) != -1) {
                         checkConstraints(pageid, qid, value, ++ii);
                         return true;
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Type <i>Q' + data.entities[qid].claims[rel][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Type <i>Q' + data.entities[qid].claims[co.relation][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
             return false;
         });
     }
     else if (co.type == 'Value type'){
-        var rel = co.relation == 'instance' ? 'P31' : 'P279';
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
             action: 'wbgetentities',
             ids: value,
             props: 'claims',
             format: 'json'
         }).done(function(data) {
-            if (data.entities[value].claims[rel] === undefined) {
+            if (data.entities[value].claims[co.relation] === undefined) {
                 report(pageid, 'error', 'Constraint violation: Value type <i>undefined</i>', qid);
                 return false;
             }
-            for (var m in data.entities[value].claims[rel]) {
-                if (data.entities[value].claims[rel][m].mainsnak.snaktype == 'value') {
-                    var numericid = data.entities[value].claims[rel][m].mainsnak.datavalue.value['numeric-id'];
+            for (var m in data.entities[value].claims[co.relation]) {
+                if (data.entities[value].claims[co.relation][m].mainsnak.snaktype == 'value') {
+                    var numericid = data.entities[value].claims[co.relation][m].mainsnak.datavalue.value['numeric-id'];
                     if (co.values.indexOf(numericid) != -1) {
                         checkConstraints(pageid, qid, value, ++ii);
                         return true;
                     }
                 }
             }
-            report(pageid, 'error', 'Constraint violation: Value type <i>Q' + data.entities[value].claims[rel][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
+            report(pageid, 'error', 'Constraint violation: Value type <i>Q' + data.entities[value].claims[co.relation][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
             return false;
         });
     }
@@ -533,7 +526,7 @@ function checkConstraints(pageid, qid, value, ii) {
         });
     }
     else if (co.type == 'Range') {
-        if (value < parseFloat(co.min) || value > parseFloat(co.max)) {
+        if (parseFloat(value) < parseFloat(co.min) || parseFloat(value) > parseFloat(co.max)) {
             report(pageid, 'error', 'Constraint violation: Range <i>' + escapeHTML(value) + '</i>', qid);
             return false;
         }
