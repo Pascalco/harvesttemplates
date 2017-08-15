@@ -819,6 +819,7 @@ function proceedOnePage() {
     var $pagelist = $('input[name="pagelist"]');
     if (i == $pagelist.length) {
         reportStatus('done<br />' + cntSuccess + ' successful edits, ' + cntError + ' errors');
+        document.title = 'DONE - '+document.title;
         stopJob();
         return true;
     }
@@ -1068,6 +1069,7 @@ function loadJob() {
     $('#getpages').attr('disabled', true);
     $('.permalink').show();
     $('#downloadlinks').hide();
+    document.title = document.title.replace('DONE - ', '');
     $.ajax({
         type: 'GET',
         url: '../oauth.php',
