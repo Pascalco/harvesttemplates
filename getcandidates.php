@@ -28,7 +28,6 @@ function getSubcats( &$cats, $root, $depth ){
     }
     getSubcats( $cats, $res, $depth - 1 );
 }
-
 function getPagesWithTemplate( $template, $cats, $namespace){
     $ret = array();
     $ret2 = array();
@@ -45,24 +44,19 @@ function getPagesWithTemplate( $template, $cats, $namespace){
     return array( $ret, $ret2 );
 }
 
-function getPagesWithClaim( $p, $offset ){
-     $ret = array();
-     $query = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>SELECT ?item WHERE {?item wdt:".$p." ?value .} LIMIT 500000 OFFSET ".$offset;
-     $url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?'
-           .'query='.urlencode( $query )
-           .'&format=json';
-     $ch = curl_init();
-     curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
-     curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-     curl_setopt( $ch, CURLOPT_URL, $url );
-     $data = json_decode( curl_exec( $ch ), true );
-     foreach( $data['results']['bindings'] as $item ){
-         $ret[] = str_replace( 'http://www.wikidata.org/entity/', '', $item['item']['value'] );
-     }
-     curl_close( $ch );
-     unset( $data );
-     return $ret;
+
+function getPagesWithoutClaim( $p, $r ){
+    $prevlist = implode('","', $r);
+    $ret = array();
+
+    $result = mysql_query( 'SELECT DISTINCT page_title FROM page WHERE page_namespace=0 AND page_title IN ("' . $prevlist . '") AND NOT EXISTS (SELECT * FROM pagelinks WHERE pl_from=page_id AND pl_namespace=120 AND pl_title = "' . $p . '")' ) OR die(mysql_num_rows());
+
+    while ( $row = mysql_fetch_assoc( $result ) ){
+        array_push($ret, $row['page_title']);
+    }
+    return $ret;
 }
+
 
 function openDB( $dbname ){
     $server = $dbname . '.labsdb';
@@ -96,17 +90,14 @@ if ( !empty( $_GET['category'] ) ){
     getSubcats( $cats, $root, $depth );
 }
 $r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
-
 mysql_close( $conn );
 
 if ( $_GET['set'] == '1' ){
-    $single = array();
-    do{
-        $single = array_merge( $single, getPagesWithClaim( $_GET['p'], count( $single ) ) );
-    } while (count($single) % 500000 == 0 && count($single) != 0);
-
-    $r[0] = array_diff( $r[0], $single );
+    $conn = openDB( 'wikidatawiki' );
+    $without = getPagesWithoutClaim( $_GET['p'], $r[0] );
+    $r[0] = array_intersect( $r[0], $without );
     $r[1] = array_intersect_key( $r[1], $r[0] );
+    mysql_close( $conn );
 }
 
 #return an array of arrays (pageid, Qid, page title)
