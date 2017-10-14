@@ -19,6 +19,7 @@ var cntError = 0;
 var autoload = false;
 var autorun = false;
 var tempunit = false;
+var htid = false;
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -45,6 +46,32 @@ function toArabicNumerals(str) {
     return str;
 }
 
+function preFillField(key, value) {
+    var $input = $('input[name=' + key + ']');
+    if ($input.length > 0) {
+        if (key == 'parameter' && $input.last().val() !== ''){
+            addAlias();
+            $input = $($input.selector); // reload as we have one more field
+        }
+        if ($input.attr('type') == 'checkbox') {
+            if (value == '1' || value == key){
+                $input.prop('checked', true);
+            } else {
+                $input.prop('checked', false);
+            }
+        } else {
+            $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
+        }
+        return;
+    }
+    var $select = $('select[name=' + key + '] option');
+    if ($select.length > 0){
+        $select.each(function() { this.selected = (this.value == value); });
+    } else if (key == 'unit'){
+        tempunit = value;
+    }
+}
+
 function prefillForm() {
     window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/g, function(m, key, value) {
         if (key == 'run' || key == 'load') {
@@ -52,30 +79,20 @@ function prefillForm() {
             autorun = autorun || (key == 'run');
             return;
         }
+        if (key == 'htid') {
+            htid = value;
+            $.getJSON('gethtshare.php', {
+                htid: htid
+            }).done(function(data) {
+                $.each(data, function(key, value){
+                    preFillField(key, value)
+                });
+                showAdditionalFields();
+                loadJob();
+            });
+        }
         if (value !== '') {
-            var $input = $('input[name=' + key + ']');
-            if ($input.length > 0) {
-                if (key == 'parameter' && $input.last().val() !== ''){
-                    addAlias();
-                    $input = $($input.selector); // reload as we have one more field
-                }
-                if ($input.attr('type') == 'checkbox') {
-                    if (value == '1' || value == key){
-                        $input.prop('checked', true);
-                    } else {
-                        $input.prop('checked', false);
-                    }
-                } else {
-                    $input.last().val(decodeURIComponent(value.replace(/\+/g, ' ')));
-                }
-                return;
-            }
-            var $select = $('select[name=' + key + '] option');
-            if ($select.length > 0){
-                $select.each(function() { this.selected = (this.value == value); });
-            } else if (key == 'unit'){
-                tempunit = value;
-            }
+            preFillField(key, value)
         }
     });
 }
@@ -821,6 +838,9 @@ function proceedOnePage() {
         reportStatus('done<br />' + cntSuccess + ' successful edits, ' + cntError + ' errors');
         document.title = 'DONE - '+document.title;
         stopJob();
+        $.getJSON('updatehtshare.php', {
+            htid: htid
+        });
         return true;
     }
     reportStatus('running (' + i + '/' + $pagelist.length + ')');
@@ -1067,7 +1087,7 @@ function addAlias(){
 
 function loadJob() {
     $('#getpages').attr('disabled', true);
-    $('.permalink').show();
+    $('#savelinks').show();
     $('#downloadlinks').hide();
     document.title = document.title.replace('DONE - ', '');
     $.ajax({
@@ -1177,18 +1197,32 @@ function loadJob() {
 $(document).ready(function() {
 
     prefillForm();
-    showAdditionalFields();
+
+    if (htid === false){
+        showAdditionalFields();
+
+        if (autoload === true) {
+            autoload = false;
+            loadJob();
+        }
+    }
 
     $('input').change(function() {
         $(this).removeClass('error');
+        htid = false;
     });
+
     $('input[name="property"]').change(function() {
         hideAdditionalFields();
         showAdditionalFields();
     });
 
-    $('.permalink').mouseenter(function() {
-        var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
+    $('#savelinks a').mouseenter(function() {
+        if ($(this).attr('id') == 'permalink') {
+            var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';
+        } else {
+            var url = '//tools.wmflabs.org/pltools/harvesttemplates/share.php?action=savenew&';
+        }
         var params = $( 'form input:visible, form select:visible' ).serializeArray();
         $('form input[type=checkbox]:not(:checked)').each(function() {
             params.push({ name: this.name, value: '0' });
@@ -1227,10 +1261,5 @@ $(document).ready(function() {
         }
         runJob($this);
     });
-
-    if (autoload === true) {
-        autoload = false;
-        loadJob();
-    }
 
 });

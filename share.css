@@ -1,0 +1,61 @@
+body {
+    font-family: Calibri, 'Helvetica Neue', 'Lucida Grande', Tahoma, Verdana, sans-serif;
+    font-size: 14px;
+}
+a {
+    color: #0645AD;
+    text-decoration: none;
+}
+
+div#main {
+    width: 95%;
+    margin: 30px auto;
+}
+
+table{
+    width: 100%;
+    background-color: #F2F2F2;
+    margin-top: 20px;
+}
+
+tr{
+    vertical-align: top;
+}
+
+tr:nth-child(odd) {
+    background-color: #FFF;
+}
+
+
+th{
+    font-weight: bold;
+    text-align: left;
+    color: #373A3C;
+}
+
+td, th{
+    padding: 10px;
+}
+
+.edit:hover, .save:hover, .delete:hover{
+    cursor: pointer;
+}
+
+input, textarea{
+    margin: 2px;
+}
+input[type="text"], textarea {
+    background-color: #FFF;
+    border: 1px solid #AFAFAF;
+    border-radius: 3px;
+    padding: 4px;
+    width: 250px;
+    box-sizing: content-box;
+    -ms-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+}
+
+input[type="text"]:focus {
+    border-color: #808080;
+}

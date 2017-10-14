@@ -52,9 +52,8 @@
             By clicking <i>get pages</i> a list with articles gets created. After it, when clicking <i>add values</i> the articles get parsed and claims get added to Wikidata. Alternatively, with <i>demo</i> only parsing is done without any edit action.<br />
             <br /><b><i>News</i></b>
             <ul>
-                <li>Full support for quantity datatype</li>
-                <li>Manual list</li>
                 <li>Autoload (&amp;load=) and autorun (&amp;run=)</li>
+                <li><a href="share.php">Collaboration platform</a></li>
             </ul>
         </div>
 
@@ -200,7 +199,7 @@
                 </div>
             </div>
         </form>
-        <div class="rightbox"><a class="permalink" style="display:none;" href="#" target="_blank">Permalink</a><span id="downloadlinks" style="display:none;"> | download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></span></div>
+        <div class="rightbox"><span id="savelinks"  style="display:none;"><a id="share" href="#" target="_blank">publicly save</a> | <a id="permalink" href="#" target="_blank">Permalink</a></span><span id="downloadlinks" style="display:none;"> | download <a class="download" href="#">CSV</a> | <a class="download" href="#">TSV</a></span></div>
         <div id="result"></div>
     </div>
 
