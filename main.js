@@ -1065,9 +1065,8 @@ function showAdditionalFields() {
                 }
                 break;
         }
-        if (data.entities[p].labels.en !== undefined){
-            $('#plabel').text(data.entities[p].labels.en.value);
-        }
+        var label = data.entities[p].labels.en !== undefined ? escapeHTML(data.entities[p].labels.en) : p;
+        $('#plabel').html('<a href="https://www.wikidata.org/wiki/Property:' + p + '" target="_blank">' + label + '</a>');
     });
 }
 
