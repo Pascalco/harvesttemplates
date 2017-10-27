@@ -39,8 +39,8 @@ function createContent(){
     while ($row = mysqli_fetch_assoc($result)){
         parse_str($row['para'], $para);
         $content .= sprintf('<tr data-id="%d"><td>%s.%s<br /><small>NS: %d</small><td><a href="//www.wikidata.org/wiki/Property:P%d">%s (P%5$d)</a></td><td><a href="//%2$s.%3$s.org/wiki/Template:%7$s">%7$s</a></td>', $row['id'], $para['siteid'], $para['project'], $para['namespace'], $para['property'], getLabel('P'.$para['property']), $para['template']);
-        if (array_key_exists('aparameter1', $para)){
-            $content .= sprintf('<td>year: %s<br />month: %s<br />day: %s</td>', $para['aparamter1'], $para['aparameter2'], $para['aparameter3']);
+        if (array_key_exists('aparameter1', $para) and !empty($para['aparameter1'])){
+            $content .= sprintf('<td>year: %s<br />month: %s<br />day: %s</td>', $para['aparameter1'], $para['aparameter2'], $para['aparameter3']);
         } else if (is_array($para['paramter'])){
             $content .= sprintf('<td>%s</td>', implode('<br /><b>or</b> ', $para['parameter']));
         } else {
