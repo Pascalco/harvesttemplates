@@ -59,7 +59,7 @@ function getPagesWithoutClaim( $p, $r ){
 
 
 function openDB( $dbname ){
-    $server = $dbname . '.labsdb';
+    $server = $dbname . '.web.db.svc.eqiad.wmflabs';
 
     $file = '/data/project/pltools/replica.my.cnf';
 
