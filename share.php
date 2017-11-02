@@ -104,7 +104,7 @@ function createContent(){
     <div id="main">
 
     <table id="maintable">
-    <tr><th>project</th><th>property</th><th>template</th><th>parameter</th><th>additional paramters</th><th>created by</th><th>last run</th><th>tags</th><th>run</th><th></th></tr>
+    <tr><th>project</th><th>property</th><th>template</th><th>parameter</th><th>additional parameters</th><th>created by</th><th>last run</th><th>tags</th><th>run</th><th></th></tr>
 
     <?php
         echo createContent();
