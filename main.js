@@ -1063,6 +1063,16 @@ function showAdditionalFields() {
                 }
                 break;
         }
+        if (data.entities[p].claims.P31 !== undefined){
+            for(claim in data.entities[p].claims.P31){
+                var instance = data.entities[p].claims.P31[claim].mainsnak.datavalue.value.id;
+                if(instance == 'Q37911748' || instance == 'Q18644427'){
+                    reportStatus('Property is deprecated');
+                    $('input[name="property"]').addClass('error');
+                    break;
+                }
+            }
+        }
         var label = data.entities[p].labels.en !== undefined ? escapeHTML(data.entities[p].labels.en.value) : p;
         $('#plabel').html('<a href="https://www.wikidata.org/wiki/Property:' + p + '" target="_blank">' + label + '</a>');
     });
