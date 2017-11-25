@@ -1224,6 +1224,13 @@ $(document).ready(function() {
         showAdditionalFields();
     });
 
+    $('input[name="template"]').change(function() {
+        if ($('input[name="template"]').val() !== '' && $('input[name="siteid"]').val() !== '' && $('input[name="project"]').val() !== ''){
+            var link = 'https://' + $('input[name="siteid"]').val() + '.' + $('input[name="project"]').val() + '.org/wiki/Template:' + $('input[name="template"]').val();
+            $('#templatelink').html('<a href="' + link + '" target="_blank">Link</a>');
+        }
+    });
+
     $('#savelinks a').mouseenter(function() {
         if ($(this).attr('id') == 'permalink') {
             var url = '//tools.wmflabs.org/pltools/harvesttemplates/?';

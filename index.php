@@ -82,7 +82,7 @@
                 <div class="div-table-row">
                     <div class="div-table-col1">Template</div>
                     <div class="div-table-col2">
-                        <input type="text" name="template" value="">
+                        <input type="text" name="template" value=""> <span id="templatelink"></span>
                     </div>
                 </div>
                 <div class="div-table-row">
