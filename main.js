@@ -203,24 +203,6 @@ function addMissingConstraintData( ii ){
         }).fail(function(data) {
             stopLoading('WQS query expired');
         });
-    } else if (constraints[ii].type == 'Unique value') {
-        constraints[ii].values = [];
-        $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'SELECT ?value WHERE { ?item wdt:' + job.property + ' ?value } GROUP BY ?value',
-            format: 'json'
-        }).done(function(data) {
-            for (var row in data.results.bindings) {
-                var value = data.results.bindings[row].value.value;
-                if (value.indexOf('http://commons.wikimedia.org/wiki/Special:FilePath/') === 0) {
-                    value = value.replace('http://commons.wikimedia.org/wiki/Special:FilePath/', '');
-                    value = decodeURIComponent(value);
-                }
-                constraints[ii].values.push(value);
-            }
-            addMissingConstraintData( ++ii );
-        }).fail(function(data) {
-            stopLoading('WQS query expired');
-        });
     } else if (constraints[ii].type == 'Commons link') {
         constraints[ii].namespace = constraints[ii].namespace.capitalizeFirstLetter();
         $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
@@ -399,14 +381,6 @@ function addValue(pageid, qid, value) {
 
 function checkConstraints(pageid, qid, value, ii) {
     if (ii == constraints.length) {
-        if (job.demo != 1) {
-            for (var i = 0; i < ii; i++) {
-                if (constraints[i].type == 'Unique value') {
-                    constraints[i].values.push(value);
-                    break;
-                }
-            }
-        }
         addValue(pageid, qid, value);
         return true;
     }
@@ -421,12 +395,30 @@ function checkConstraints(pageid, qid, value, ii) {
         return true;
     }
     else if (co.type == 'Unique value') {
-        if (co.values.indexOf(value) != -1) {
-            report(pageid, 'error', 'Constraint violation: Unique value <i>' + escapeHTML(value) + '</i>', qid);
-            return false;
+        if (job.datatype == 'wikibase-item') {
+            var queryvalue = 'wd:'+value;
+        } else if (job.datatype == 'commonsMedia') {
+            var queryvalue = '<http://commons.wikimedia.org/wiki/Special:FilePath/' + value + '>';
+        } else {
+            var queryvalue = '"' + value + '"';
         }
-        checkConstraints(pageid, qid, value, ++ii);
-        return true;
+        $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
+            query: 'ASK { ?item wdt:' + job.property + ' ' + queryvalue + ' }',
+            format: 'json'
+        }).done(function(data) {
+            if (data.boolean) {
+                $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
+                    query: 'SELECT ?item WHERE { ?item wdt:' + job.property + ' ' + queryvalue + ' } LIMIT 1',
+                    format: 'json'
+                }).done(function(data) {
+                    report(pageid, 'error', 'Constraint violation: Unique value <i><a href="' + data.results.bindings[0].item.value + '" target="_blank">' + escapeHTML(value) + '</a></i>', qid);
+                    return false;
+                });
+            } else {
+                checkConstraints(pageid, qid, value, ++ii);
+                return true;
+            }
+        });
     }
     else if (co.type == 'Type') {
         $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
