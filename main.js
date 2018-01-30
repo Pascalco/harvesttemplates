@@ -1193,6 +1193,16 @@ function loadJob() {
     });
 }
 
+function updateTemplateLink() {
+    var template = $('input[name="template"]').val(),
+        siteid = $('input[name="siteid"]').val(),
+        project = $('input[name="project"]').val();
+    if (template !== '' && siteid !== '' && project !== '') {
+        var link = 'https://' + siteid + '.' + project + '.org/wiki/Template:' + template;
+        $('#templatelink').html('<a href="' + link + '" target="_blank">Link</a>');
+    }
+}
+
 $(document).ready(function() {
 
     prefillForm();
@@ -1216,12 +1226,7 @@ $(document).ready(function() {
         showAdditionalFields();
     });
 
-    $('input[name="template"]').change(function() {
-        if ($('input[name="template"]').val() !== '' && $('input[name="siteid"]').val() !== '' && $('input[name="project"]').val() !== ''){
-            var link = 'https://' + $('input[name="siteid"]').val() + '.' + $('input[name="project"]').val() + '.org/wiki/Template:' + $('input[name="template"]').val();
-            $('#templatelink').html('<a href="' + link + '" target="_blank">Link</a>');
-        }
-    });
+    $('input[name="template"], input[name="siteid"], input[name="project"]').change( updateTemplateLink );
 
     $('#savelinks a').mouseenter(function() {
         if ($(this).attr('id') == 'permalink') {
