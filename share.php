@@ -5,7 +5,8 @@ $userinfo = json_decode(getUserInfo());
 $username = $userinfo->query->userinfo->name;
 if (isset($_GET['action'])){
     if ($_GET['action'] == 'savenew'){
-        mysqli_query($conn2, 'INSERT INTO ht_share (para, user) VALUES ("'.$_SERVER["QUERY_STRING"].'", "'.$username.'")');
+        $para = preg_replace('/limit=\d+&?/', '', preg_replace('/offset=\d+&?/', '' , str_replace('action=savenew&', '', $_SERVER["QUERY_STRING"] ) ) );
+        mysqli_query($conn2, 'INSERT INTO ht_share (para, user) VALUES ("'.$para.'", "'.$username.'")');
     } else if ($_GET['action'] == 'delete'){
         mysqli_query($conn2, 'DELETE FROM ht_share WHERE id = "'.$_GET['id'].'" AND user = "'.$username.'"');
         return 0;
