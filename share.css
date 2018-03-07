@@ -59,3 +59,16 @@ input[type="text"], textarea {
 input[type="text"]:focus {
     border-color: #808080;
 }
+
+#maintable thead tr .header {
+	background-image: url(pics/bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+#maintable thead tr .headerSortUp {
+	background-image: url(pics/asc.gif);
+}
+#maintable thead tr .headerSortDown {
+	background-image: url(pics/desc.gif);
+}

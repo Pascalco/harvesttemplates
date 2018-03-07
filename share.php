@@ -89,6 +89,7 @@ function createContent(){
     <link href="../common.css" rel="stylesheet">
 
     <script src="//tools-static.wmflabs.org/static/jquery/1.11.0/jquery.min.js"></script>
+    <script src="tablesorter.js"></script>
 
     <?php
         $commit = trim(file_get_contents( '../harvesttemplates/.git/refs/heads/master' ));
@@ -105,11 +106,12 @@ function createContent(){
     <div id="main">
 
     <table id="maintable">
-    <tr><th>project</th><th>property</th><th>template</th><th>parameter</th><th>additional parameters</th><th>created by</th><th>last run</th><th>tags</th><th>run</th><th></th></tr>
-
+    <thead><tr><th>project</th><th>property</th><th>template</th><th>parameter</th><th>additional parameters</th><th>created by</th><th>last run</th><th>tags</th><th>run</th><th></th></tr></thead>
+    <tbody>
     <?php
         echo createContent();
     ?>
+    </tbody>
     </table>
     </div>
 

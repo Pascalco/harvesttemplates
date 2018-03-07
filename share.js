@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+    $('#maintable').tablesorter({ headers: { 8: { sorter: false }, 9: { sorter: false } } });
+
     $('html').on('click','.edit',function(e){
         e.preventDefault();
         var tagfield = $(this).parent().find('span');
