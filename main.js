@@ -395,12 +395,13 @@ function checkConstraints(pageid, qid, value, ii) {
         return true;
     }
     else if (co.type == 'Unique value') {
+        var queryvalue;
         if (job.datatype == 'wikibase-item') {
-            var queryvalue = 'wd:'+value;
+            queryvalue = 'wd:'+value;
         } else if (job.datatype == 'commonsMedia') {
-            var queryvalue = '<http://commons.wikimedia.org/wiki/Special:FilePath/' + value + '>';
+            queryvalue = '<http://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(value) + '>';
         } else {
-            var queryvalue = '"' + value + '"';
+            queryvalue = '"' + encodeURIComponent(value) + '"';
         }
         $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
             query: 'ASK { ?item wdt:' + job.property + ' ' + queryvalue + ' }',
@@ -418,6 +419,8 @@ function checkConstraints(pageid, qid, value, ii) {
                 checkConstraints(pageid, qid, value, ++ii);
                 return true;
             }
+        }).fail(function () {
+            report(pageid, 'error', 'SPARQL error', qid);
         });
     }
     else if (co.type == 'Type') {
