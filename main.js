@@ -1203,12 +1203,15 @@ function updateTemplateLink() {
     if (template !== '' && siteid !== '' && project !== '') {
         var link = 'https://' + siteid + '.' + project + '.org/wiki/Template:' + template;
         $('#templatelink').html('<a href="' + link + '" target="_blank">Link</a>');
+    } else {
+        $('#templatelink').html('');
     }
 }
 
 $(document).ready(function() {
 
     prefillForm();
+    updateTemplateLink();
 
     if (htid === false){
         showAdditionalFields();
