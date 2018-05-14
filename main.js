@@ -987,10 +987,10 @@ function getPages() {
 function loadUnits(claims){
     var ids = [];
     for (var c in claims){
-        if (claims[c].mainsnak.snaktype == 'novalue' || claims[c].mainsnak.datavalue.value['numeric-id'] == 21027105){
+        if (claims[c].snaktype == 'novalue'){
             $('select[name="unit"]').append('<option value="1">no unit</option>');
-        } else if (claims[c].mainsnak.snaktype == 'value'){
-            ids.push('Q'+claims[c].mainsnak.datavalue.value['numeric-id']);
+        } else if (claims[c].snaktype == 'value'){
+            ids.push(claims[c].datavalue.value['id']);
         }
     }
     if (ids.length > 0){
@@ -1049,11 +1049,18 @@ function showAdditionalFields() {
                 $('.timeparameters').show();
                 break;
             case 'quantity':
-                if (data.entities[p].claims.P2237 !== undefined){
-                    loadUnits(data.entities[p].claims.P2237);
-                    $('.quantityparameters').show();
-                } else {
-                    reportStatus('P2237 (units used for this property) on property page missing');
+                var unitsDefined = false;
+                if (data.entities[p].claims.P2302 !== undefined){
+                    for (claim in data.entities[p].claims.P2302){
+                        if (data.entities[p].claims.P2302[claim].mainsnak.datavalue.value.id == 'Q21514353'){
+                            unitsDefined = true;
+                            loadUnits(data.entities[p].claims.P2302[claim].qualifiers.P2305);
+                            $('.quantityparameters').show();
+                        }
+                    }
+                }
+                if (unitsDefined === false){
+                    reportStatus('allowed unit constraint on property page missing');
                     $('input[name="property"]').addClass('error');
                 }
                 break;
