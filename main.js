@@ -1208,7 +1208,7 @@ function updateTemplateLink() {
         siteid = $('input[name="siteid"]').val(),
         project = $('input[name="project"]').val();
     if (template !== '' && siteid !== '' && project !== '') {
-        var link = 'https://' + siteid + '.' + project + '.org/wiki/Template:' + template;
+        var link = 'https://' + siteid + '.' + project + '.org/wiki/Template:' + encodeURIComponent( template );
         $('#templatelink').html('<a href="' + link + '" target="_blank">Link</a>');
     } else {
         $('#templatelink').html('');
