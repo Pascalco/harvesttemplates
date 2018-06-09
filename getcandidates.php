@@ -31,7 +31,7 @@ function getSubcats( &$cats, $root, $depth ){
 function getPagesWithTemplate( $template, $cats, $namespace){
     $ret = array();
     $ret2 = array();
-    $template = ucfirst( trim( str_replace( ' ', '_', $template ) ) );
+    $template = mysql_real_escape_string( ucfirst( trim( str_replace( ' ', '_', $template ) ) ) );
     if ( count( $cats ) == 0){
         $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY page_latest DESC' );
     } else {
@@ -86,7 +86,7 @@ $conn = openDB( $_GET['dbname'] );
 $cats = array();
 if ( !empty( $_GET['category'] ) ){
     $depth = (!empty( $_GET['depth'] ) ? $_GET['depth'] : 0);
-    $root = array( trim( str_replace( ' ', '_', $_GET['category'] ) ) );
+    $root = array( mysql_real_escape_string( trim( str_replace( ' ', '_', $_GET['category'] ) ) ) );
     getSubcats( $cats, $root, $depth );
 }
 $r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
