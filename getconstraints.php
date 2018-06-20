@@ -151,6 +151,19 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
             case 'Q21528959': # used as reference
                 $con = array(array('type'=> 'Source'));
                 break 2;
+            case 'Q53869507': # property scope
+                if (array_key_exists('qualifiers', $claim)){
+                    if (array_key_exists('P5314', $claim->qualifiers)){
+                        if ($claim->qualifiers->P5314[0]->datavalue->value->id == 'Q54828449'){
+                            $con = array(array('type'=> 'Qualifier'));
+                            break 2;
+                        }
+                        if ($claim->qualifiers->P5314[0]->datavalue->value->id == 'Q54828450'){
+                            $con = array(array('type'=> 'Source'));
+                            break 2;
+                        }
+                    }
+                }
         }
     }
 }
