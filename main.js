@@ -281,21 +281,36 @@ function getSiteid(siteid, project) {
     }
 }
 
-function setSource(qid, guid) {
-    var sources = [{
-        type: 'wikibase-entityid',
-        q: qid,
-        p: 'P143',
-        numericid: wbeditionid[job.dbname]
-    }];
-    $.ajax({
-        type: 'GET',
-        url: '../oauth.php',
-        data: {
-            action: 'addSource',
-            guid: guid,
-            sources: sources
-        }
+function setSource(pageid, guid) {
+    $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
+        action: 'query',
+        prop: 'revisions',
+        pageids: pageid,
+        rvprop: 'ids',
+        format: 'json'
+    }).done(function(data) {
+        title = data.query.pages[pageid].title.replace(/ /g, '_')
+        revid = data.query.pages[pageid].revisions[0].revid;
+        permalink = 'https://' + job.siteid + '.' + job.project + '.org/w/index.php?title=' + title + '&oldid=' + revid;
+
+        var sources = [{
+            type: 'wikibase-entityid',
+            p: 'P143',
+            numericid: wbeditionid[job.dbname]
+        }, {
+            type: 'string',
+            p: 'P4656',
+            text: permalink
+        }];
+        $.ajax({
+            type: 'GET',
+            url: '../oauth.php',
+            data: {
+                action: 'addSource',
+                guid: guid,
+                sources: sources
+            }
+        });
     });
 }
 
@@ -369,7 +384,7 @@ function addValue(pageid, qid, value) {
             if (data.indexOf('createdClaim') > -1) {
                 var res = data.split('|');
                 var guid = res[1];
-                setSource(qid, guid);
+                setSource(pageid, guid);
                 report(pageid, 'success', value, qid);
             } else {
                 report(pageid, 'error', escapeHTML(data), qid);
