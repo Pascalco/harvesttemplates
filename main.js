@@ -88,7 +88,6 @@ function prefillForm() {
                     preFillField(key, value)
                 });
                 showAdditionalFields();
-                loadJob();
             });
         }
         if (value !== '') {
@@ -1092,6 +1091,12 @@ function showAdditionalFields() {
         }
         var label = data.entities[p].labels.en !== undefined ? escapeHTML(data.entities[p].labels.en.value) : p;
         $('#plabel').html('<a href="https://www.wikidata.org/wiki/Property:' + p + '" target="_blank">' + label + '</a>');
+
+        if (autoload === true) {
+            autoload = false;
+            loadJob();
+        }
+
     });
 }
 
@@ -1237,11 +1242,6 @@ $(document).ready(function() {
 
     if (htid === false){
         showAdditionalFields();
-
-        if (autoload === true) {
-            autoload = false;
-            loadJob();
-        }
     }
 
     $('input').change(function() {
