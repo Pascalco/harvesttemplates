@@ -20,6 +20,7 @@ var autoload = false;
 var autorun = false;
 var tempunit = false;
 var htid = false;
+var editgroup = false
 
 String.prototype.capitalizeFirstLetter = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -307,7 +308,8 @@ function setSource(pageid, guid) {
             data: {
                 action: 'addSource',
                 guid: guid,
-                sources: sources
+                sources: sources,
+                editgroup: editgroup
             }
         });
     });
@@ -376,7 +378,8 @@ function addValue(pageid, qid, value) {
             url: '../oauth.php',
             data: {
                 action: 'createClaim',
-                claim: claim
+                claim: claim,
+                editgroup: editgroup
             }
         })
         .done(function(data) {
@@ -946,6 +949,7 @@ function createCheckboxlist(pageids) {
 
 function getPages() {
     job.template = job.template.capitalizeFirstLetter().replace(/_/g, ' ');
+    editgroup = Math.floor(Math.random() * Math.pow(2, 48)).toString(16)
     $.getJSON('getcandidates.php?', {
         dbname: job.dbname,
         template: job.template,
