@@ -139,11 +139,11 @@ function report(pageid, status, value, qid) {
         } else {
             value = escapeHTML(value);
         }
-        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i></span>');
+        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → added value <i>' + value + '</i><br/></span>');
     } else {
         delay = 500;
         cntError += 1;
-        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '</span>');
+        $('#' + pageid).next().after('<span class="value"> → <a href="//www.wikidata.org/wiki/' + qid + '" target="_blank">' + qid + '</a> → ' + value + '<br/></span>');
     }
     $('#' + pageid).parent().addClass(status);
 }
@@ -725,7 +725,7 @@ function handleValue(pageid, qid, value) {
             if (job.wikisyntax) {
                 res = value;
             } else {
-                report(pageid, 'error', 'no target page found', qid);
+                report(pageid, 'error', 'no target page found for value ' + value, qid);
                 return 0;
             }
         }
@@ -886,8 +886,21 @@ function proceedOnePage() {
                         if (value !== false) {
                             if (job.demo != 1 && bot === 0) {
                                 delay = 5000;
+                            } 
+                            // handle multi value entries 
+                            if (value[0] === '*') {
+                                var values = value.split('*')
+                                // skip first entry: start from 1 instead of 0
+                                for (var i = 1; i < value.length; i++) {
+                                    if (values[i]) {
+                                        handleValue(id, qid, values[i].trim());
+                                        sleep(delay);
+                                    }
+                                }
+                            // handle single value (default case)
+                            } else {
+                                handleValue(id, qid, value);
                             }
-                            handleValue(id, qid, value);
                         } else {
                             report(id, 'error', 'no value', qid);
                         }
@@ -1237,6 +1250,10 @@ function updateTemplateLink() {
     } else {
         $('#templatelink').html('');
     }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 $(document).ready(function() {
