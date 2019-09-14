@@ -707,7 +707,7 @@ function checkForInterwiki(pageid, qid, res, url) {
 
 function handleValue(pageid, qid, value) {
     if (['string', 'external-id', 'url', 'wikibase-item'].indexOf(job.datatype) > -1){
-        value = job.addprefix + value.replace(new RegExp('^' + job.removeprefix), '');
+        value = job.addprefix + value.replace(new RegExp('^' + job.removeprefix), '').trim();
     }
     if (job.datatype == 'string' || job.datatype == 'external-id') {
         checkConstraints(pageid, qid, value, 0);
