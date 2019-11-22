@@ -27,14 +27,14 @@ curl_close( $curl );
 
 $con = array();
 
-if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
-    foreach( $data->entities->$_GET['p']->claims->P2302 as $claim ){
-        $type = $claim->mainsnak->datavalue->value->id;
+if (array_key_exists('P2302', $data->entities->{$_GET['p']}->claims)){
+    foreach( $data->entities->{$_GET['p']}->claims->{'P2302'} as $claim ){
+        $type = $claim->mainsnak->datavalue->value->{id};
         switch($type){
             case 'Q21502404': # format
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P1793', $claim->qualifiers)){
-                        $value = $claim->qualifiers->P1793[0]->datavalue->value;
+                        $value = $claim->qualifiers->{'P1793'}[0]->datavalue->value;
                         if (substr($value,0,4) == '(?i)'){
                             $con[] = array('type' => 'Format', 'modifier' => 'i', 'pattern' => substr($value, 4));
                         } else {
@@ -46,7 +46,7 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
             case 'Q21510852': # commons link
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2307', $claim->qualifiers)){
-                        $con[] = array('type' => 'Commons link', 'namespace' => $claim->qualifiers->P2307[0]->datavalue->value);
+                        $con[] = array('type' => 'Commons link', 'namespace' => $claim->qualifiers->{'P2307'}[0]->datavalue->value);
                     }
                 }
                 break;
@@ -54,10 +54,10 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2305', $claim->qualifiers) and array_key_exists('P2306', $claim->qualifiers)){
                         $list =  array();
-                        foreach( $claim->qualifiers->P2305 as $el ){
-                            $list[] = $el->datavalue->value->id;
+                        foreach( $claim->qualifiers->{'P2305'} as $el ){
+                            $list[] = $el->datavalue->value->{id};
                         }
-                        $con[] = array('type' => 'Conflicts with', 'list' => array($claim->qualifiers->P2306[0]->datavalue->value->id => $list));
+                        $con[] = array('type' => 'Conflicts with', 'list' => array($claim->qualifiers->{'P2306'}[0]->datavalue->value->{id} => $list));
                     }
                 }
                 break;
@@ -65,8 +65,8 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2305', $claim->qualifiers)){
                         $list =  array();
-                        foreach( $claim->qualifiers->P2305 as $el ){
-                            $list[] = $el->datavalue->value->id;
+                        foreach( $claim->qualifiers->{'P2305'} as $el ){
+                            $list[] = $el->datavalue->value->{id};
                         }
                         $con[] = array('type' => 'One of', 'values' => $list);
                     }
@@ -76,10 +76,10 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2308', $claim->qualifiers) and array_key_exists('P2309', $claim->qualifiers)){
                         $list =  array();
-                        foreach( $claim->qualifiers->P2308 as $el ){
-                            $list[] = $el->datavalue->value->id;
+                        foreach( $claim->qualifiers->{'P2308'} as $el ){
+                            $list[] = $el->datavalue->value->{id};
                         }
-                        if ($claim->qualifiers->P2309[0]->datavalue->value->id == 'Q21503252'){
+                        if ($claim->qualifiers->{'P2309'}[0]->datavalue->value->{id} == 'Q21503252'){
                             $relation = 'P31';
                         } else {
                             $relation = 'P279';
@@ -92,10 +92,10 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2308', $claim->qualifiers) and array_key_exists('P2309', $claim->qualifiers)){
                         $list =  array();
-                        foreach( $claim->qualifiers->P2308 as $el ){
-                            $list[] = $el->datavalue->value->id;
+                        foreach( $claim->qualifiers->{'P2308'} as $el ){
+                            $list[] = $el->datavalue->value->{id};
                         }
-                        if ($claim->qualifiers->P2309[0]->datavalue->value->id == 'Q21503252'){
+                        if ($claim->qualifiers->{'P2309'}[0]->datavalue->value->{id} == 'Q21503252'){
                             $relation = 'P31';
                         } else {
                             $relation = 'P279';
@@ -107,31 +107,31 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
             case 'Q21510860': # range
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P2310', $claim->qualifiers)){
-                        if ($claim->qualifiers->P2310[0]->snaktype == 'value'){
-                            $min = $claim->qualifiers->P2310[0]->datavalue->value->time;
-                        } else if ($claim->qualifiers->P2310[0]->snaktype == 'somevalue'){
+                        if ($claim->qualifiers->{'P2310'}[0]->snaktype == 'value'){
+                            $min = $claim->qualifiers->{'P2310'}[0]->datavalue->value->time;
+                        } else if ($claim->qualifiers->{'P2310'}[0]->snaktype == 'somevalue'){
                             $min = date('Y-m-d').'T00:00:00Z';
                         } else {
                             $min = '';
                         }
                     } else if (array_key_exists('P2313', $claim->qualifiers)){
-                        if ($claim->qualifiers->P2313[0]->snaktype == 'value'){
-                            $min = $claim->qualifiers->P2313[0]->datavalue->value->amount;
+                        if ($claim->qualifiers->{'P2313'}[0]->snaktype == 'value'){
+                            $min = $claim->qualifiers->{'P2313'}[0]->datavalue->value->amount;
                         } else {
                             $min = '';
                         }
                     }
                     if (array_key_exists('P2311', $claim->qualifiers)){
-                        if ($claim->qualifiers->P2311[0]->snaktype == 'value'){
-                            $max = $claim->qualifiers->P2311[0]->datavalue->value->time;
-                        } else if ($claim->qualifiers->P2311[0]->snaktype == 'somevalue'){
+                        if ($claim->qualifiers->{'P2311'}[0]->snaktype == 'value'){
+                            $max = $claim->qualifiers->{'P2311'}[0]->datavalue->value->time;
+                        } else if ($claim->qualifiers->{'P2311'}[0]->snaktype == 'somevalue'){
                             $max = date('Y-m-d').'T00:00:00Z';
                         } else {
                             $max = '';
                         }
                     } else if (array_key_exists('P2312', $claim->qualifiers)){
-                        if ($claim->qualifiers->P2312[0]->snaktype == 'value'){
-                            $max = $claim->qualifiers->P2312[0]->datavalue->value->amount;
+                        if ($claim->qualifiers->{'P2312'}[0]->snaktype == 'value'){
+                            $max = $claim->qualifiers->{'P2312'}[0]->datavalue->value->amount;
                         } else {
                             $max = '';
                         }
@@ -154,11 +154,11 @@ if (array_key_exists('P2302', $data->entities->$_GET['p']->claims)){
             case 'Q53869507': # property scope
                 if (array_key_exists('qualifiers', $claim)){
                     if (array_key_exists('P5314', $claim->qualifiers)){
-                        if ($claim->qualifiers->P5314[0]->datavalue->value->id == 'Q54828449'){
+                        if ($claim->qualifiers->{'P5314'}[0]->datavalue->value->{id} == 'Q54828449'){
                             $con = array(array('type'=> 'Qualifier'));
                             break 2;
                         }
-                        if ($claim->qualifiers->P5314[0]->datavalue->value->id == 'Q54828450'){
+                        if ($claim->qualifiers->{'P5314'}[0]->datavalue->value->{id} == 'Q54828450'){
                             $con = array(array('type'=> 'Source'));
                             break 2;
                         }
