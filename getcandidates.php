@@ -12,7 +12,7 @@ header( 'Content-Type: application/json' );
 ini_set( 'memory_limit', '4G' );
 ini_set( 'max_execution_time', 0);
 
-function getSubcats( &$cats, $root, $depth ){
+function getSubcats( &$cats, $root, $depth, $conn ){
     $c = array();
     foreach ( $root as $r ){
         if ( isset ( $cats[$r] ) ) continue;
@@ -21,23 +21,23 @@ function getSubcats( &$cats, $root, $depth ){
     }
     if ( $depth == 0) return;
     if ( count( $c ) == 0) return;
-    $result = mysql_query( 'SELECT DISTINCT page_title FROM page, categorylinks WHERE page_id=cl_from AND cl_to IN ("'.implode('","', $c).'") AND cl_type="subcat"');
+    $result = mysqli_query($conn, 'SELECT DISTINCT page_title FROM page, categorylinks WHERE page_id=cl_from AND cl_to IN ("'.implode('","', $c).'") AND cl_type="subcat"');
     $res = array();
-    while( $row = mysql_fetch_assoc( $result ) ){
-        $res[] = mysql_real_escape_string($row['page_title']);
+    while( $row = mysqli_fetch_assoc( $result ) ){
+        $res[] = mysqli_real_escape_string($conn, $row['page_title']);
     }
     getSubcats( $cats, $res, $depth - 1 );
 }
-function getPagesWithTemplate( $template, $cats, $namespace){
+function getPagesWithTemplate( $template, $cats, $namespace, $conn){
     $ret = array();
     $ret2 = array();
-    $template = mysql_real_escape_string( ucfirst( trim( str_replace( ' ', '_', $template ) ) ) );
+    $template = mysqli_real_escape_string($conn, ucfirst( trim( str_replace( ' ', '_', $template ) ) ) );
     if ( count( $cats ) == 0){
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY page_latest DESC' );
+        $result = mysqli_query($conn, 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from ORDER BY page_latest DESC' );
     } else {
-        $result = mysql_query( 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to IN ("'.implode('","', $cats).'") )  ORDER BY page_latest DESC' );
+        $result = mysqli_query($conn, 'SELECT DISTINCT tl_from, page_title, pp_value FROM templatelinks, page, page_props WHERE tl_from_namespace='.$namespace.' AND tl_namespace=10 AND tl_title = "'.$template.'" AND pp_propname = "wikibase_item" AND pp_page = tl_from AND page_id = tl_from AND tl_from IN (SELECT DISTINCT cl_from FROM categorylinks WHERE cl_to IN ("'.implode('","', $cats).'") )  ORDER BY page_latest DESC' );
     }
-    while ( $row = mysql_fetch_assoc( $result ) ){
+    while ( $row = mysqli_fetch_assoc( $result ) ){
         $ret[$row['tl_from']] = $row['pp_value'];
         $ret2[$row['tl_from']] = $row['page_title'];
     }
@@ -45,13 +45,13 @@ function getPagesWithTemplate( $template, $cats, $namespace){
 }
 
 
-function getPagesWithoutClaim( $p, $r ){
+function getPagesWithoutClaim( $p, $r, $conn ){
     $prevlist = implode('","', $r);
     $ret = array();
 
-    $result = mysql_query( 'SELECT DISTINCT page_title FROM page WHERE page_namespace=0 AND page_title IN ("' . $prevlist . '") AND NOT EXISTS (SELECT * FROM pagelinks WHERE pl_from=page_id AND pl_namespace=120 AND pl_title = "' . $p . '")' );
+    $result = mysqli_query($conn, 'SELECT DISTINCT page_title FROM page WHERE page_namespace=0 AND page_title IN ("' . $prevlist . '") AND NOT EXISTS (SELECT * FROM pagelinks WHERE pl_from=page_id AND pl_namespace=120 AND pl_title = "' . $p . '")' );
 
-    while ( $row = mysql_fetch_assoc( $result ) ){
+    while ( $row = mysqli_fetch_assoc( $result ) ){
         array_push($ret, $row['page_title']);
     }
     return $ret;
@@ -73,8 +73,8 @@ function openDB( $dbname ){
         if ( trim( $foo[0] ) == 'user' ) $username = $foo[1];
         if ( trim( $foo[0] ) == 'password' ) $password = $foo[1];
     }
-    $conn =  mysql_connect( $server, $username, $password ) OR die(mysql_error());
-    mysql_select_db( $dbname.'_p', $conn );
+    $conn =  mysqli_connect( $server, $username, $password ) OR die(mysqli_error());
+    mysqli_select_db( $conn, $dbname.'_p' );
     return $conn;
 }
 
@@ -86,18 +86,18 @@ $conn = openDB( $_GET['dbname'] );
 $cats = array();
 if ( !empty( $_GET['category'] ) ){
     $depth = (!empty( $_GET['depth'] ) ? $_GET['depth'] : 0);
-    $root = array( mysql_real_escape_string( trim( str_replace( ' ', '_', $_GET['category'] ) ) ) );
-    getSubcats( $cats, $root, $depth );
+    $root = array( mysqli_real_escape_string($conn, trim( str_replace( ' ', '_', $_GET['category'] ) ) ) );
+    getSubcats( $cats, $root, $depth, $conn );
 }
-$r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'] );
-mysql_close( $conn );
+$r = getPagesWithTemplate( $_GET['template'], $cats, $_GET['namespace'], $conn );
+mysqli_close( $conn );
 
 if ( $_GET['set'] == '1' ){
     $conn = openDB( 'wikidatawiki' );
-    $without = getPagesWithoutClaim( $_GET['p'], $r[0] );
+    $without = getPagesWithoutClaim( $_GET['p'], $r[0], $conn );
     $r[0] = array_intersect( $r[0], $without );
     $r[1] = array_intersect_key( $r[1], $r[0] );
-    mysql_close( $conn );
+    mysqli_close( $conn );
 }
 
 #return an array of arrays (pageid, Qid, page title)
