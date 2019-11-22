@@ -26,7 +26,7 @@ function getSubcats( &$cats, $root, $depth, $conn ){
     while( $row = mysqli_fetch_assoc( $result ) ){
         $res[] = mysqli_real_escape_string($conn, $row['page_title']);
     }
-    getSubcats( $cats, $res, $depth - 1 );
+    getSubcats( $cats, $res, $depth - 1, $conn );
 }
 function getPagesWithTemplate( $template, $cats, $namespace, $conn){
     $ret = array();
