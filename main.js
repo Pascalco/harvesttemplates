@@ -180,67 +180,6 @@ function stopJob() {
     $('input[name="pagelist"]').attr('disabled', false);
 }
 
-function addMissingConstraintData( ii ){
-    if (ii == constraints.length) {
-        reportStatus('loading...');
-        getPages();
-        return 1;
-    }
-    if (constraints[ii].type == 'Qualifier' || constraints[ii].type == 'Mandatory qualifier' || constraints[ii].type == 'Source') {
-        stopLoading('Constraint violation: ' + constraints[ii].type);
-        $('input[name="property"]').addClass('error');
-    } else if (constraints[ii].type == 'Type' || constraints[ii].type == 'Value type'){
-        var cl = 'wd:' + constraints[ii].class.join(' wd:');
-        constraints[ii].values = [];
-        $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'SELECT ?value WHERE { VALUES ?cl { ' + cl + ' } . ?value wdt:P279* ?cl }',
-            format: 'json'
-        }).done(function(data) {
-            for (var row in data.results.bindings) {
-                constraints[ii].values.push(parseInt(data.results.bindings[row].value.value.replace('http://www.wikidata.org/entity/Q', '')));
-            }
-            addMissingConstraintData( ++ii );
-        }).fail(function(data) {
-            stopLoading('WQS query expired');
-        });
-    } else if (constraints[ii].type == 'Commons link') {
-        constraints[ii].namespace = constraints[ii].namespace.capitalizeFirstLetter();
-        $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
-            action: 'query',
-            meta: 'siteinfo',
-            siprop: 'namespaces',
-            format: 'json'
-        }).done(function(data) {
-            for (var ns in data.query.namespaces) {
-                if (
-                    data.query.namespaces[ns]['*'] === constraints[ii].namespace ||
-                    (data.query.namespaces[ns].canonical !== undefined && data.query.namespaces[ns].canonical === constraints[ii].namespace)
-                ) {
-                    constraints[ii].namespaceid = data.query.namespaces[ns].id;
-                    break;
-                }
-            }
-            if (constraints[ii].namespaceid === undefined) {
-                stopLoading('Undefined namespace "' + constraints[ii].namespace + '"');
-                return;
-            }
-            addMissingConstraintData( ++ii );
-        });
-    } else {
-        addMissingConstraintData( ++ii );
-    }
-}
-
-
-function createConstraints() {
-    $.getJSON('getconstraints.php', {
-        p: job.property
-    }).done(function(data) {
-        constraints = data;
-        addMissingConstraintData( 0 );
-    });
-}
-
 function loadSiteinfo() {
     $.getJSON('https://' + job.siteid + '.' + job.project + '.org/w/api.php?callback=?', {
         action: 'query',
@@ -269,7 +208,8 @@ function loadSiteinfo() {
                 templateprefixes.push(data.query.namespacealiases[i]['*']);
             }
         }
-        createConstraints();
+        reportStatus('loading...');
+        getPages();
     });
 }
 
@@ -395,174 +335,57 @@ function addValue(pageid, qid, value) {
     }
 }
 
+function createClaim(value){
+    var datavalue;
+    switch (job.datatype) {
+        case 'commonsMedia':
+        case 'external-id':
+        case 'string':
+        case 'url':
+            datavalue = '{"value": "'+value+'","type": "string"}';
+            break;
+        case 'wikibase-item':
+            datavalue = '{"value": {"entity-type":"item", "id": "'+value+'"}, "type": "wikibase-entityid"}';
+            break;
+        case 'time':
+            var precision = 9;
+            if (value.substring(5, 7) != '00') {
+                precision = 10;
+                if (value.substring(8, 10) != '00') {
+                    precision = 11;
+                }
+            }
+            datavalue = '{"value":{"time":"'+value+'","timezone":0,"before":0,"after":0,"precision":'+precision+',"calendarmodel":"http://www.wikidata.org/entity/'+job.calendar+'"},"type":"time"}';
+            break;
+        case 'quantity':
+            var unit = job.unit !== '1' ? 'http://www.wikidata.org/entity/' + job.unit : job.unit
+            datavalue = '{"value":{"amount":"'+value+'","unit":"'+unit+'"},"type":"quantity"}';
+            break;
+    }
+    return '{"mainsnak": {"snaktype": "value","property": "'+job.property+'","datavalue": '+datavalue+', "datatype": "'+job.datatype+'"}}';
+}
+
+
 
 function checkConstraints(pageid, qid, value, ii) {
-    if (ii == constraints.length) {
-        addValue(pageid, qid, value);
-        return true;
-    }
-    var co = constraints[ii];
-    if (co.type == 'Format') {
-        var patt = new RegExp('^(' + co.pattern + ')$', co.modifier);
-        if (patt.test(value) === false) {
-            report(pageid, 'error', 'Constraint violation: Format <i>' + escapeHTML(value) + '</i>', qid);
-            return false;
-        }
-        checkConstraints(pageid, qid, value, ++ii);
-        return true;
-    }
-    else if (co.type == 'Unique value') {
-        var queryvalue;
-        if (job.datatype == 'wikibase-item') {
-            queryvalue = 'wd:'+value;
-        } else if (job.datatype == 'commonsMedia') {
-            queryvalue = '<http://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(value) + '>';
+    var claim = createClaim(value);
+    $.getJSON('https://tools.wmflabs.org/plnode/cc',{
+        entity: qid,
+        claim: claim,
+        constraints: 'all'
+    }).done(function(data) {
+        if (data.violations == 0){
+            addValue(pageid, qid, value);
         } else {
-            queryvalue = '"' + encodeURIComponent(value) + '"';
+            report(pageid, 'error', 'Constraint violation: ' + data.problems[0]['text'], qid);
         }
-        $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-            query: 'ASK { ?item wdt:' + job.property + ' ' + queryvalue + ' }',
-            format: 'json'
-        }).done(function(data) {
-            if (data.boolean) {
-                $.getJSON('https://query.wikidata.org/bigdata/namespace/wdq/sparql?',{
-                    query: 'SELECT ?item WHERE { ?item wdt:' + job.property + ' ' + queryvalue + ' } LIMIT 1',
-                    format: 'json'
-                }).done(function(data) {
-                    report(pageid, 'error', 'Constraint violation: Unique value <i><a href="' + data.results.bindings[0].item.value + '" target="_blank">' + escapeHTML(value) + '</a></i>', qid);
-                    return false;
-                });
-            } else {
-                checkConstraints(pageid, qid, value, ++ii);
-                return true;
-            }
-        }).fail(function () {
-            report(pageid, 'error', 'SPARQL error', qid);
-        });
-    }
-    else if (co.type == 'Type') {
-        $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
-            action: 'wbgetentities',
-            ids: qid,
-            props: 'claims',
-            format: 'json'
-        }).done(function(data) {
-            if (data.entities[qid].claims[co.relation] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Type <i>undefined</i>', qid);
-                return false;
-            }
-            for (var m in data.entities[qid].claims[co.relation]) {
-                if (data.entities[qid].claims[co.relation][m].mainsnak.snaktype == 'value') {
-                    var numericid = data.entities[qid].claims[co.relation][m].mainsnak.datavalue.value['numeric-id'];
-                    if (co.values.indexOf(numericid) != -1) {
-                        checkConstraints(pageid, qid, value, ++ii);
-                        return true;
-                    }
-                }
-            }
-            report(pageid, 'error', 'Constraint violation: Type <i>Q' + data.entities[qid].claims[co.relation][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
-            return false;
-        });
-    }
-    else if (co.type == 'Value type'){
-        $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
-            action: 'wbgetentities',
-            ids: value,
-            props: 'claims',
-            format: 'json'
-        }).done(function(data) {
-            if (data.entities[value].claims[co.relation] === undefined) {
-                report(pageid, 'error', 'Constraint violation: Value type <i>undefined</i>', qid);
-                return false;
-            }
-            for (var m in data.entities[value].claims[co.relation]) {
-                if (data.entities[value].claims[co.relation][m].mainsnak.snaktype == 'value') {
-                    var numericid = data.entities[value].claims[co.relation][m].mainsnak.datavalue.value['numeric-id'];
-                    if (co.values.indexOf(numericid) != -1) {
-                        checkConstraints(pageid, qid, value, ++ii);
-                        return true;
-                    }
-                }
-            }
-            report(pageid, 'error', 'Constraint violation: Value type <i>Q' + data.entities[value].claims[co.relation][0].mainsnak.datavalue.value['numeric-id'] + '</i>', qid);
-            return false;
-        });
-    }
-    else if (co.type == 'One of'){
-        if (co.values.indexOf(value) == -1) {
-            report(pageid, 'error', 'Constraint violation: One of <i>' + escapeHTML(value) + '</i>', qid);
-            return false;
-        }
-        checkConstraints(pageid, qid, value, ++ii);
-        return true;
-    }
-    else if (co.type == 'Commons link'){
-        $.getJSON('https://commons.wikimedia.org/w/api.php?callback=?', {
-            action: 'query',
-            titles: co.namespace + ':' + value,
-            redirects: 'true',
-            format: 'json'
-        }).done(function(data) {
-            if ('-1' in data.query.pages) {
-                report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
-                return false;
-            }
-            for (var m in data.query.pages){
-                if (data.query.pages[m].ns !== co.namespaceid) {
-                    report(pageid, 'error', 'Constraint violation: Commons link <i>' + co.namespace + ':' + escapeHTML(value) + '</i>', qid);
-                    return false;
-                } else {
-                    value = data.query.pages[m].title.slice(co.namespace.length+1)
-                }
-            }
-            checkConstraints(pageid, qid, value, ++ii);
-            return true;
-        });
-    }
-    else if (co.type == 'Conflicts with'){
-        $.getJSON('https://www.wikidata.org/w/api.php?callback=?',{
-            action: 'wbgetentities',
-            ids: qid,
-            props: 'claims',
-            format: 'json'
-        }).done(function(data) {
-            for (var pp in co.list){
-                if (data.entities[qid].claims[pp] !== undefined) {
-                    if (co.list[pp].length === 0){
-                        report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
-                        return false;
-                    }
-                    if (pp == job.property) {
-                        if ($.inArray(value, co.list[pp]) !== -1) {
-                            report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
-                            return false;
-                        }
-                        continue;
-                    }
-                    for (var m in data.entities[qid].claims[pp]) {
-                        if (data.entities[qid].claims[pp][m].mainsnak.snaktype == 'value') {
-                            var numericid = data.entities[qid].claims[pp][m].mainsnak.datavalue.value['numeric-id'];
-                            if (co.list[pp].indexOf(numericid) != -1) {
-                                report(pageid, 'error', 'Constraint violation: Conflicts with', qid);
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-            checkConstraints(pageid, qid, value, ++ii);
-            return true;
-        });
-    }
-    else if (co.type == 'Range') {
-        if (parseFloat(value) < parseFloat(co.min) || parseFloat(value) > parseFloat(co.max)) {
-            report(pageid, 'error', 'Constraint violation: Range <i>' + escapeHTML(value) + '</i>', qid);
-            return false;
-        }
-        checkConstraints(pageid, qid, value, ++ii);
-        return true;
-    }
+    }).fail(function(err) { //likely because of WQS query limit
+        report(pageid, 'error', 'failure while checking constraints', qid);
+        console.log(err.responseJSON.error);
+        delay = 5000;
+    });
 }
+
 
 function parseDate(value) {
     var date = false;
