@@ -7,7 +7,7 @@
  * See <http://creativecommons.org/publicdomain/zero/1.0/> for a copy of the
  * CC0 Public Domain Dedication.
 **/
-
+header('Access-Control-Allow-Origin: *');
 header( 'Content-Type: application/json' );
 include('../connect.inc.php');
 
