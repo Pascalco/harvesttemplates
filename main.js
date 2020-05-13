@@ -369,7 +369,7 @@ function createClaim(value){
 
 function checkConstraints(pageid, qid, value, ii) {
     var claim = createClaim(value);
-    $.getJSON('https://tools.wmflabs.org/plnode/cc',{
+    $.getJSON('https://plnode.toolforge.org/cc',{
         entity: qid,
         claim: claim,
         constraints: 'all'
