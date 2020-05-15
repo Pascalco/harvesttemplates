@@ -368,10 +368,10 @@ function createClaim(value){
 
 
 function checkConstraints(pageid, qid, value, ii) {
-    var claim = createClaim(value);
+    var statement = createClaim(value);
     $.getJSON('https://plnode.toolforge.org/cc',{
         entity: qid,
-        claim: claim,
+        statement: statement,
         constraints: 'all'
     }).done(function(data) {
         if (data.violations == 0){
