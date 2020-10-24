@@ -59,7 +59,7 @@ class Start extends React.Component {
             <button className="linkButton" onClick={this.onLinkClick} url={'share.php'}>predefined queries</button>
             <button className="linkButton deactivated" onClick={this.onLinkClick} url={''}>help</button>
             <button className="linkButton" onClick={this.onLinkClick} url={'https://www.wikidata.org/wiki/User_talk:Pasleim'}>contact</button>
-            <button className="linkButton deactivated" onClick={this.onLinkClick} url={''}>code</button>
+            <button className="linkButton" onClick={this.onLinkClick} url={'https://github.com/Pascalco/harvesttemplates'}>code</button>
             
           </span>
           )
