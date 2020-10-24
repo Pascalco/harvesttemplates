@@ -186,7 +186,6 @@ class Harvester extends React.Component {
     const columnDelimiter = ',';
     const lineDelimiter = '\n';
     const keys = ['pageid', 'title', 'qid', 'rawvalue', 'parsedvalue', 'status', 'message'];
-
     let result = '';
     result += keys.join(columnDelimiter);
     result += lineDelimiter;
@@ -194,10 +193,15 @@ class Harvester extends React.Component {
     array.forEach(item => {
       let ctr = 0;
       keys.forEach(key => {
-        if (ctr > 0)
+        if (ctr > 0) {
           result += columnDelimiter;
+        }
         if (key in item) {
-          result += item[key];
+          if (String(item[key]).includes(columnDelimiter)){
+            result += `"${item[key]}"`;
+          } else {
+            result += item[key];
+          }
         }
         ctr++;
       });
