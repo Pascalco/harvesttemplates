@@ -258,6 +258,7 @@ class Harvester extends React.Component {
     if (!csv.match(/^data:text\/csv/i)) {
       csv = `data:text/csv;charset=utf-8,${csv}`;
     }
+    csv = csv.replace('#', '%23');
     link.setAttribute('href', encodeURI(csv));
     link.setAttribute('download', filename);
     link.click();
