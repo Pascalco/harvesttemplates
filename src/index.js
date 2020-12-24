@@ -1,16 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Form from './components/Form';
-import Start from './components/Start';
+import React from "react";
+import ReactDOM from "react-dom";
+import Form from "./components/Form";
+import Start from "./components/Start";
 
-import './style.css';
+import "./style.css";
 
-ReactDOM.render(
-    <Start />,
-  document.getElementById('start')
-);
+ReactDOM.render(<Start />, document.getElementById("start"));
 
-ReactDOM.render(
-    <Form />,
-  document.getElementById('form')
-);
+ReactDOM.render(<Form />, document.getElementById("form"));

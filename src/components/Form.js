@@ -87,7 +87,7 @@ class Form extends React.Component {
       } else if (key === 'constraints'){
         update.constraint_temp = value.split('|');
       } else if (key === 'templateredirects'){
-        update.templateredirects_temp = value.split('|');            
+        update.templateredirects_temp = value.split('|');
       } else if (booleanvariables.includes(key)){
         update[key] = (value === '1');
       } else if (stringvariables.includes(key)){
@@ -99,7 +99,7 @@ class Form extends React.Component {
     this.setState(update, () => {
       this.handleFocus();
       if (load){
-        this.markReady('buttonPressed');      
+        this.markReady('buttonPressed');
       }
     });
   }
@@ -476,7 +476,7 @@ class Form extends React.Component {
           for (let val of pa.redirects) {
             val.title = val.title.split(':')[1];
             if (this.state.templateredirects_temp){
-              templateredirects[val.pageid] = {title: val.title, value: this.state.templateredirects_temp.includes(val.title), pageid: val.pageid};  
+              templateredirects[val.pageid] = {title: val.title, value: this.state.templateredirects_temp.includes(val.title), pageid: val.pageid};
             } else {
               templateredirects[val.pageid] = {title: val.title, value: true, pageid: val.pageid};
             }
