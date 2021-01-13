@@ -2,11 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
 import _ from "lodash";
-import Harvester from "./Harvester";
-import { capitalizeFirstLetter } from "../util";
 import queryString from "query-string";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Harvester from "./Harvester";
+import { capitalizeFirstLetter, backend } from "../util";
 
 class Form extends React.Component {
   constructor(props) {
@@ -450,51 +450,25 @@ class Form extends React.Component {
       });
   }
 
-  loadCategorymembers(categories) {
-    let promises = [];
-    let newcategories = [];
-    for (let category of categories) {
-      let data = {
-        action: "query",
-        list: "categorymembers",
-        cmlimit: "max",
-        cmtitle: category[0],
-        cmcontinue: category[1],
-        _depth: category[2],
-        format: "json",
-        origin: "*",
-      };
-      promises.push(
-        axios.get(`${this.job.site}/w/api.php`, {
-          params: data,
-          cancelToken: this.tokenC.token,
-        })
-      );
-    }
-    axios.all(promises).then(results => {
-      for (let result of results) {
-        let depth = result.config.params._depth;
-        if ("query" in result.data) {
-          for (let val of result.data.query.categorymembers) {
-            if (val.ns === 14 && depth < this.state.depth) {
-              newcategories.push([val.title, "", depth + 1]);
-            }
-            if (val.ns === parseInt(this.state.namespace)) {
-              this.categorymembers.push(val.title);
-            }
-          }
-          if ("continue" in result.data) {
-            let cont = result.data.continue.cmcontinue;
-            newcategories.push([result.config.params.cmtitle, cont, depth]);
-          }
-        }
-      }
-      if (newcategories.length > 0) {
-        this.loadCategorymembers(newcategories);
-      } else {
+  loadCategorymembers() {
+    const qs = {
+      category: this.state.category,
+      depth: this.state.depth,
+      namespace: this.state.namespace,
+      servername: `${this.state.siteid}.${this.state.project}.org`,
+    };
+    axios
+      .get(`${backend}categoryscan`, { params: qs })
+      .then(response => {
+        this.categorymembers = response.data;
         this.markReady("categorymembers");
-      }
-    });
+      })
+      .catch(error => {
+        if (!axios.isCancel(error)) {
+          console.log(error);
+          this.markError("category");
+        }
+      });
   }
 
   loadTemplateredirects() {
@@ -779,7 +753,7 @@ class Form extends React.Component {
       this.tokenC = axios.CancelToken.source();
       if (this.state.category.length > 0) {
         this.markUnready("categorymembers");
-        this.loadCategorymembers([[`Category:${this.state.category}`, "", 0]]);
+        this.loadCategorymembers();
       }
     }
   }
@@ -1145,6 +1119,7 @@ class Form extends React.Component {
                     value={this.state.category}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
+                    className={this.state.errors.includes("category") ? "inputerror" : ""}
                   />
                 </div>
               </div>
