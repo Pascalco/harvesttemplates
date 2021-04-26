@@ -36,6 +36,7 @@ class Form extends React.Component {
       removesuffix: "",
       searchvalue: "",
       replacevalue: "",
+      monolanguage: "",
       calendar: "Q1985727",
       ready: {
         siteinfo: false,
@@ -178,6 +179,7 @@ class Form extends React.Component {
     this.job.depth = this.state.depth;
     this.job.alreadyset = this.state.alreadyset;
     this.job.wikisyntax = this.state.wikisyntax;
+    this.job.monolanguage = this.state.monolanguage;
     this.job.constraints = [];
     for (let c of Object.values(this.state.constraints)) {
       if (c.value === true) {
@@ -255,7 +257,7 @@ class Form extends React.Component {
     if (allowedunits_id.length > 0) {
       if (allowedunits_id.includes("1")) {
         allowedunits.push(
-          <option value={1} key='novalue'>
+          <option value={1} key="novalue">
             no value
           </option>
         );
@@ -384,7 +386,16 @@ class Form extends React.Component {
             }
           }
           this.job.datatype = response.data.entities[this.job.p].datatype;
-          const supportedDatatypes = ["quantity", "time", "wikibase-item", "url", "string", "external-id", "commonsMedia"];
+          const supportedDatatypes = [
+            "quantity",
+            "time",
+            "wikibase-item",
+            "url",
+            "string",
+            "external-id",
+            "commonsMedia",
+            "monolingualtext",
+          ];
           if (!supportedDatatypes.includes(this.job.datatype)) {
             toast.error(<span>not supported datatype: {this.job.datatype}</span>, { position: toast.POSITION.TOP_CENTER });
             this.markError("property");
@@ -393,7 +404,7 @@ class Form extends React.Component {
 
           let label = "en" in response.data.entities[this.job.p].labels ? response.data.entities[this.job.p].labels.en.value : this.job.p;
           let propinfofield = (
-            <a href={"https://www.wikidata.org/wiki/Property:" + this.job.p} target='_blank' rel='noopener noreferrer'>
+            <a href={"https://www.wikidata.org/wiki/Property:" + this.job.p} target="_blank" rel="noopener noreferrer">
               {label}
             </a>
           );
@@ -523,8 +534,8 @@ class Form extends React.Component {
       templateinfofield = (
         <a
           href={`https://${this.state.siteid}.${this.state.project}.org/wiki/Template:${this.state.template}`}
-          target='_blank'
-          rel='noopener noreferrer'
+          target="_blank"
+          rel="noopener noreferrer"
         >
           link
         </a>
@@ -763,10 +774,10 @@ class Form extends React.Component {
     for (let i = 0; i < this.state.parameters.length; i += 1) {
       standardfield.push(
         <input
-          name='parameters'
+          name="parameters"
           key={i}
           listid={i}
-          type='text'
+          type="text"
           value={this.state.parameters[i]}
           onChange={this.handleInputChange}
           onFocus={this.handleFocus}
@@ -778,7 +789,7 @@ class Form extends React.Component {
       <div>
         {standardfield}
         <br />
-        <button onClick={this.addAlias} className='formButton'>
+        <button onClick={this.addAlias} className="formButton">
           + add alias
         </button>
       </div>
@@ -790,8 +801,8 @@ class Form extends React.Component {
           <div>
             {mainfield}
             <input
-              type='checkbox'
-              name='wikisyntax'
+              type="checkbox"
+              name="wikisyntax"
               checked={this.state.wikisyntax}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
@@ -806,9 +817,9 @@ class Form extends React.Component {
             {mainfield}or
             <br />
             <input
-              type='text'
-              name='year'
-              className='shorter30'
+              type="text"
+              name="year"
+              className="shorter30"
               value={this.state.aparameter1}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
@@ -816,9 +827,9 @@ class Form extends React.Component {
             year
             <br />
             <input
-              type='text'
-              name='month'
-              className='shorter30'
+              type="text"
+              name="month"
+              className="shorter30"
               value={this.state.aparameter2}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
@@ -826,28 +837,28 @@ class Form extends React.Component {
             month
             <br />
             <input
-              type='text'
-              name='day'
-              className='shorter30'
+              type="text"
+              name="day"
+              className="shorter30"
               value={this.state.aparameter3}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
             />{" "}
             day
             <br />
-            <select name='calendar' value={this.state.calendar} onChange={this.handleInputChange} onFocus={this.handleFocus}>
-              <option value='Q1985727'>Gregorian</option>
-              <option value='Q1985786'>Julian</option>
+            <select name="calendar" value={this.state.calendar} onChange={this.handleInputChange} onFocus={this.handleFocus}>
+              <option value="Q1985727">Gregorian</option>
+              <option value="Q1985786">Julian</option>
             </select>{" "}
             if year
-            <select name='rel' value={this.state.rel} onChange={this.handleInputChange} onFocus={this.handleFocus} className='shorter30'>
-              <option value='geq'>&#61;&#62;</option>
-              <option value='l'>&#60;</option>
+            <select name="rel" value={this.state.rel} onChange={this.handleInputChange} onFocus={this.handleFocus} className="shorter30">
+              <option value="geq">&#61;&#62;</option>
+              <option value="l">&#60;</option>
             </select>
             <input
-              type='number'
-              name='limityear'
-              min='1'
+              type="number"
+              name="limityear"
+              min="1"
               value={this.state.limityear}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
@@ -860,16 +871,33 @@ class Form extends React.Component {
           <div>
             {mainfield}
             <br />
-            unit:{" "}
-            <select name='unit' value={this.state.unit} onFocus={this.handleFocus} onChange={this.handleInputChange}>
+            unit{" "}
+            <select name="unit" value={this.state.unit} onFocus={this.handleFocus} onChange={this.handleInputChange}>
               {this.state.allowedunits}
             </select>
             <br />
             decimal mark
-            <select name='decimalmark' value={this.state.decimalmark} onFocus={this.handleFocus} onChange={this.handleInputChange}>
+            <select name="decimalmark" value={this.state.decimalmark} onFocus={this.handleFocus} onChange={this.handleInputChange}>
               <option>.</option>
               <option>,</option>
             </select>
+          </div>
+        );
+        break;
+      case "monolingualtext":
+        parameterfields = (
+          <div>
+            {mainfield}
+            <br />
+            language code{" "}
+            <input
+              type="text"
+              name="monolanguage"
+              className="shorter30"
+              value={this.state.monolanguage}
+              onChange={this.handleInputChange}
+              onFocus={this.handleFocus}
+            />
           </div>
         );
         break;
@@ -882,13 +910,13 @@ class Form extends React.Component {
       let constraintboxes = [];
       for (let c of Object.values(this.state.constraints)) {
         constraintboxes.push(
-          <div key={c.qid} className='row'>
-            <div className='col2'>
+          <div key={c.qid} className="row">
+            <div className="col2">
               <input
-                type='checkbox'
+                type="checkbox"
                 checked={c.value}
                 key={c.qid}
-                name='constraints'
+                name="constraints"
                 listid={c.qid}
                 onChange={this.handleInputChange}
                 onFocus={this.handleFocus}
@@ -913,10 +941,10 @@ class Form extends React.Component {
         templateredirectboxes.push(
           <div key={c.pageid}>
             <input
-              type='checkbox'
+              type="checkbox"
               checked={c.value}
               key={c.pageid}
-              name='templateredirects'
+              name="templateredirects"
               listid={c.pageid}
               onChange={this.handleInputChange}
               onFocus={this.handleFocus}
@@ -926,9 +954,9 @@ class Form extends React.Component {
         );
       }
       templateredirectfield = (
-        <div className='row'>
-          <div className='col1'>include</div>
-          <div className='col2'>{templateredirectboxes}</div>
+        <div className="row">
+          <div className="col1">include</div>
+          <div className="col2">{templateredirectboxes}</div>
         </div>
       );
     }
@@ -937,15 +965,15 @@ class Form extends React.Component {
       <div>
         <ToastContainer />
         <form>
-          <div className='flex-container'>
-            <div className='flexItem'>
+          <div className="flex-container">
+            <div className="flexItem">
               <h2>Load pages from</h2>
-              <div className='row'>
-                <div className='col1'>Wiki</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">Wiki</div>
+                <div className="col2">
                   <input
-                    name='siteid'
-                    type='text'
+                    name="siteid"
+                    type="text"
                     value={this.state.siteid}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -953,32 +981,32 @@ class Form extends React.Component {
                   />
                   .
                   <select
-                    name='project'
+                    name="project"
                     value={this.state.project}
                     onFocus={this.handleFocus}
                     onChange={this.handleInputChange}
                     className={`shorter55 ${this.state.errors.includes("project") ? "inputerror" : ""}`}
                   >
-                    <option value='wikipedia'> wikipedia </option>
-                    <option value='wikibooks'> wikibooks </option>
-                    <option value='wikinews'> wikinews </option>
-                    <option value='wikiquote'> wikiquote </option>
-                    <option value='wikisource'> wikisource </option>
-                    <option value='wikiversity'> wikiversity </option>
-                    <option value='wikivoyage'> wikivoyage </option>
-                    <option value='wiktionary'> wiktionary </option>
-                    <option value='commons'> commons </option>
+                    <option value="wikipedia"> wikipedia </option>
+                    <option value="wikibooks"> wikibooks </option>
+                    <option value="wikinews"> wikinews </option>
+                    <option value="wikiquote"> wikiquote </option>
+                    <option value="wikisource"> wikisource </option>
+                    <option value="wikiversity"> wikiversity </option>
+                    <option value="wikivoyage"> wikivoyage </option>
+                    <option value="wiktionary"> wiktionary </option>
+                    <option value="commons"> commons </option>
                   </select>
                   .org
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>Namespace</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">Namespace</div>
+                <div className="col2">
                   <input
-                    name='namespace'
-                    type='number'
+                    name="namespace"
+                    type="number"
                     value={this.state.namespace}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -989,12 +1017,12 @@ class Form extends React.Component {
               <br />
               <h2>Define import</h2>
 
-              <div className='row'>
-                <div className='col1'>Property</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">Property</div>
+                <div className="col2">
                   <input
-                    name='p'
-                    type='number'
+                    name="p"
+                    type="number"
                     value={this.state.p}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1004,12 +1032,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>Template</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">Template</div>
+                <div className="col2">
                   <input
-                    name='template'
-                    type='text'
+                    name="template"
+                    type="text"
                     value={this.state.template}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1021,20 +1049,20 @@ class Form extends React.Component {
 
               {templateredirectfield}
 
-              <div className='row'>
-                <div className='col1'>Parameter</div>
-                <div className='col2'>{parameterfields}</div>
+              <div className="row">
+                <div className="col1">Parameter</div>
+                <div className="col2">{parameterfields}</div>
               </div>
             </div>
 
-            <div className='flexItem'>
+            <div className="flexItem">
               <h2>Modify values</h2>
-              <div className='row'>
-                <div className='col1'>add prefix</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">add prefix</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='addprefix'
+                    type="text"
+                    name="addprefix"
                     value={this.state.addprefix}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1042,12 +1070,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>remove prefix</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">remove prefix</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='removeprefix'
+                    type="text"
+                    name="removeprefix"
                     value={this.state.removeprefix}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1055,12 +1083,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>add suffix</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">add suffix</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='addsuffix'
+                    type="text"
+                    name="addsuffix"
                     value={this.state.addsuffix}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1068,12 +1096,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>remove suffix</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">remove suffix</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='removesuffix'
+                    type="text"
+                    name="removesuffix"
                     value={this.state.removesuffix}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1081,12 +1109,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>regex search value</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">regex search value</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='searchvalue'
+                    type="text"
+                    name="searchvalue"
                     value={this.state.searchvalue}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1094,12 +1122,12 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>regex replace value</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">regex replace value</div>
+                <div className="col2">
                   <input
-                    type='text'
-                    name='replacevalue'
+                    type="text"
+                    name="replacevalue"
                     value={this.state.replacevalue}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1108,14 +1136,14 @@ class Form extends React.Component {
               </div>
             </div>
 
-            <div className='flexItem'>
+            <div className="flexItem">
               <h2>Filter</h2>
-              <div className='row'>
-                <div className='col1'>Category</div>
-                <div className='col2'>
+              <div className="row">
+                <div className="col1">Category</div>
+                <div className="col2">
                   <input
-                    name='category'
-                    type='text'
+                    name="category"
+                    type="text"
                     value={this.state.category}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1124,25 +1152,25 @@ class Form extends React.Component {
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>Category depth</div>
-                <div className='col2'>
-                  <input name='depth' type='number' value={this.state.depth} onChange={this.handleInputChange} onFocus={this.handleFocus} />
+              <div className="row">
+                <div className="col1">Category depth</div>
+                <div className="col2">
+                  <input name="depth" type="number" value={this.state.depth} onChange={this.handleInputChange} onFocus={this.handleFocus} />
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col1'>Manual list</div>
-                <div className='col2'>
-                  <textarea name='manuallist' value={this.state.manuallist} onChange={this.handleInputChange} onFocus={this.handleFocus} />
+              <div className="row">
+                <div className="col1">Manual list</div>
+                <div className="col2">
+                  <textarea name="manuallist" value={this.state.manuallist} onChange={this.handleInputChange} onFocus={this.handleFocus} />
                 </div>
               </div>
 
-              <div className='row'>
-                <div className='col2'>
+              <div className="row">
+                <div className="col2">
                   <input
-                    type='checkbox'
-                    name='alreadyset'
+                    type="checkbox"
+                    name="alreadyset"
                     checked={this.state.alreadyset}
                     onChange={this.handleInputChange}
                     onFocus={this.handleFocus}
@@ -1153,12 +1181,12 @@ class Form extends React.Component {
               </div>
             </div>
 
-            <div className='flexItem'>{constraintfield}</div>
+            <div className="flexItem">{constraintfield}</div>
           </div>
-          <div className='formFooter'>
+          <div className="formFooter">
             <button
               onClick={this.handleSubmit}
-              id='submitButton'
+              id="submitButton"
               className={`linkButton ${this.state.ready.buttonPressed ? "deactivated" : ""}`}
             >
               {this.state.ready.buttonPressed ? "loading..." : "load"}
