@@ -258,6 +258,8 @@ class Harvester extends React.Component {
       exportParameters = [...exportParameters, "calendar", "limityear", "rel"];
     } else if (this.props.job.datatype === "quantity") {
       exportParameters = [...exportParameters, "unit", "decimalmark"];
+    } else if (this.props.job.datatype === "monolingualtext") {
+      exportParameters = [...exportParameters, "pagetitle", "monolanguage"];
     }
     for (let key of exportParameters) {
       if (key in this.props.job && this.props.job[key].toString().length > 0) {

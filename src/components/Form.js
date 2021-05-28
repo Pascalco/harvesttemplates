@@ -98,9 +98,10 @@ class Form extends React.Component {
       "unit",
       "decimalmark",
       "manuallist",
+      "monolanguage",
     ];
     let arrayvariables = ["parameters", "templateredirects"];
-    let booleanvariables = ["wikisyntax", "alreadyset"];
+    let booleanvariables = ["wikisyntax", "alreadyset", "pagetitle"];
     let update = {};
     for (let [key, value] of Object.entries(params)) {
       if (key === "p") {
