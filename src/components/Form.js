@@ -19,6 +19,7 @@ class Form extends React.Component {
       template: "",
       templateredirects: [],
       parameters: [""],
+      pagetitle: false,
       limityear: 1926,
       rel: "geq",
       decimalmark: ".",
@@ -168,6 +169,7 @@ class Form extends React.Component {
     this.job.namespace = this.state.namespace;
     this.job.template = capitalizeFirstLetter(this.state.template).replace(/_/g, " ");
     this.job.parameters = this.state.parameters;
+    this.job.pagetitle = this.state.pagetitle;
     this.job.calendar = this.state.calendar;
     this.job.limityear = this.state.limityear;
     this.job.rel = this.state.rel;
@@ -669,7 +671,7 @@ class Form extends React.Component {
     event.preventDefault();
     this.handleFocus();
     this.job.htid = undefined;
-    if (this.state.parameters[0] === "" && this.state.aparameter1 === "") {
+    if (!this.state.parameters[0] && !this.state.aparameter1 && !this.state.pagetitle) {
       this.markError("parameters");
     } else if (this.state.template === "") {
       this.markError("template");
@@ -709,6 +711,8 @@ class Form extends React.Component {
       newerrors = newerrors.filter(e => e !== "project");
     } else if (name === "project") {
       newerrors = newerrors.filter(e => e !== "siteid");
+    } else if (name === "pagetitle") {
+      newerrors = newerrors.filter(e => e !== "parameters");
     }
     this.setState({
       [name]: value,
@@ -889,7 +893,16 @@ class Form extends React.Component {
           <div>
             {mainfield}
             <br />
-            language code{" "}
+            <input
+              type="checkbox"
+              name="pagetitle"
+              checked={this.state.pagetitle}
+              onChange={this.handleInputChange}
+              onFocus={this.handleFocus}
+            />
+            or use page title
+            <br />
+            language code
             <input
               type="text"
               name="monolanguage"
