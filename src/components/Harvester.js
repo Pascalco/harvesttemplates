@@ -35,7 +35,7 @@ class Harvester extends React.Component {
   }
 
   onLogin() {
-    window.location.href = `${backend}authorize?landingpage=https://pltools.toolforge.org/harvesttemplates2/landingpage.php`;
+    window.location.href = `${backend}authorize?landingpage=https://pltools.toolforge.org/harvesttemplates/landingpage.php`;
   }
 
   runHarvester(i) {
@@ -192,9 +192,9 @@ class Harvester extends React.Component {
       });
     } else {
       toast.error(
-        <span id='toast'>
+        <span id="toast">
           you are not logged in.{" "}
-          <button onClick={this.onLogin} className='linkButton'>
+          <button onClick={this.onLogin} className="linkButton">
             login
           </button>
         </span>,
@@ -315,7 +315,7 @@ class Harvester extends React.Component {
         selector: "title",
         sortable: true,
         format: row => (
-          <a href={`${this.props.job.site}/wiki/${row.title}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`${this.props.job.site}/wiki/${row.title}`} target="_blank" rel="noopener noreferrer">
             {row.title}
           </a>
         ),
@@ -325,7 +325,7 @@ class Harvester extends React.Component {
         selector: "qid",
         sortable: true,
         format: row => (
-          <a href={`https://www.wikidata.org/wiki/${row.qid}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://www.wikidata.org/wiki/${row.qid}`} target="_blank" rel="noopener noreferrer">
             {row.qid}
           </a>
         ),
@@ -383,20 +383,20 @@ class Harvester extends React.Component {
       />
     );
     return (
-      <div className='fullwidth'>
-        <button onClick={this.handleStartStop} id='startButton' className='linkButton'>
+      <div className="fullwidth">
+        <button onClick={this.handleStartStop} id="startButton" className="linkButton">
           start
         </button>
-        <button onClick={this.handleDownload} className='linkButton'>
+        <button onClick={this.handleDownload} className="linkButton">
           download log
         </button>
-        <button onClick={this.handlePermalink} className='linkButton'>
+        <button onClick={this.handlePermalink} className="linkButton">
           permalink
         </button>
-        <button onClick={this.handleSave} className='linkButton'>
+        <button onClick={this.handleSave} className="linkButton">
           publicly save
         </button>
-        <div id='jobstatus'>{this.state.jobstatus}</div>
+        <div id="jobstatus">{this.state.jobstatus}</div>
         {mytable}
       </div>
     );
