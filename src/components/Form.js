@@ -265,6 +265,7 @@ class Form extends React.Component {
           </option>
         );
         allowedunits_id = allowedunits_id.filter(item => item !== "1");
+        allowedunits_id = allowedunits_id.splice(0,50); //max 50 units can be requested
       }
       let unit = "1";
       let data = {
